@@ -3,6 +3,7 @@ using System.IO;
 using Medja;
 using Medja.Controls;
 using Medja.OpenTk;
+using Medja.OpenTk.Themes.DarkBlue;
 using Medja.OpenTk.Rendering;
 using Medja.Theming;
 
@@ -12,7 +13,7 @@ namespace SecureTextEditor
     {
         static void Main(string[] args)
         {
-            var library = new MedjaOpenTkLibrary(new DarkBlueTheme());//new Medja.OpenTk.Themes.DarkBlue.DarkBlueTheme());
+            var library = new MedjaOpenTkLibrary(new DarkBlueTheme());
             library.RendererFactory = CreateRenderer;
 
             var controlFactory = library.ControlFactory;
