@@ -5,7 +5,6 @@ using Medja.Controls;
 using Medja.OpenTk;
 using Medja.OpenTk.Themes.DarkBlue;
 using Medja.OpenTk.Rendering;
-using Medja.Primitives;
 using Medja.Theming;
 
 namespace SecureTextEditor
