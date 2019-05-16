@@ -65,16 +65,20 @@ namespace SecureTextEditor
               var saveBtn = controlFactory.Create<Button>();
               saveBtn.Text = "Save";
   
-              var paddingDrpDwn = controlFactory.Create<ComboBox<TabItem>();
-              paddingDrpDwn.Text = "Padding";
+              var paddingDrpDwn = controlFactory.Create<ComboBox<string>>();
+//              paddingDrpDwn.Text = "Padding";
+              paddingDrpDwn.AddItem("123");
+              paddingDrpDwn.AddItem("456");
+              paddingDrpDwn.AddItem("789"); 
+              paddingDrpDwn.Position.Height = 30;
               
               var blockModeDrpDwn = controlFactory.Create<Button>();
               blockModeDrpDwn.Text = "Blockmodi";
   
               var encryptDrpDwn = controlFactory.Create<Button>();
               encryptDrpDwn.Text = "Encryption";
-  
-  
+
+
               var buttonStackPanel = controlFactory.Create<HorizontalStackPanel>();
               buttonStackPanel.ChildrenWidth = 90;
               buttonStackPanel.Position.Height = saveBtn.Position.Height;
