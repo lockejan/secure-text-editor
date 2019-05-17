@@ -6,7 +6,7 @@ using Medja.Theming;
 
 namespace SecureTextEditor
 {
-    public class TextEditorControl : ControlFactory
+    public class TextEditorControl
     {
         private readonly ControlFactory _controlFactory;
         
