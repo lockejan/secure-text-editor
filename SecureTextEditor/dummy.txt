@@ -1,2 +1,2 @@
-Dies ist ein langer Text
+﻿ffffffDies ist ein langer Text
 Und dies auch...
