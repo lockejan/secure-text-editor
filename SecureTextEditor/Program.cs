@@ -18,8 +18,8 @@ namespace SecureTextEditor
             var window = application.CreateWindow();
             window.CenterOnScreen(800, 600);
 
-            var test = new SecureTextEditorView(controlFactory);
-            window.Content = test.dockPanel;//new SecureTextEditorView(controlFactory);
+            var view = new SecureTextEditorView(controlFactory);
+            window.Content = view.dockPanel;//new SecureTextEditorView(controlFactory);
             window.Title = "NotYetSecureTextEditor";
 
             application.MainWindow = window;
