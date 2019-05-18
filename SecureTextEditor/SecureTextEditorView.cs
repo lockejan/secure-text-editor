@@ -45,6 +45,7 @@ namespace SecureTextEditor
 //            var buttonStackPanel = CreateButtonPanel(controlFactory);
 //            CreateDockPanel(buttonStackPanel, controlFactory);
             CreateDockPanel(CreateButtonPanel(controlFactory), controlFactory);
+            FocusManager.Default.SetFocus(_textBox);
             
             //POSITION BUTTONS
 //            var buttonStackPanel = controlFactory.Create<HorizontalStackPanel>();
@@ -73,7 +74,6 @@ namespace SecureTextEditor
             dockPanel.Add(Dock.Bottom, buttonStackPanel);
             dockPanel.Add(Dock.Fill, _textBox);
             dockPanel.Background = _textBox.Background;
-            FocusManager.Default.SetFocus(_textBox);
         }
 
         private HorizontalStackPanel CreateButtonPanel(IControlFactory controlFactory)
@@ -108,7 +108,7 @@ namespace SecureTextEditor
         }
 
 
-        public void LoadText(String path)
+        public void LoadTextfile(String path)
         {
             if (File.Exists(path))
             {
@@ -118,7 +118,7 @@ namespace SecureTextEditor
             FocusManager.Default.SetFocus(_textBox);
         }
 
-        public void SaveText()
+        public void SaveTextfile()
         {
             File.WriteAllText(_path, Text, Encoding.UTF8);
             FocusManager.Default.SetFocus(_textBox);
@@ -126,12 +126,12 @@ namespace SecureTextEditor
         
         public void OnLoadButtonClicked(object sender, EventArgs e)
         {
-            LoadText("dummy.txt");
+            LoadTextfile("dummy.txt");
         }
 
         private void OnSaveButtonClicked(object sender, EventArgs e)
         {
-            SaveText();
+            SaveTextfile();
         }
         
         private String AssemblyDirectory
