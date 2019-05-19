@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net472</TargetFramework>
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DocumentationFile>bin\Debug\SecureTextEditor.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <DocumentationFile>bin\Release\SecureTextEditor.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="BouncyCastle" Version="1.8.5" />
+      <PackageReference Include="Medja" Version="2019.5.13.2" />
+      <PackageReference Include="Medja.OpenTk" Version="2019.5.13.2" />
+      <PackageReference Include="Medja.OpenTk.Themes" Version="2019.5.13.2" />
+      <PackageReference Include="Medja.Utils" Version="2019.5.13.2" />
+      <PackageReference Include="OpenTK" Version="3.0.1" />
+      <PackageReference Include="SkiaSharp" Version="1.68.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="libSkiaSharp.so">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+</Project>

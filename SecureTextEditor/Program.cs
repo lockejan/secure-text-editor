@@ -18,9 +18,7 @@ namespace SecureTextEditor
             var window = application.CreateWindow();
             window.CenterOnScreen(800, 600);
             window.Title = "NotYetSecureTextEditor";
-
-            var view = new SecureTextEditorView(controlFactory);
-            window.Content = view.dockPanel;//new SecureTextEditorView(controlFactory);
+            window.Content = new SecureTextEditorView(controlFactory);
 
             application.MainWindow = window;
             application.Run();
