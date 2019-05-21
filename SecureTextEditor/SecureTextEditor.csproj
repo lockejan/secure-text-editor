@@ -16,12 +16,13 @@
 
     <ItemGroup>
       <PackageReference Include="BouncyCastle" Version="1.8.5" />
-      <PackageReference Include="Medja" Version="2019.5.13.2" />
-      <PackageReference Include="Medja.OpenTk" Version="2019.5.13.2" />
-      <PackageReference Include="Medja.OpenTk.Themes" Version="2019.5.13.2" />
-      <PackageReference Include="Medja.Utils" Version="2019.5.13.2" />
+      <PackageReference Include="Medja" Version="2019.5.20.2" />
+      <PackageReference Include="Medja.OpenTk" Version="2019.5.20.2" />
+      <PackageReference Include="Medja.OpenTk.Themes" Version="2019.5.20.2" />
+      <PackageReference Include="Medja.Utils" Version="2019.5.20.2" />
       <PackageReference Include="OpenTK" Version="3.0.1" />
       <PackageReference Include="SkiaSharp" Version="1.68.0" />
+      <PackageReference Include="xunit" Version="2.4.1" />
     </ItemGroup>
 
     <ItemGroup>

@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecureTextEditor", "SecureTextEditor\SecureTextEditor.csproj", "{79560307-8382-43FC-A9A3-0CEE41729240}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSecureTextEditor", "TestSecureTextEditor\TestSecureTextEditor.csproj", "{5711569B-BCDC-4E34-A1AF-281F479FDCBD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{79560307-8382-43FC-A9A3-0CEE41729240}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{79560307-8382-43FC-A9A3-0CEE41729240}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{79560307-8382-43FC-A9A3-0CEE41729240}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5711569B-BCDC-4E34-A1AF-281F479FDCBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5711569B-BCDC-4E34-A1AF-281F479FDCBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5711569B-BCDC-4E34-A1AF-281F479FDCBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5711569B-BCDC-4E34-A1AF-281F479FDCBD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
