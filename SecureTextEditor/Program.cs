@@ -1,7 +1,6 @@
 ﻿using Medja;
 using Medja.OpenTk;
 using Medja.OpenTk.Themes.DarkBlue;
-using Medja.OpenTk.Rendering;
 
 namespace SecureTextEditor
 {
@@ -10,7 +9,6 @@ namespace SecureTextEditor
         static void Main(string[] args)
         {
             var library = new MedjaOpenTkLibrary(new DarkBlueTheme());
-            library.RendererFactory = CreateRenderer;
 
             var controlFactory = library.ControlFactory;
             var application = MedjaApplication.Create(library);
@@ -23,12 +21,6 @@ namespace SecureTextEditor
             application.MainWindow = window;
             application.Run();
         }
-
-        private static IRenderer CreateRenderer()
-        {
-            var openTkRenderer = new OpenTkRenderer();
-            return openTkRenderer;
-        }
-
+        
     }
 }
