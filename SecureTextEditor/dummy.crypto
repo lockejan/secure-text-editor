@@ -1,0 +1,1 @@
+﻿{"Text":null,"AES":{"IV":"RHYFEfAzvX3l7EwPpYJl3Q==","Key":"jLIKto+dqGjN5jnZPnvxBElCDjtMyA7nVeVeM/Ad3II=","KeySize":256,"FeedbackSize":8,"Mode":1,"Padding":2,"BlockSize":128,"LegalBlockSizes":[{"MinSize":128,"MaxSize":128,"SkipSize":0}],"LegalKeySizes":[{"MinSize":128,"MaxSize":256,"SkipSize":64}]}}
