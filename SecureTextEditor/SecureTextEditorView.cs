@@ -1,41 +1,37 @@
 using System;
 using System.IO;
 using System.Reflection;
-using System.Security.Cryptography;
 using System.Text;
 using Medja.Controls;
-using Medja.Primitives;
 using Medja.Theming;
-using Org.BouncyCastle.Asn1.Cms;
-using Org.BouncyCastle.Bcpg;
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Digests;
-using Org.BouncyCastle.Crypto.Utilities;
-using Org.BouncyCastle.Utilities.Encoders;
+using Newtonsoft.Json;
+using Xunit.Sdk;
 
 namespace SecureTextEditor
 {
     public class SecureTextEditorView : ContentControl
     {
-        private string _path;
+        private string _path = "dummy.txt";
         private readonly IControlFactory _controlFactory;
 
         private Button _loadBtn;
         private Button _saveBtn;
-        private Button _decryptBtn;
-        private Button _encryptBtn;
+        private Button _cryptBtn;
 
+        private ComboBox _cipherModeComboBox;
         private ComboBox _paddingModeComboBox;
         private ComboBox _blockModeComboBox;
-        
+        private ComboBox _macModeComboBox;
+
+        private bool _cryptor = false;
+        private SecureTextEditorModel _cryptoFabric;
+
         private TextEditor _textBox;
         public string Text
         {
             get { return _textBox.GetText(); }
             set { _textBox.SetText(value); }
         }
-
-        private Aes _myAes;
 
         /// <summary>
         /// Creates mainView Component. Expects ControlFactory for component creation. 
@@ -46,26 +42,17 @@ namespace SecureTextEditor
             _controlFactory = controlFactory;
             _textBox = controlFactory.Create<TextEditor>();
 
-            CreateCryptoHandler();
-            
+            _cryptoFabric = new SecureTextEditorModel();
+
             CreateButtons(controlFactory);
             RegisterButtonEvents();
             
             CreateComboBoxes(controlFactory);
             
-//            var buttonStackPanel = CreateButtonPanel(controlFactory);
-//            CreateDockPanel(buttonStackPanel, controlFactory);
             Content = CreateDockPanel();
             FocusManager.Default.SetFocus(_textBox);
         }
-
-        private void CreateCryptoHandler()
-        {
-            _myAes = Aes.Create();
-            _myAes.Mode = CipherMode.ECB;
-            _myAes.Padding = PaddingMode.None;
-        }
-
+        
         private Control CreateDockPanel()
         {
             var dockPanel = _controlFactory.Create<DockPanel>();
@@ -79,15 +66,17 @@ namespace SecureTextEditor
         private HorizontalStackPanel CreateButtonPanel()
         {
             var buttonStackPanel = _controlFactory.Create<HorizontalStackPanel>();
-            buttonStackPanel.ChildrenWidth = 90;
+            buttonStackPanel.ChildrenWidth = 100;
             buttonStackPanel.Position.Height = _loadBtn.Position.Height;
             buttonStackPanel.Background = _textBox.Background;
             buttonStackPanel.Add(_loadBtn);
             buttonStackPanel.Add(_saveBtn);
-            buttonStackPanel.Add(_decryptBtn);
-            buttonStackPanel.Add(_encryptBtn);
-            buttonStackPanel.Add(_paddingModeComboBox);
+            buttonStackPanel.Add(_cryptBtn);
+            buttonStackPanel.Add(_cipherModeComboBox);
+//            buttonStackPanel.ChildrenWidth(_cipherModeComboBox, 90);
             buttonStackPanel.Add(_blockModeComboBox);
+            buttonStackPanel.Add(_paddingModeComboBox);
+            buttonStackPanel.Add(_macModeComboBox);
             buttonStackPanel.Position.Width = 2 * buttonStackPanel.ChildrenWidth.Value;
 //            buttonStackPanel.HorizontalAlignment = HorizontalAlignment.Right;
             buttonStackPanel.Margin.SetLeftAndRight(5);
@@ -104,20 +93,17 @@ namespace SecureTextEditor
             _saveBtn = controlFactory.Create<Button>();
             _saveBtn.Text = "Save";
             
-            _decryptBtn = controlFactory.Create<Button>();
-            _decryptBtn.Text = "Decrypt";
-            
-            _encryptBtn = controlFactory.Create<Button>();
-            _encryptBtn.Text = "Encrypt";
+            _cryptBtn = controlFactory.Create<Button>();
+            _cryptBtn.Text = "Crypt";
         }
 
         private void CreateComboBoxes(IControlFactory controlFactory)
         {
-            _paddingModeComboBox = controlFactory.Create<ComboBox>();
-            _paddingModeComboBox.Title = "Padding";
-            _paddingModeComboBox.Add("None");
-            _paddingModeComboBox.Add("PKCS7");
-            _paddingModeComboBox.Add("ZeroByte");
+            _cipherModeComboBox = controlFactory.Create<ComboBox>();
+            _cipherModeComboBox.Title = "Cipher";
+            _cipherModeComboBox.Add("AES-128");
+            _cipherModeComboBox.Add("AES-192");
+            _cipherModeComboBox.Add("AES-256");            
             
             _blockModeComboBox = controlFactory.Create<ComboBox>();
             _blockModeComboBox.Title = "Blockmode";
@@ -126,22 +112,37 @@ namespace SecureTextEditor
             _blockModeComboBox.Add("OFB");
             _blockModeComboBox.Add("CTS");
             _blockModeComboBox.Add("GCM");
+            
+            _paddingModeComboBox = controlFactory.Create<ComboBox>();
+            _paddingModeComboBox.Title = "Padding";
+            _paddingModeComboBox.Add("None");
+            _paddingModeComboBox.Add("PKCS7");
+            _paddingModeComboBox.Add("ZeroByte");
+            
+            _macModeComboBox = controlFactory.Create<ComboBox>();
+            _macModeComboBox.Title = "AUTH";
+            _macModeComboBox.Add("None");
+            _macModeComboBox.Add("SHA-256");
+            _macModeComboBox.Add("AESCMAC");
+            _macModeComboBox.Add("HMACSHA256");
         }
 
         private void RegisterButtonEvents()
         {
             _loadBtn.InputState.Clicked += OnLoadButtonClicked;
             _saveBtn.InputState.Clicked += OnSaveButtonClicked;
-            _decryptBtn.InputState.Clicked += OnDecryptButtonClicked;
-            _encryptBtn.InputState.Clicked += OnEncryptButtonClicked;
+            _cryptBtn.InputState.Clicked += OnCryptButtonClicked;
         }
-
-
+        
         private void LoadTextfile(String path)
         {
             if (File.Exists(path))
             {
                 Text = File.ReadAllText(path,Encoding.UTF8);
+                var cryptoData = File.ReadAllText("dummy.crypto", Encoding.UTF8);
+                _cryptoFabric = JsonConvert.DeserializeObject<SecureTextEditorModel>(cryptoData);
+                Console.WriteLine(_cryptoFabric);
+                
                 _path = AssemblyDirectory + "/../../../" + path;
             }
             FocusManager.Default.SetFocus(_textBox);
@@ -149,99 +150,15 @@ namespace SecureTextEditor
         
         private void SaveTextfile()
         {
-            EncryptTextToBytes(Text, _myAes.Key, _myAes.IV);
-            File.WriteAllText(_path, Text, Encoding.UTF8);
+            var tmp = _cryptoFabric.EncryptTextToBytes(Text, _cryptoFabric.AES.Key, _cryptoFabric.AES.IV);
+            
+//            Console.WriteLine(JsonConvert.SerializeObject(_cryptoFabric));
+            File.WriteAllText("./dummy.crypto",JsonConvert.SerializeObject(_cryptoFabric), Encoding.UTF8);
+            
+            File.WriteAllText(_path, Convert.ToBase64String(tmp), Encoding.UTF8);
             FocusManager.Default.SetFocus(_textBox);
         }
 
-        private byte[] EncryptTextToBytes(string plainText, byte[] Key, byte[] IV)
-        {
-            // Check arguments.
-            if (plainText == null || plainText.Length <= 0)
-                throw new ArgumentNullException("plainText");
-            if (Key == null || Key.Length <= 0)
-                throw new ArgumentNullException("Key");
-            if (IV == null || IV.Length <= 0)
-                throw new ArgumentNullException("IV");
-            byte[] encrypted;
-            
-            // Create an Aes object
-            // with the specified key and IV.
-            using (Aes aesAlg = Aes.Create())
-            {
-                aesAlg.Key = Key;
-                aesAlg.IV = IV;
-
-                // Create an encryptor to perform the stream transform.
-                ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
-
-                // Create the streams used for encryption.
-                using (MemoryStream msEncrypt = new MemoryStream())
-                {
-                    using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
-                    {
-                        using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
-                        {
-                            //Write all data to the stream.
-                            swEncrypt.Write(plainText);
-                        }
-                        encrypted = msEncrypt.ToArray();
-                    }
-                }
-            }
-            
-            // Return the encrypted bytes from the memory stream.
-//            Text = Convert.ToBase64String(encrypted);
-            return encrypted;
-        }
-
-        private string DecryptText(byte[] cipherBytes, byte[] Key, byte[] IV)
-        {
-            // Check arguments.
-            if (cipherBytes == null || cipherBytes.Length <= 0)
-                throw new ArgumentNullException("cipherBytes");
-            if (Key == null || Key.Length <= 0)
-                throw new ArgumentNullException("Key");
-            if (IV == null || IV.Length <= 0)
-                throw new ArgumentNullException("IV");
-            
-//            byte[] cipherBytes = Encoding.UTF8.GetBytes(cipherText);
-            
-            // Declare the string used to hold
-            // the decrypted text.
-            string plaintext = null;
-
-            // Create an Aes object
-            // with the specified key and IV.
-            using (Aes aesAlg = Aes.Create())
-            {
-                aesAlg.Key = Key;
-                aesAlg.IV = IV;
-
-                // Create a decryptor to perform the stream transform.
-                ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
-
-                // Create the streams used for decryption.
-                using (MemoryStream msDecrypt = new MemoryStream(cipherBytes))
-                {
-                    using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
-                    {
-                        using (StreamReader srDecrypt = new StreamReader(csDecrypt))
-                        {
-
-                            // Read the decrypted bytes from the decrypting stream
-                            // and place them in a string.
-                            plaintext = srDecrypt.ReadToEnd();
-                        }
-                    }
-                }
-
-            }
-
-            return plaintext;
-        }
-        
-        
         private void OnLoadButtonClicked(object sender, EventArgs e)
         {
             LoadTextfile("dummy.txt");
@@ -252,18 +169,21 @@ namespace SecureTextEditor
             SaveTextfile();
         }
         
-        private void OnEncryptButtonClicked(object sender, EventArgs e)
+        private void OnCryptButtonClicked(object sender, EventArgs e)
         {
-            Text = Convert.ToBase64String(EncryptTextToBytes(Text, _myAes.Key, _myAes.IV));
-//            DecryptText(cipherText, _myAes.Key, _myAes.IV);
+            if (_cryptor == false)
+            {
+                Text = Convert.ToBase64String(_cryptoFabric.EncryptTextToBytes(Text, _cryptoFabric.AES.Key, _cryptoFabric.AES.IV));
+                _cryptor = true;
+            }
+            else
+            {
+                Text = _cryptoFabric.DecryptText(Convert.FromBase64String(Text), _cryptoFabric.AES.Key, _cryptoFabric.AES.IV);
+                _cryptor = false;
+            }
+
         }
 
-        private void OnDecryptButtonClicked(object sender, EventArgs e)
-        {
-            var encryptedBytes = Convert.FromBase64String(Text);
-            Text = DecryptText(encryptedBytes, _myAes.Key, _myAes.IV);
-        }
-        
         private String AssemblyDirectory
         {
             get
