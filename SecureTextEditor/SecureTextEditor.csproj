@@ -20,6 +20,7 @@
       <PackageReference Include="Medja.OpenTk" Version="2019.5.24.2" />
       <PackageReference Include="Medja.OpenTk.Themes" Version="2019.5.24.2" />
       <PackageReference Include="Medja.Utils" Version="2019.5.24.2" />
+      <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
       <PackageReference Include="OpenTK" Version="3.0.1" />
       <PackageReference Include="SkiaSharp" Version="1.68.0" />
       <PackageReference Include="xunit" Version="2.4.1" />
