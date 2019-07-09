@@ -1,17 +1,11 @@
 using System;
-using System.IO;
-using System.Reflection;
-using System.Text;
 using Medja.Controls;
 using Medja.Theming;
-using Newtonsoft.Json;
-using Xunit.Sdk;
 
 namespace SecureTextEditor
 {
     public class SecureTextEditorView : ContentControl
     {
-        private string _path = "dummy.txt";
         private readonly IControlFactory _controlFactory;
 
         private Button _loadBtn;
@@ -146,40 +140,16 @@ namespace SecureTextEditor
             _saveBtn.InputState.Clicked += OnSaveButtonClicked;
             _cryptBtn.InputState.Clicked += OnCryptButtonClicked;
         }
-        
-        private void LoadTextfile(String path)
-        {
-            if (File.Exists(path))
-            {
-                Text = File.ReadAllText(path,Encoding.UTF8);
-                var cryptoData = File.ReadAllText("dummy.crypto", Encoding.UTF8);
-                _cryptoFabric = JsonConvert.DeserializeObject<SecureTextEditorModel>(cryptoData);
-                Console.WriteLine(_cryptoFabric);
-                
-                _path = AssemblyDirectory + "/../../../" + path;
-            }
-            FocusManager.Default.SetFocus(_textBox);
-        }
-        
-        private void SaveTextfile()
-        {
-//            var tmp = _cryptoFabric.EncryptTextToBytes(Text, _cryptoFabric.KEY);
-            
-//            Console.WriteLine(JsonConvert.SerializeObject(_cryptoFabric));
-//            File.WriteAllText("./dummy.crypto",JsonConvert.SerializeObject(_cryptoFabric), Encoding.UTF8);
-//            
-//            File.WriteAllText(_path, Convert.ToBase64String(tmp), Encoding.UTF8);
-//            FocusManager.Default.SetFocus(_textBox);
-        }
 
         private void OnLoadButtonClicked(object sender, EventArgs e)
         {
-            LoadTextfile("dummy.txt");
+            _cryptoFabric.LoadTextfile("dummy.txt");
+            FocusManager.Default.SetFocus(_textBox);
         }
 
         private void OnSaveButtonClicked(object sender, EventArgs e)
         {
-            SaveTextfile();
+            _cryptoFabric.SaveTextfile();
         }
         
         private void OnCryptButtonClicked(object sender, EventArgs e)
@@ -195,22 +165,12 @@ namespace SecureTextEditor
             else
             {
                 Text = _cryptoFabric.DecryptText(Convert.FromBase64String(Text),
-                                                            _blockModeComboBox.DisplayText,
+                                                 _blockModeComboBox.DisplayText,
                                                             _paddingComboBox.DisplayText);
                 _cryptor = false;
             }
 
         }
-
-        private String AssemblyDirectory
-        {
-            get
-            {
-                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
-                UriBuilder uri = new UriBuilder(codeBase);
-                string path = Uri.UnescapeDataString(uri.Path);
-                return Path.GetDirectoryName(path);
-            }
-        }
+        
     }
 }
