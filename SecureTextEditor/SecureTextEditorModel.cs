@@ -1,6 +1,13 @@
 using System;
 using System.IO;
 using System.Security.Cryptography;
+using System.Text;
+using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Engines;
+using Org.BouncyCastle.Crypto.Modes;
+using Org.BouncyCastle.Crypto.Paddings;
+using Org.BouncyCastle.Crypto.Parameters;
+using Org.BouncyCastle.Security;
 
 namespace SecureTextEditor
 {
@@ -14,105 +21,206 @@ namespace SecureTextEditor
         }
 
         
-        private Aes _myAes; 
-        public Aes AES
+        private AesEngine _myAes; 
+        public AesEngine AES
         {
             get { return _myAes; }
             set { _myAes = value; }
         }
 
-        public SecureTextEditorModel()
+        private byte[] _myKey; 
+        public byte[] KEY
         {
-            _myAes = Aes.Create();
-            _myAes.Mode = CipherMode.CBC;
-            _myAes.Padding = PaddingMode.PKCS7;
+            get { return _myKey; }
+            set { _myKey = value; }
+        }
+
+        
+        private byte[] _myIv; 
+        public byte[] IV
+        {
+            get { return _myIv; }
+            set { _myIv = value; }
         }
         
-        public byte[] EncryptTextToBytes(string plainText, byte[] Key, byte[] IV)
+        public SecureTextEditorModel()
         {
-            // Check arguments.
-            if (plainText == null || plainText.Length <= 0)
-                throw new ArgumentNullException("plainText");
-            if (Key == null || Key.Length <= 0)
-                throw new ArgumentNullException("Key");
-            if (IV == null || IV.Length <= 0)
-                throw new ArgumentNullException("IV");
-            byte[] encrypted;
-            
-            // Create an Aes object
-            // with the specified key and IV.
-            using (Aes aesAlg = Aes.Create())
-            {
-                aesAlg.Key = Key;
-                aesAlg.IV = IV;
-
-                // Create an encryptor to perform the stream transform.
-                ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
-
-                // Create the streams used for encryption.
-                using (MemoryStream msEncrypt = new MemoryStream())
-                {
-                    using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
-                    {
-                        using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
-                        {
-                            //Write all data to the stream.
-                            swEncrypt.Write(plainText);
-                        }
-                        encrypted = msEncrypt.ToArray();
-                    }
-                }
-            }
-            
-            // Return the encrypted bytes from the memory stream.
-//            Text = Convert.ToBase64String(encrypted);
-            return encrypted;
+            _myAes = new AesEngine();
+            _myKey = null;
+            _myIv = null;
         }
 
-        public string DecryptText(byte[] cipherBytes, byte[] Key, byte[] IV)
+        private byte[] GenerateKey(String cipher)
         {
-            // Check arguments.
-            if (cipherBytes == null || cipherBytes.Length <= 0)
-                throw new ArgumentNullException("cipherBytes");
-            if (Key == null || Key.Length <= 0)
-                throw new ArgumentNullException("Key");
-            if (IV == null || IV.Length <= 0)
-                throw new ArgumentNullException("IV");
-            
-//            byte[] cipherBytes = Encoding.UTF8.GetBytes(cipherText);
-            
-            // Declare the string used to hold
-            // the decrypted text.
-            string plaintext = null;
+            CipherKeyGenerator gen = new CipherKeyGenerator();
+            gen = GeneratorUtilities.GetKeyGenerator(cipher);
+            return gen.GenerateKey(); 
+        }
 
-            // Create an Aes object
-            // with the specified key and IV.
-            using (Aes aesAlg = Aes.Create())
+        private void GenerateIv()
+        {
+            SecureRandom random = new SecureRandom();
+            _myIv = new byte[_myKey.Length];
+            
+            random.NextBytes(_myIv);
+        }
+
+        public byte[] EncryptTextToBytes(string plainText, string algo, string blockmode, string padding)
+        {
+            _myKey = GenerateKey(algo);
+            GenerateIv();
+
+            byte[] inputBytes = Encoding.UTF8.GetBytes(plainText);
+            
+            KeyParameter keyParam = new KeyParameter(_myKey);
+            ParametersWithIV keyParamWithIv = new ParametersWithIV(keyParam, _myIv, 0, 16);
+
+            switch (blockmode)
             {
-                aesAlg.Key = Key;
-                aesAlg.IV = IV;
-
-                // Create a decryptor to perform the stream transform.
-                ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
-
-                // Create the streams used for decryption.
-                using (MemoryStream msDecrypt = new MemoryStream(cipherBytes))
-                {
-                    using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
+                case "ECB":
+                    if (padding == "NoPadding")
                     {
-                        using (StreamReader srDecrypt = new StreamReader(csDecrypt))
-                        {
-
-                            // Read the decrypted bytes from the decrypting stream
-                            // and place them in a string.
-                            plaintext = srDecrypt.ReadToEnd();
-                        }
+                        BufferedBlockCipher ecb = new BufferedBlockCipher(_myAes);
+                        ecb.Init(true, keyParam);
+                        return ecb.DoFinal(inputBytes);
                     }
-                }
+                    else if (padding == "ZeroBytePadding")
+                    {
+                        PaddedBufferedBlockCipher ecb = new PaddedBufferedBlockCipher(_myAes, new ZeroBytePadding());
+                        ecb.Init(true, keyParam);
+                        return ecb.DoFinal(inputBytes);
+                    }
+                    else
+                    {
+                        PaddedBufferedBlockCipher ecb = new PaddedBufferedBlockCipher(_myAes, new Pkcs7Padding());
+                        ecb.Init(true, keyParam);
+                        return ecb.DoFinal(inputBytes);
+                    }
+//                    break;
+                case "CBC":
+                    if (padding == "NoPadding")
+                    {
+                        var cbc = new BufferedBlockCipher(new CbcBlockCipher(_myAes));
+                        cbc.Init(true, keyParamWithIv);
+                        return cbc.DoFinal(inputBytes);        
+                    }
+                    else if (padding == "ZeroBytePadding")
+                    {
+                        var cbc = new PaddedBufferedBlockCipher(new CbcBlockCipher(_myAes),new ZeroBytePadding());
+                        cbc.Init(true, keyParamWithIv);
+                        return cbc.DoFinal(inputBytes);                            
+                    }
+                    else
+                    {
+                        var cbc = new PaddedBufferedBlockCipher(new CbcBlockCipher(_myAes),new Pkcs7Padding());
+                        cbc.Init(true, keyParamWithIv);
+                        return cbc.DoFinal(inputBytes);                            
+                    }
+//                    break;
+                case "CTS":
+                    var cts = new CtsBlockCipher(new CbcBlockCipher(_myAes));
+                    cts.Init(true, keyParamWithIv);
+                    return cts.DoFinal(inputBytes);                        
+//                    break;
+                case "OFB":
+                    var ofb = new BufferedBlockCipher(new OfbBlockCipher(_myAes,8));
+                    ofb.Init(true, keyParamWithIv);
+                    return ofb.DoFinal(inputBytes);                        
+//                    break;
+                case "GCM":
+                    var gcm = new GcmBlockCipher(_myAes);
+                    AeadParameters parameters = 
+                        new AeadParameters(new KeyParameter(_myKey), 128, _myIv, null);
 
+                    gcm.Init(true, parameters);
+
+                    byte[] encryptedBytes = new byte[gcm.GetOutputSize(inputBytes.Length)];
+                    Int32 retLen = gcm.ProcessBytes
+                        (inputBytes, 0, inputBytes.Length, encryptedBytes, 0);
+                    gcm.DoFinal(encryptedBytes, retLen);
+                    return encryptedBytes;
+//                    break;
+            }
+            
+            return new byte[16];
+        }
+
+        public string DecryptText(byte[] cipherBytes, string blockmode, string padding)
+        {
+//            PaddedBufferedBlockCipher cipher = new PaddedBufferedBlockCipher(_myAes);
+
+            KeyParameter keyParam = new KeyParameter(_myKey);
+            ParametersWithIV keyParamWithIv = new ParametersWithIV(keyParam, _myIv, 0, 16);
+            
+            switch (blockmode)
+            {
+                case "ECB":
+                    if (padding == "NoPadding")
+                    {
+                        var ecb = new BufferedBlockCipher(_myAes);
+                        ecb.Init(false, keyParam);
+                        return Encoding.UTF8.GetString(ecb.DoFinal(cipherBytes));
+                    }
+                    else if (padding == "ZeroBytePadding")
+                    {
+                        var ecb = new PaddedBufferedBlockCipher(_myAes, new ZeroBytePadding());
+                        ecb.Init(false, keyParam);
+                        return Encoding.UTF8.GetString(ecb.DoFinal(cipherBytes));
+                    }
+                    else
+                    {
+                        var ecb = new PaddedBufferedBlockCipher(_myAes, new Pkcs7Padding());
+                        ecb.Init(false, keyParam);
+                        return Encoding.UTF8.GetString(ecb.DoFinal(cipherBytes));
+                    }
+//                    break;
+                case "CBC":
+                    if (padding == "NoPadding")
+                    {
+                        var cbc = new BufferedBlockCipher(new CbcBlockCipher(_myAes));
+                        cbc.Init(false, keyParamWithIv);
+                        return Encoding.UTF8.GetString(cbc.DoFinal(cipherBytes)); 
+                    }
+                    else if (padding == "ZeroBytePadding")
+                    {
+                        var cbc = new PaddedBufferedBlockCipher(new CbcBlockCipher(_myAes),new ZeroBytePadding());
+                        cbc.Init(false, keyParamWithIv);
+                        return Encoding.UTF8.GetString(cbc.DoFinal(cipherBytes));
+                    }
+                    else
+                    {
+                        var cbc = new PaddedBufferedBlockCipher(new CbcBlockCipher(_myAes),new Pkcs7Padding());
+                        cbc.Init(false, keyParamWithIv);
+                        return Encoding.UTF8.GetString(cbc.DoFinal(cipherBytes));                            
+                    }
+//                    break;
+                case "CTS":
+                    var cts = new CtsBlockCipher(new CbcBlockCipher(_myAes));
+                    cts.Init(false, keyParamWithIv);
+                    return Encoding.UTF8.GetString(cts.DoFinal(cipherBytes));                        
+//                    break;
+                case "OFB":
+                    var ofb = new BufferedBlockCipher(new OfbBlockCipher(_myAes,8));
+                    ofb.Init(false, keyParamWithIv);
+                    return Encoding.UTF8.GetString(ofb.DoFinal(cipherBytes));                        
+//                    break;
+                case "GCM":
+                    var gcm = new GcmBlockCipher(_myAes);
+                    AeadParameters parameters = 
+                        new AeadParameters(new KeyParameter(_myKey), 128, _myIv, null);
+
+                    gcm.Init(false, parameters);
+
+                    byte[] decryptedBytes = new byte[gcm.GetOutputSize(cipherBytes.Length)];
+                    Int32 retLen = gcm.ProcessBytes
+                        (cipherBytes, 0, cipherBytes.Length, decryptedBytes, 0);
+                    gcm.DoFinal(decryptedBytes, retLen);
+                    return Encoding.UTF8.GetString(decryptedBytes); //.TrimEnd("\r\n\0".ToCharArray())
+//                    break;
             }
 
-            return plaintext;
+            return "Dummy";
         }
     }
+    
 }
