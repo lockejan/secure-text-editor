@@ -6,11 +6,14 @@ using System.Text;
 using Medja.Controls;
 using Newtonsoft.Json;
 using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Crypto.Engines;
+using Org.BouncyCastle.Crypto.Macs;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Paddings;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
+using Org.BouncyCastle.Utilities.Encoders;
 
 namespace SecureTextEditor
 {
@@ -71,13 +74,7 @@ namespace SecureTextEditor
             switch (blockmode)
             {
                 case "ECB":
-                    if (padding == "NoPadding")
-                    {
-                        BufferedBlockCipher ecb = new BufferedBlockCipher(_myAes);
-                        ecb.Init(true, keyParam);
-                        return ecb.DoFinal(inputBytes);
-                    }
-                    else if (padding == "ZeroBytePadding")
+                    if (padding == "ZeroBytePadding")
                     {
                         PaddedBufferedBlockCipher ecb = new PaddedBufferedBlockCipher(_myAes, new ZeroBytePadding());
                         ecb.Init(true, keyParam);
@@ -91,13 +88,7 @@ namespace SecureTextEditor
                     }
 
                 case "CBC":
-                    if (padding == "NoPadding")
-                    {
-                        var cbc = new BufferedBlockCipher(new CbcBlockCipher(_myAes));
-                        cbc.Init(true, keyParamWithIv);
-                        return cbc.DoFinal(inputBytes);        
-                    }
-                    else if (padding == "ZeroBytePadding")
+                    if (padding == "ZeroBytePadding")
                     {
                         var cbc = new PaddedBufferedBlockCipher(new CbcBlockCipher(_myAes),new ZeroBytePadding());
                         cbc.Init(true, keyParamWithIv);
@@ -132,7 +123,6 @@ namespace SecureTextEditor
                         (inputBytes, 0, inputBytes.Length, encryptedBytes, 0);
                     gcm.DoFinal(encryptedBytes, retLen);
                     return encryptedBytes;
-
             }
             
             return new byte[16];
@@ -147,13 +137,7 @@ namespace SecureTextEditor
             switch (blockmode)
             {
                 case "ECB":
-                    if (padding == "NoPadding")
-                    {
-                        var ecb = new BufferedBlockCipher(_myAes);
-                        ecb.Init(false, keyParam);
-                        return Encoding.UTF8.GetString(ecb.DoFinal(cipherBytes));
-                    }
-                    else if (padding == "ZeroBytePadding")
+                    if (padding == "ZeroBytePadding")
                     {
                         var ecb = new PaddedBufferedBlockCipher(_myAes, new ZeroBytePadding());
                         ecb.Init(false, keyParam);
@@ -167,13 +151,7 @@ namespace SecureTextEditor
                     }
 
                 case "CBC":
-                    if (padding == "NoPadding")
-                    {
-                        var cbc = new BufferedBlockCipher(new CbcBlockCipher(_myAes));
-                        cbc.Init(false, keyParamWithIv);
-                        return Encoding.UTF8.GetString(cbc.DoFinal(cipherBytes)); 
-                    }
-                    else if (padding == "ZeroBytePadding")
+                    if (padding == "ZeroBytePadding")
                     {
                         var cbc = new PaddedBufferedBlockCipher(new CbcBlockCipher(_myAes),new ZeroBytePadding());
                         cbc.Init(false, keyParamWithIv);
@@ -207,23 +185,69 @@ namespace SecureTextEditor
                     Int32 retLen = gcm.ProcessBytes
                         (cipherBytes, 0, cipherBytes.Length, decryptedBytes, 0);
                     gcm.DoFinal(decryptedBytes, retLen);
-                    return Encoding.UTF8.GetString(decryptedBytes); //.TrimEnd("\r\n\0".ToCharArray())
+                    return Encoding.UTF8.GetString(decryptedBytes).TrimEnd("\r\n\0".ToCharArray());
             }
 
             return "Dummy";
         }
         
-        public void LoadTextfile(String path)
+        public byte[] SHA256(byte[] data)
+        {
+            Sha256Digest sha256 = new Sha256Digest();
+            sha256.BlockUpdate(data, 0, data.Length);
+            byte[] hash = new byte[sha256.GetDigestSize()];
+            sha256.DoFinal(hash, 0);
+            return hash;
+        }
+        
+        public byte[] HMacSha256(byte[] data)
+        {
+            Sha256Digest sha256 = new Sha256Digest();
+            HMac hMac = new HMac(sha256);
+            
+            KeyParameter keyParam = new KeyParameter(_myKey);
+            
+            hMac.Init(keyParam);
+            
+            hMac.BlockUpdate(data, 0, data.Length);
+            
+            byte[] hash = new byte[hMac.GetMacSize()];
+
+            hMac.DoFinal(hash,0);
+
+            return hash;
+        }
+        
+        public byte[] AesCMac(byte[] data)
+        {
+            CMac mac = new CMac(_myAes);
+            
+            KeyParameter keyParam = new KeyParameter(_myKey);
+            
+            mac.Init(keyParam);
+            
+            mac.BlockUpdate(data, 0, data.Length);
+            
+            byte[] hash = new byte[mac.GetMacSize()];
+            
+            mac.DoFinal(hash,0);
+
+            return hash;
+        }
+        
+        public String LoadTextfile(String path)
         {
             if (File.Exists(path))
             {
-                var Text = File.ReadAllText(path,Encoding.UTF8);
-                var cryptoData = File.ReadAllText("dummy.crypto", Encoding.UTF8);
-                _cryptoFabric = JsonConvert.DeserializeObject<SecureTextEditorModel>(cryptoData);
-                Console.WriteLine(_cryptoFabric);
+                return File.ReadAllText(path,Encoding.UTF8);
+//                var cryptoData = File.ReadAllText("dummy.crypto", Encoding.UTF8);
+//                _cryptoFabric = JsonConvert.DeserializeObject<SecureTextEditorModel>(cryptoData);
+//                Console.WriteLine(_cryptoFabric);
                 
-                _path = AssemblyDirectory + "/../../../" + path;
+//                _path = AssemblyDirectory + "/../../../" + path;
             }
+
+            return "File not found!";
         }
         
         public void SaveTextfile()
