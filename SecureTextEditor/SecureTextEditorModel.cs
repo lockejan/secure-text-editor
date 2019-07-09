@@ -1,7 +1,10 @@
 using System;
 using System.IO;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using Medja.Controls;
+using Newtonsoft.Json;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Modes;
@@ -28,6 +31,8 @@ namespace SecureTextEditor
         private byte[] _myIv; 
 
         private AesEngine _myAes; 
+        
+        private string _path = "dummy.txt";
         
         /// <summary>
         /// Default constructor of Model class
@@ -207,6 +212,42 @@ namespace SecureTextEditor
 
             return "Dummy";
         }
+        
+        public void LoadTextfile(String path)
+        {
+            if (File.Exists(path))
+            {
+                var Text = File.ReadAllText(path,Encoding.UTF8);
+                var cryptoData = File.ReadAllText("dummy.crypto", Encoding.UTF8);
+                _cryptoFabric = JsonConvert.DeserializeObject<SecureTextEditorModel>(cryptoData);
+                Console.WriteLine(_cryptoFabric);
+                
+                _path = AssemblyDirectory + "/../../../" + path;
+            }
+        }
+        
+        public void SaveTextfile()
+        {
+//            var tmp = _cryptoFabric.EncryptTextToBytes(Text, _cryptoFabric.KEY);
+            
+//            Console.WriteLine(JsonConvert.SerializeObject(_cryptoFabric));
+//            File.WriteAllText("./dummy.crypto",JsonConvert.SerializeObject(_cryptoFabric), Encoding.UTF8);
+//            
+//            File.WriteAllText(_path, Convert.ToBase64String(tmp), Encoding.UTF8);
+//            FocusManager.Default.SetFocus(_textBox);
+        }
+        
+        private String AssemblyDirectory
+        {
+            get
+            {
+                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+                UriBuilder uri = new UriBuilder(codeBase);
+                string path = Uri.UnescapeDataString(uri.Path);
+                return Path.GetDirectoryName(path);
+            }
+        }
+        
     }
     
 }
