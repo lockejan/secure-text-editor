@@ -11,6 +11,9 @@ using Org.BouncyCastle.Security;
 
 namespace SecureTextEditor
 {
+    /// <summary>
+    /// Model for STE which contains all necessary parameters and attributes to be stored on disk or in memory
+    /// </summary>
     public class SecureTextEditorModel
     {
         private char[] _text;
@@ -20,29 +23,15 @@ namespace SecureTextEditor
             set { _text = value; }
         }
 
-        
-        private AesEngine _myAes; 
-        public AesEngine AES
-        {
-            get { return _myAes; }
-            set { _myAes = value; }
-        }
-
         private byte[] _myKey; 
-        public byte[] KEY
-        {
-            get { return _myKey; }
-            set { _myKey = value; }
-        }
-
         
         private byte[] _myIv; 
-        public byte[] IV
-        {
-            get { return _myIv; }
-            set { _myIv = value; }
-        }
+
+        private AesEngine _myAes; 
         
+        /// <summary>
+        /// Default constructor of Model class
+        /// </summary>
         public SecureTextEditorModel()
         {
             _myAes = new AesEngine();
@@ -50,24 +39,23 @@ namespace SecureTextEditor
             _myIv = null;
         }
 
-        private byte[] GenerateKey(String cipher)
+        private void GenerateKey(String cipher)
         {
             CipherKeyGenerator gen = new CipherKeyGenerator();
             gen = GeneratorUtilities.GetKeyGenerator(cipher);
-            return gen.GenerateKey(); 
+            _myKey = gen.GenerateKey(); 
         }
 
         private void GenerateIv()
         {
             SecureRandom random = new SecureRandom();
             _myIv = new byte[_myKey.Length];
-            
             random.NextBytes(_myIv);
         }
 
         public byte[] EncryptTextToBytes(string plainText, string algo, string blockmode, string padding)
         {
-            _myKey = GenerateKey(algo);
+            GenerateKey(algo);
             GenerateIv();
 
             byte[] inputBytes = Encoding.UTF8.GetBytes(plainText);
@@ -96,7 +84,7 @@ namespace SecureTextEditor
                         ecb.Init(true, keyParam);
                         return ecb.DoFinal(inputBytes);
                     }
-//                    break;
+
                 case "CBC":
                     if (padding == "NoPadding")
                     {
@@ -116,17 +104,17 @@ namespace SecureTextEditor
                         cbc.Init(true, keyParamWithIv);
                         return cbc.DoFinal(inputBytes);                            
                     }
-//                    break;
+
                 case "CTS":
                     var cts = new CtsBlockCipher(new CbcBlockCipher(_myAes));
                     cts.Init(true, keyParamWithIv);
                     return cts.DoFinal(inputBytes);                        
-//                    break;
+
                 case "OFB":
                     var ofb = new BufferedBlockCipher(new OfbBlockCipher(_myAes,8));
                     ofb.Init(true, keyParamWithIv);
                     return ofb.DoFinal(inputBytes);                        
-//                    break;
+
                 case "GCM":
                     var gcm = new GcmBlockCipher(_myAes);
                     AeadParameters parameters = 
@@ -139,7 +127,7 @@ namespace SecureTextEditor
                         (inputBytes, 0, inputBytes.Length, encryptedBytes, 0);
                     gcm.DoFinal(encryptedBytes, retLen);
                     return encryptedBytes;
-//                    break;
+
             }
             
             return new byte[16];
@@ -147,8 +135,7 @@ namespace SecureTextEditor
 
         public string DecryptText(byte[] cipherBytes, string blockmode, string padding)
         {
-//            PaddedBufferedBlockCipher cipher = new PaddedBufferedBlockCipher(_myAes);
-
+            
             KeyParameter keyParam = new KeyParameter(_myKey);
             ParametersWithIV keyParamWithIv = new ParametersWithIV(keyParam, _myIv, 0, 16);
             
@@ -173,7 +160,7 @@ namespace SecureTextEditor
                         ecb.Init(false, keyParam);
                         return Encoding.UTF8.GetString(ecb.DoFinal(cipherBytes));
                     }
-//                    break;
+
                 case "CBC":
                     if (padding == "NoPadding")
                     {
@@ -193,17 +180,17 @@ namespace SecureTextEditor
                         cbc.Init(false, keyParamWithIv);
                         return Encoding.UTF8.GetString(cbc.DoFinal(cipherBytes));                            
                     }
-//                    break;
+
                 case "CTS":
                     var cts = new CtsBlockCipher(new CbcBlockCipher(_myAes));
                     cts.Init(false, keyParamWithIv);
                     return Encoding.UTF8.GetString(cts.DoFinal(cipherBytes));                        
-//                    break;
+
                 case "OFB":
                     var ofb = new BufferedBlockCipher(new OfbBlockCipher(_myAes,8));
                     ofb.Init(false, keyParamWithIv);
-                    return Encoding.UTF8.GetString(ofb.DoFinal(cipherBytes));                        
-//                    break;
+                    return Encoding.UTF8.GetString(ofb.DoFinal(cipherBytes));
+                
                 case "GCM":
                     var gcm = new GcmBlockCipher(_myAes);
                     AeadParameters parameters = 
@@ -216,7 +203,6 @@ namespace SecureTextEditor
                         (cipherBytes, 0, cipherBytes.Length, decryptedBytes, 0);
                     gcm.DoFinal(decryptedBytes, retLen);
                     return Encoding.UTF8.GetString(decryptedBytes); //.TrimEnd("\r\n\0".ToCharArray())
-//                    break;
             }
 
             return "Dummy";
