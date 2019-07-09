@@ -18,10 +18,10 @@ namespace SecureTextEditor
         private Button _saveBtn;
         private Button _cryptBtn;
 
-        private ComboBox _cipherModeComboBox;
-        private ComboBox _paddingModeComboBox;
+        private ComboBox _cipherAlgorithmComboBox;
+        private ComboBox _paddingComboBox;
         private ComboBox _blockModeComboBox;
-        private ComboBox _macModeComboBox;
+        private ComboBox _integrityComboBox;
 
         private bool _cryptor = false;
         private SecureTextEditorModel _cryptoFabric;
@@ -72,11 +72,11 @@ namespace SecureTextEditor
             buttonStackPanel.Add(_loadBtn);
             buttonStackPanel.Add(_saveBtn);
             buttonStackPanel.Add(_cryptBtn);
-            buttonStackPanel.Add(_cipherModeComboBox);
+            buttonStackPanel.Add(_cipherAlgorithmComboBox);
 //            buttonStackPanel.ChildrenWidth(_cipherModeComboBox, 90);
             buttonStackPanel.Add(_blockModeComboBox);
-            buttonStackPanel.Add(_paddingModeComboBox);
-            buttonStackPanel.Add(_macModeComboBox);
+            buttonStackPanel.Add(_paddingComboBox);
+//            buttonStackPanel.Add(_integrityComboBox);
             buttonStackPanel.Position.Width = 2 * buttonStackPanel.ChildrenWidth.Value;
 //            buttonStackPanel.HorizontalAlignment = HorizontalAlignment.Right;
             buttonStackPanel.Margin.SetLeftAndRight(5);
@@ -88,43 +88,56 @@ namespace SecureTextEditor
         private void CreateButtons(IControlFactory controlFactory)
         {
             _loadBtn = controlFactory.Create<Button>();
+            _loadBtn.Position.Width = 100;
             _loadBtn.Text = "Load";
             
             _saveBtn = controlFactory.Create<Button>();
+            _saveBtn.Position.Width = 100;
             _saveBtn.Text = "Save";
             
             _cryptBtn = controlFactory.Create<Button>();
+            _cryptBtn.Position.Width = 100;
             _cryptBtn.Text = "Crypt";
         }
 
         private void CreateComboBoxes(IControlFactory controlFactory)
         {
-            _cipherModeComboBox = controlFactory.Create<ComboBox>();
-            _cipherModeComboBox.Title = "Cipher";
-            _cipherModeComboBox.Add("AES-128");
-            _cipherModeComboBox.Add("AES-192");
-            _cipherModeComboBox.Add("AES-256");            
+            _cipherAlgorithmComboBox = controlFactory.Create<ComboBox>();
+            _cipherAlgorithmComboBox.Title = "Cipher";
+            _cipherAlgorithmComboBox.Position.Width = 120;
+            _cipherAlgorithmComboBox.Add("AES128");
+            _cipherAlgorithmComboBox.Add("AES192");
+            _cipherAlgorithmComboBox.Add("AES256");            
             
             _blockModeComboBox = controlFactory.Create<ComboBox>();
             _blockModeComboBox.Title = "Blockmode";
+            _blockModeComboBox.Position.Width = 130;
             _blockModeComboBox.Add("ECB");
             _blockModeComboBox.Add("CBC");
-            _blockModeComboBox.Add("OFB");
             _blockModeComboBox.Add("CTS");
+            _blockModeComboBox.Add("OFB");
             _blockModeComboBox.Add("GCM");
+
+            _paddingComboBox = controlFactory.Create<ComboBox>();
+            _paddingComboBox.Title = "Padding";
+            _paddingComboBox.Position.Width = 150;
+            _paddingComboBox.Add("NoPadding");
+            _paddingComboBox.Add("PKCS7");
+            _paddingComboBox.Add("ZeroByte");
             
-            _paddingModeComboBox = controlFactory.Create<ComboBox>();
-            _paddingModeComboBox.Title = "Padding";
-            _paddingModeComboBox.Add("None");
-            _paddingModeComboBox.Add("PKCS7");
-            _paddingModeComboBox.Add("ZeroByte");
-            
-            _macModeComboBox = controlFactory.Create<ComboBox>();
-            _macModeComboBox.Title = "AUTH";
-            _macModeComboBox.Add("None");
-            _macModeComboBox.Add("SHA-256");
-            _macModeComboBox.Add("AESCMAC");
-            _macModeComboBox.Add("HMACSHA256");
+//            _integrityComboBox = controlFactory.Create<ComboBox>();
+//            _integrityComboBox.Title = "Integrity";
+//            _integrityComboBox.Position.Width = 150;
+//            _integrityComboBox.Add("None");
+//            _integrityComboBox.Add("SHA-256");
+//            _integrityComboBox.Add("AESCMAC");
+//            _integrityComboBox.Add("HMACSHA256");
+//
+//            _integrityComboBox = controlFactory.Create<ComboBox>();
+//            _integrityComboBox.Title = "PBE";
+//            _integrityComboBox.Add("AES 256-bit, GCM, SCRYPT");
+//            _integrityComboBox.Add("PBEWithSHA256And128Bit-AES-CBC-BC");
+//            _integrityComboBox.Add("PBEWithSHAAnd40BitRC4");
         }
 
         private void RegisterButtonEvents()
@@ -150,13 +163,13 @@ namespace SecureTextEditor
         
         private void SaveTextfile()
         {
-            var tmp = _cryptoFabric.EncryptTextToBytes(Text, _cryptoFabric.AES.Key, _cryptoFabric.AES.IV);
+//            var tmp = _cryptoFabric.EncryptTextToBytes(Text, _cryptoFabric.KEY);
             
 //            Console.WriteLine(JsonConvert.SerializeObject(_cryptoFabric));
-            File.WriteAllText("./dummy.crypto",JsonConvert.SerializeObject(_cryptoFabric), Encoding.UTF8);
-            
-            File.WriteAllText(_path, Convert.ToBase64String(tmp), Encoding.UTF8);
-            FocusManager.Default.SetFocus(_textBox);
+//            File.WriteAllText("./dummy.crypto",JsonConvert.SerializeObject(_cryptoFabric), Encoding.UTF8);
+//            
+//            File.WriteAllText(_path, Convert.ToBase64String(tmp), Encoding.UTF8);
+//            FocusManager.Default.SetFocus(_textBox);
         }
 
         private void OnLoadButtonClicked(object sender, EventArgs e)
@@ -173,12 +186,17 @@ namespace SecureTextEditor
         {
             if (_cryptor == false)
             {
-                Text = Convert.ToBase64String(_cryptoFabric.EncryptTextToBytes(Text, _cryptoFabric.AES.Key, _cryptoFabric.AES.IV));
+                Text = Convert.ToBase64String(_cryptoFabric.EncryptTextToBytes(Text,
+                                                _cipherAlgorithmComboBox.DisplayText, 
+                                                _blockModeComboBox.DisplayText,
+                                                _paddingComboBox.DisplayText));
                 _cryptor = true;
             }
             else
             {
-                Text = _cryptoFabric.DecryptText(Convert.FromBase64String(Text), _cryptoFabric.AES.Key, _cryptoFabric.AES.IV);
+                Text = _cryptoFabric.DecryptText(Convert.FromBase64String(Text),
+                                                            _blockModeComboBox.DisplayText,
+                                                            _paddingComboBox.DisplayText);
                 _cryptor = false;
             }
 
