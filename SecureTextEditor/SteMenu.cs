@@ -41,26 +41,6 @@ namespace SecureTextEditor
             {"Digest", new[] {"SHA-256","AESCMAC","HMAC-SHA256"}},
             {"Digital Signature", new[] {"SHA256withDSA"}},
         };
-
-        
-        public static readonly IDictionary<string, string[]> CipherQuestionTree = new Dictionary<string, string[]>()
-        {
-            {"Cipher", new[] {"Which key length?","Which Blockmode?","Which Padding?"}},
-            {"PBE", new[] {"Which of the following you'd like to use?","Please provide a password!"}},
-        };
-        
-        public static readonly IDictionary<string, string[]> IntegrityQuestionTree = new Dictionary<string, string[]>()
-        {
-            {"Digest", new[] {"Which of the following you'd like to use?"}},
-            {"Digital Signature", new[] {"Which of the following you'd like to use?"}},
-        };
-        
-//        public static readonly IDictionary<string, string[]> SavePathQuestionTree = new Dictionary<string, string[]>()
-//        {
-//            {"Digest", new[] {"Which of the following you'd like to use?"}},
-//            {"Digital Signature", new[] {"Which of the following you'd like to use?"}},
-//        };
-
         
         public static readonly IDictionary<string, Dictionary<string, string[]>> EncryptMenuTree = new Dictionary<string, Dictionary<string, string[]>>()
         {

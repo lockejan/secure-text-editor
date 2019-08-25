@@ -77,19 +77,20 @@ namespace SecureTextEditor
 //            _blockModeComboBox.IsEnabled = false;
 
 //            Console.WriteLine(_cipherAlgorithmComboBox.);
-            _digestComboBox.SelectItem("None");
-            Console.WriteLine(_digestComboBox.SelectedItem);
-            Console.WriteLine(_digestComboBox.DisplayText);
-
-            if (_digestComboBox.DisplayText.Equals("None"))
-            {
-                Console.WriteLine("NOnE IS NONE");
-            }
-            
-            foreach (var item in _cipherAlgorithmComboBox.GetChildren())
-            {
-                Console.WriteLine(item);
-            }
+//            _digestComboBox.SelectItem("None");
+//            _signingComboBox.SelectItem("None");
+//            Console.WriteLine(_digestComboBox.SelectedItem);
+//            Console.WriteLine(_digestComboBox.DisplayText);
+//
+//            if (_digestComboBox.DisplayText.Equals("None"))
+//            {
+//                Console.WriteLine("NOnE IS NONE");
+//            }
+//            
+//            foreach (var item in _cipherAlgorithmComboBox.GetChildren())
+//            {
+//                Console.WriteLine(item);
+//            }
 
             
 //            _paddingComboBox.IsEnabled = false;
@@ -124,8 +125,8 @@ namespace SecureTextEditor
             const float rowHeight = 30;
 //            const float columnWidth = 300;
             
-            tablePanel.Columns.Add(new ColumnDefinition(200));
-            tablePanel.Columns.Add(new ColumnDefinition(440));
+            tablePanel.Columns.Add(new ColumnDefinition(150));
+            tablePanel.Columns.Add(new ColumnDefinition(470));
             tablePanel.Rows.Add(new RowDefinition(rowHeight));
             tablePanel.Rows.Add(new RowDefinition(rowHeight));
             tablePanel.Rows.Add(new RowDefinition(rowHeight));
@@ -208,12 +209,19 @@ namespace SecureTextEditor
             _cipherAlgorithmComboBox = _controlFactory.Create<ComboBox>();
             _cipherAlgorithmComboBox.Title = "Cipher/PBE";
             _cipherAlgorithmComboBox.Position.Width = 200;
-            _cipherAlgorithmComboBox.Add("AES-128");
-            _cipherAlgorithmComboBox.Add("AES-192");
-            _cipherAlgorithmComboBox.Add("AES-256"); 
-            _cipherAlgorithmComboBox.Add("PBEWithAES256-GCM-SCRYPT");
-            _cipherAlgorithmComboBox.Add("PBEWithSHA256And128Bit-AES-CBC-BC");
-            _cipherAlgorithmComboBox.Add("PBEWithSHAAnd40BitRC4");            
+
+            foreach (var option in SteMenu.CipherMenuTree)
+            {
+                foreach (var keyLength in option.Value)
+                {
+                    _cipherAlgorithmComboBox.Add(option.Key + keyLength);
+                }
+            }
+            
+            foreach (var option in SteMenu.PBEMenuTree)
+            {
+                _cipherAlgorithmComboBox.Add("PBE" + option.Key);
+            }
             
             _blockModeComboBox = _controlFactory.Create<ComboBox>();
             _blockModeComboBox.Title = "Blockmode";
@@ -242,40 +250,50 @@ namespace SecureTextEditor
             _digestComboBox = _controlFactory.Create<ComboBox>();
             _digestComboBox.Title = "Digest";
             _digestComboBox.Position.Width = 150;
-            _digestComboBox.Add("None");
-            _digestComboBox.Add("SHA-256");
-            _digestComboBox.Add("AESCMAC");
-            _digestComboBox.Add("HMACSHA256");
-            _digestComboBox.PropertyIsFocused.PropertyChanged += HandleIntegrityOptions;
 
+            foreach (var option in SteMenu.IntegrityMenuTree["Digest"])
+            {
+                _digestComboBox.Add(option);
+            }
+            
             _signingComboBox = _controlFactory.Create<ComboBox>();
             _signingComboBox.Title = "Sign";
             _signingComboBox.Position.Width = 150;
-            _signingComboBox.Add("None");
-            _signingComboBox.Add("SHA256withDSA");
+            
+            foreach (var option in SteMenu.IntegrityMenuTree["Digital Signature"])
+            {
+                _signingComboBox.Add(option);
+            }
+            
+            _digestComboBox.PropertySelectedItem.PropertyChanged += HandleIntegrityOptions;
             _signingComboBox.PropertySelectedItem.PropertyChanged += HandleIntegrityOptions;
         }
 
         private void HandleIntegrityOptions(object sender, EventArgs e)
         {
-            string[] digestOptions = { "SHA-256", "AESCMAC","HMACSHA256" };
+            string[] digestOptions = SteMenu.IntegrityMenuTree["Digest"];
+            string[] signOptions = SteMenu.IntegrityMenuTree["Digital Signature"];
+            Console.WriteLine(digestOptions);
+            Console.WriteLine(signOptions);
             
-            Console.WriteLine(_digestComboBox.SelectedItem);
-            Console.WriteLine(_signingComboBox.DisplayText);
+            var currentDigestItem = (_digestComboBox.SelectedItem as ComboBoxMenuItem)?.Title;
+            var currentSignItem = (_signingComboBox.SelectedItem as ComboBoxMenuItem)?.Title;
 
-            if (_digestComboBox.Title != "None")
+            if (currentSignItem != null && signOptions.Contains(currentSignItem))
             {
-                if(_signingComboBox.DisplayText.Equals("SHA256withDSA"))
+                if(signOptions.Contains(currentSignItem))
                     _signingComboBox.SelectItem("None");
             }
-            else if (_signingComboBox.DisplayText != "None")
+            else if (currentDigestItem != null && digestOptions.Contains(currentDigestItem)) 
             {
-                if(digestOptions.Contains(_digestComboBox.DisplayText))
+                if(digestOptions.Contains(currentDigestItem))
                     _digestComboBox.SelectItem("None");
             }
         }
 
     }
+    
+    //DialogService.Hide(dialog) oder dialog.Hide()
     
     public class TextBlockRenderer : TextControlRendererBase<TextBlock>
     {
