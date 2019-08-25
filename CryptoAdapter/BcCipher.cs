@@ -1,53 +1,55 @@
 using System;
-using System.IO;
-using System.Reflection;
-using System.Security.Cryptography;
+using System.Collections.Generic;
 using System.Text;
-using Medja.Controls;
-using Newtonsoft.Json;
 using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Crypto.Engines;
-using Org.BouncyCastle.Crypto.Macs;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Paddings;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Utilities.Encoders;
 
-namespace SecureTextEditor
+namespace CryptoAdapter
 {
-    /// <summary>
-    /// Model for STE which contains all necessary parameters and attributes to be stored on disk or in memory
-    /// </summary>
-    public class SecureTextEditorModel
+
+    public class BcCipher : CustomCipherFactory
     {
-        private char[] _text;
-        public char[] Text
-        {
-            get { return _text; }
-            set { _text = value; }
-        }
+        private string _algo;
+        private string _keyLength;
+        private byte[] _textBytes;
+        private string _blockmode;
+        private string _padding;
+        
+        private byte[] _myKey;
+        private byte[] _myIv;
+        private AesEngine _myAes;
 
-        private byte[] _myKey; 
-        
-        private byte[] _myIv; 
-
-        private AesEngine _myAes; 
-        
-        private string _path = "dummy.txt";
-        
-        /// <summary>
-        /// Default constructor of Model class
-        /// </summary>
-        public SecureTextEditorModel()
+        public BcCipher(Dictionary<string, string> config)
         {
             _myAes = new AesEngine();
             _myKey = null;
             _myIv = null;
-        }
+            
+//            var configs = config.Split('/');
+            Console.WriteLine("Encryption startet");
+            foreach (var entries in config)
+            {
+                Console.WriteLine($"- {entries}");
+            }
+//            , string algo, string plainText, string blockmode, string padding
+//            var test = "Cipher/AES/192/CBC/PKCS7";
+            _algo = config["Algorithm"];
+            _keyLength = config["KeySize"];
+            _blockmode = config["BlockMode"];
+            _padding = config["Padding"];
+//            _textBytes = Encoding.UTF8.GetBytes(plainText);
 
-        private void GenerateKey(String cipher)
+            GenerateKey(_algo+_keyLength);
+            GenerateIv();
+            
+
+        }
+        
+        private void GenerateKey(string cipher)
         {
             CipherKeyGenerator gen = new CipherKeyGenerator();
             gen = GeneratorUtilities.GetKeyGenerator(cipher);
@@ -60,56 +62,52 @@ namespace SecureTextEditor
             _myIv = new byte[_myKey.Length];
             random.NextBytes(_myIv);
         }
-
-        public byte[] EncryptTextToBytes(string plainText, string algo, string blockmode, string padding)
+        
+        public override byte[] EncryptTextToBytes(string input)
         {
-            GenerateKey(algo);
-            GenerateIv();
-
-            byte[] inputBytes = Encoding.UTF8.GetBytes(plainText);
-            
+            _textBytes = Encoding.UTF8.GetBytes(input);
             KeyParameter keyParam = new KeyParameter(_myKey);
             ParametersWithIV keyParamWithIv = new ParametersWithIV(keyParam, _myIv, 0, 16);
 
-            switch (blockmode)
+            switch (_blockmode)
             {
                 case "ECB":
-                    if (padding == "ZeroBytePadding")
+                    if (_padding == "ZeroBytePadding")
                     {
                         PaddedBufferedBlockCipher ecb = new PaddedBufferedBlockCipher(_myAes, new ZeroBytePadding());
                         ecb.Init(true, keyParam);
-                        return ecb.DoFinal(inputBytes);
+                        return ecb.DoFinal(_textBytes);
                     }
                     else
                     {
                         PaddedBufferedBlockCipher ecb = new PaddedBufferedBlockCipher(_myAes, new Pkcs7Padding());
                         ecb.Init(true, keyParam);
-                        return ecb.DoFinal(inputBytes);
+                        return ecb.DoFinal(_textBytes);
                     }
 
                 case "CBC":
-                    if (padding == "ZeroBytePadding")
+                    if (_padding == "ZeroBytePadding")
                     {
                         var cbc = new PaddedBufferedBlockCipher(new CbcBlockCipher(_myAes),new ZeroBytePadding());
                         cbc.Init(true, keyParamWithIv);
-                        return cbc.DoFinal(inputBytes);                            
+                        return cbc.DoFinal(_textBytes);                            
                     }
                     else
                     {
                         var cbc = new PaddedBufferedBlockCipher(new CbcBlockCipher(_myAes),new Pkcs7Padding());
                         cbc.Init(true, keyParamWithIv);
-                        return cbc.DoFinal(inputBytes);                            
+                        return cbc.DoFinal(_textBytes);                            
                     }
 
                 case "CTS":
                     var cts = new CtsBlockCipher(new CbcBlockCipher(_myAes));
                     cts.Init(true, keyParamWithIv);
-                    return cts.DoFinal(inputBytes);                        
+                    return cts.DoFinal(_textBytes);                        
 
                 case "OFB":
                     var ofb = new BufferedBlockCipher(new OfbBlockCipher(_myAes,8));
                     ofb.Init(true, keyParamWithIv);
-                    return ofb.DoFinal(inputBytes);                        
+                    return ofb.DoFinal(_textBytes);                        
 
                 case "GCM":
                     var gcm = new GcmBlockCipher(_myAes);
@@ -118,9 +116,9 @@ namespace SecureTextEditor
 
                     gcm.Init(true, parameters);
 
-                    byte[] encryptedBytes = new byte[gcm.GetOutputSize(inputBytes.Length)];
+                    byte[] encryptedBytes = new byte[gcm.GetOutputSize(_textBytes.Length)];
                     Int32 retLen = gcm.ProcessBytes
-                        (inputBytes, 0, inputBytes.Length, encryptedBytes, 0);
+                        (_textBytes, 0, _textBytes.Length, encryptedBytes, 0);
                     gcm.DoFinal(encryptedBytes, retLen);
                     return encryptedBytes;
             }
@@ -128,16 +126,16 @@ namespace SecureTextEditor
             return new byte[16];
         }
 
-        public string DecryptText(byte[] cipherBytes, string blockmode, string padding)
+        public override string DecryptBytesToText(byte[] cipherBytes)
         {
             
             KeyParameter keyParam = new KeyParameter(_myKey);
             ParametersWithIV keyParamWithIv = new ParametersWithIV(keyParam, _myIv, 0, 16);
             
-            switch (blockmode)
+            switch (_blockmode)
             {
                 case "ECB":
-                    if (padding == "ZeroBytePadding")
+                    if (_padding == "ZeroBytePadding")
                     {
                         var ecb = new PaddedBufferedBlockCipher(_myAes, new ZeroBytePadding());
                         ecb.Init(false, keyParam);
@@ -151,7 +149,7 @@ namespace SecureTextEditor
                     }
 
                 case "CBC":
-                    if (padding == "ZeroBytePadding")
+                    if (_padding == "ZeroBytePadding")
                     {
                         var cbc = new PaddedBufferedBlockCipher(new CbcBlockCipher(_myAes),new ZeroBytePadding());
                         cbc.Init(false, keyParamWithIv);
@@ -190,88 +188,9 @@ namespace SecureTextEditor
 
             return "Dummy";
         }
-        
-        public byte[] SHA256(byte[] data)
-        {
-            Sha256Digest sha256 = new Sha256Digest();
-            sha256.BlockUpdate(data, 0, data.Length);
-            byte[] hash = new byte[sha256.GetDigestSize()];
-            sha256.DoFinal(hash, 0);
-            return hash;
-        }
-        
-        public byte[] HMacSha256(byte[] data)
-        {
-            Sha256Digest sha256 = new Sha256Digest();
-            HMac hMac = new HMac(sha256);
-            
-            KeyParameter keyParam = new KeyParameter(_myKey);
-            
-            hMac.Init(keyParam);
-            
-            hMac.BlockUpdate(data, 0, data.Length);
-            
-            byte[] hash = new byte[hMac.GetMacSize()];
-
-            hMac.DoFinal(hash,0);
-
-            return hash;
-        }
-        
-        public byte[] AesCMac(byte[] data)
-        {
-            CMac mac = new CMac(_myAes);
-            
-            KeyParameter keyParam = new KeyParameter(_myKey);
-            
-            mac.Init(keyParam);
-            
-            mac.BlockUpdate(data, 0, data.Length);
-            
-            byte[] hash = new byte[mac.GetMacSize()];
-            
-            mac.DoFinal(hash,0);
-
-            return hash;
-        }
-        
-        public String LoadTextfile(String path)
-        {
-            if (File.Exists(path))
-            {
-                return File.ReadAllText(path,Encoding.UTF8);
-//                var cryptoData = File.ReadAllText("dummy.crypto", Encoding.UTF8);
-//                _cryptoFabric = JsonConvert.DeserializeObject<SecureTextEditorModel>(cryptoData);
-//                Console.WriteLine(_cryptoFabric);
-                
-//                _path = AssemblyDirectory + "/../../../" + path;
-            }
-
-            return "File not found!";
-        }
-        
-        public void SaveTextfile()
-        {
-//            var tmp = _cryptoFabric.EncryptTextToBytes(Text, _cryptoFabric.KEY);
-            
-//            Console.WriteLine(JsonConvert.SerializeObject(_cryptoFabric));
-//            File.WriteAllText("./dummy.crypto",JsonConvert.SerializeObject(_cryptoFabric), Encoding.UTF8);
-//            
-//            File.WriteAllText(_path, Convert.ToBase64String(tmp), Encoding.UTF8);
-//            FocusManager.Default.SetFocus(_textBox);
-        }
-        
-        private String AssemblyDirectory
-        {
-            get
-            {
-                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
-                UriBuilder uri = new UriBuilder(codeBase);
-                string path = Uri.UnescapeDataString(uri.Path);
-                return Path.GetDirectoryName(path);
-            }
-        }
-        
     }
-    
+
+
+
+
 }

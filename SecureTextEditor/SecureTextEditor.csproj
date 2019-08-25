@@ -16,20 +16,25 @@
 
     <ItemGroup>
       <PackageReference Include="BouncyCastle" Version="1.8.5" />
-      <PackageReference Include="Medja" Version="2019.5.24.2" />
-      <PackageReference Include="Medja.OpenTk" Version="2019.5.24.2" />
-      <PackageReference Include="Medja.OpenTk.Themes" Version="2019.5.24.2" />
-      <PackageReference Include="Medja.Utils" Version="2019.5.24.2" />
+      <PackageReference Include="Medja" Version="2019.8.22.1" />
+      <PackageReference Include="Medja.OpenTk" Version="2019.8.22.1" />
+      <PackageReference Include="Medja.OpenTk.Themes" Version="2019.8.22.1" />
+      <PackageReference Include="Medja.Utils" Version="2019.8.22.1" />
       <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-      <PackageReference Include="OpenTK" Version="3.0.1" />
+      <PackageReference Include="OpenTK" Version="3.1.0" />
       <PackageReference Include="SkiaSharp" Version="1.68.0" />
       <PackageReference Include="xunit" Version="2.4.1" />
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="libSkiaSharp.so">
+      <ProjectReference Include="..\CryptoAdapter\CryptoAdapter.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="libSkiaSharp.so" />
+      <Content Include="libSkiaSharp.so">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
+      </Content>
     </ItemGroup>
 
 </Project>

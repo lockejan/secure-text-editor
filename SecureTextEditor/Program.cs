@@ -14,9 +14,11 @@ namespace SecureTextEditor
             var application = MedjaApplication.Create(library);
 
             var window = application.CreateWindow();
-            window.CenterOnScreen(800, 600);
+            window.AutoSetContentAlignment = true;
+//            window.CenterOnScreen(800, 600);
             window.Title = "NotYetSecureTextEditor";
-            window.Content = new SecureTextEditorView(controlFactory);
+            window.Content = new SteMainView(controlFactory);
+//            window.Content = new SteSaveDialog(controlFactory);
 
             application.MainWindow = window;
             application.Run();
