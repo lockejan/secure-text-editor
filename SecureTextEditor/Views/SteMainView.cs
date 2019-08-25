@@ -89,8 +89,15 @@ namespace SecureTextEditor
         private void OnLoadButtonClicked(object sender, EventArgs e)
         {
 //            Text = _cryptoFabric.LoadTextfile();
-            Text = "blub";
-            FocusManager.Default.SetFocus(_textBox);
+//            Text = "blub";
+//            FocusManager.Default.SetFocus(_textBox);
+
+            DialogService.Show(
+                _controlFactory.Create<Dialog>(
+                    d =>
+                    {
+                        d.Content = new SteSaveDialog(_controlFactory);
+                    }));
         }
 
         private void OnSaveButtonClicked(object sender, EventArgs e)
