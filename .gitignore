@@ -1,5 +1,4 @@
 .idea/
-*dummy.txt
 
 # Created by https://www.gitignore.io/api/rider,linux
 # Edit at https://www.gitignore.io/?templates=rider,linux
@@ -93,3 +92,5 @@ fabric.properties
 # End of https://www.gitignore.io/api/rider,linux
 
 .vs
+SecureTextEditor/*.ste
+SecureTextEditor/bin/Debug/*
