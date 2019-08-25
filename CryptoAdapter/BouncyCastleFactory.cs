@@ -1,62 +1,30 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace CryptoAdapter
 {
     public class BouncyCastleFactory : CryptoFactory{
         protected override CustomCipherFactory CreateCryptor(Dictionary<string, Dictionary<string, string>> config) {
             CustomCipherFactory customCipherFactory = null;
-
-//            var boundary = cryptoTask.IndexOf('/');
-//            var type = cryptoTask.Substring(0, boundary);
-            var type = config.Keys.First();
-//            var config = cryptoTask.Substring(boundary + 1);
             
-            switch (type)
-            {
-                case "Cipher":
-                    customCipherFactory = new BcCipher(config["Cipher"]);
-                    break;
-                case "PBE":
-                    customCipherFactory = new BcPbe();
-                    break;
-                default:
-                    Console.WriteLine($"{type} Cipher is not available in the factory");
-                    break;
-            }
+            if (config.ContainsKey("Cipher"))
+                customCipherFactory = new BcCipher(config["Cipher"]);
+            else
+                customCipherFactory = new BcPbe(config["PBE"]);
+            
             return customCipherFactory; 
         }
 
-        protected override DigestFactory CreateDigestor(string cryptoTask)
+        protected override DigestFactory CreateDigestor(Dictionary<string, Dictionary<string, string>> config)
         {
-            DigestFactory digestFactory = null;
-
-            switch (cryptoTask)
-            {
-                case "Digest":
-                    digestFactory = new BcDigest();
-                    break;
-                default:
-                    Console.WriteLine($"{cryptoTask} Digest is not available in the factory");
-                    break;
-            }
+            DigestFactory digestFactory = new BcDigest(config["Integrity"]);
+            
             return digestFactory; 
         }
 
-        protected override CertificateFactory CreateCertifier(string cryptoTask)
+        protected override CertificateFactory CreateCertifier(Dictionary<string, Dictionary<string, string>> config)
         {
-            CertificateFactory certificateFactory = null;
+            CertificateFactory certificateFactory = new BcCertificate(config["Integrity"]);
 
-            switch (cryptoTask)
-            {
-                case "Cert":
-                    certificateFactory = new BcCertificate();
-                    break;
-                default:
-                    Console.WriteLine($"{cryptoTask} Cert-Type is not available in the factory");
-                    break;
-            }
             return certificateFactory; 
         }
     }

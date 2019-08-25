@@ -1,16 +1,21 @@
 using System;
+using System.Collections.Generic;
 
 namespace CryptoAdapter
 {
 
     public class BcPbe : CustomCipherFactory
     {
+        private Dictionary<string, string> _config;
+        public BcPbe(Dictionary<string, string> config)
+        {
+            _config = config;
+        }
 
         public override byte[] EncryptTextToBytes(string config)
         {
-            var configs = config.Split('/');
-            Console.WriteLine("PBE-Encryption startet");
-            foreach (var entries in configs)
+            Console.WriteLine("PBE-Encryption started");
+            foreach (var entries in config)
             {
                 Console.WriteLine($"- {entries}");
             }
@@ -18,6 +23,12 @@ namespace CryptoAdapter
         }
 
         public override string DecryptBytesToText(byte[] cipherBytes)
+        {
+            Console.WriteLine("Decrypted Cipher Text...");
+            return "Decrypted Cipher Text...";
+        }
+
+        public override Dictionary<string, string> Result()
         {
             throw new NotImplementedException();
         }
