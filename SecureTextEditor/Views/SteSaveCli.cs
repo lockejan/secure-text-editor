@@ -1,13 +1,11 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using CryptoAdapter;
-using Newtonsoft.Json;
 
-
-namespace SecureTextEditor
+namespace SecureTextEditor.Views
 {
     /// <summary>
     /// CLI class to provide a terminal wizard to setup all parameters
@@ -15,12 +13,15 @@ namespace SecureTextEditor
     /// </summary>
     public static class SteSaveCli
     {
-        private static Dictionary<string, Dictionary<string, string>> setupConfig = new
+        private static Dictionary<string, Dictionary<string, string>> _setupConfig = new
             Dictionary<string, Dictionary<string, string>>();
         
-        private static char[] userPassword;
+        private static char[] _userPassword;
 
-        private static String WorkingDirectory
+        /// <summary>
+        /// Interface which can be used by other classes to get back the full path of the working DIR.
+        /// </summary>
+        public static String WorkingDirectory
         {
             get
             {
@@ -34,15 +35,10 @@ namespace SecureTextEditor
         /// Entry point of CLI saveDialog.
         /// Prints out welcome message and then hands over to main Dialog function.
         /// </summary>
-        public static void SaveDialog()
+        public static void SaveDialog(string plainText)
         {
             Console.WriteLine("\nYou just started the save dialog.\n" +
                               "A wizard will guide you through the options.\n");
-            InitDialog();
-        }
-
-        private static void InitDialog()
-        {
             bool userWantsMore = true;
             const string cipherMenu = "Password Based Encryption or just Cipher?\n" +
                                       " 0. PBE\n" +
@@ -59,7 +55,7 @@ namespace SecureTextEditor
                 {
                     userInput = Convert.ToInt32(buffer);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     if (buffer != null && !buffer.Equals(""))
                     {
@@ -71,22 +67,20 @@ namespace SecureTextEditor
                 switch (userInput)
                 {
                     case 0: 
-                        setupConfig.Clear();
+                        _setupConfig.Clear();
                         PbeDialog();
                         PasswordDialog();
                         IntegrityDialog("");
-                        ProcessConfig();
-                        FileDialog();
+                        FileDialog(plainText);
                         userWantsMore = false;
                         break;
                     case 1: 
-                        setupConfig.Clear();
+                        _setupConfig.Clear();
                         CipherDialog();
                         BlockModeDialog();
-                        PaddingDialog(setupConfig["Cipher"]["BlockMode"]);
-                        IntegrityDialog(setupConfig["Cipher"]["BlockMode"]);
-                        ProcessConfig();
-                        FileDialog();
+                        PaddingDialog(_setupConfig["Cipher"]["BlockMode"]);
+                        IntegrityDialog(_setupConfig["Cipher"]["BlockMode"]);
+                        FileDialog(plainText);
                         userWantsMore = false;
                         break;
                     case 2:
@@ -97,58 +91,39 @@ namespace SecureTextEditor
             }
             
         }
-
-//        private static void SaveFile(string path, SecureTextEditorModel model)
-        private static void SaveFile(string path, string json)
-        {
-//            string json = JsonConvert.SerializeObject(model);
-            File.WriteAllText(path, json);
-        }
         
-        private static void FileDialog()
+        private static void FileDialog(string plainText)
         {
-            Console.WriteLine("You are currently in the " +
+            Console.WriteLine("\nYou are currently in the " +
                               $"following directory:\n{WorkingDirectory}");
             Console.WriteLine("Your file will be saved here.\n" +
                               "Please enter a filename to proceed:");
             var fileName = Console.ReadLine();
-            
-            //TODO save json to drive
+
             // model = CALL static class which then processes the config list and gives back some sort of object
-            SaveFile(fileName, "Hallo Welt");
+            try
+            {
+                SteCryptoHandler.ProcessConfigToSave(fileName, plainText, _setupConfig);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
             
-            //#############################################################
-            CryptoFactory bouncyCastle = new BouncyCastleFactory(); 
-//            CustomCipherFactory cipherObject = bouncyCastle.GetCipher("Cipher/AES/192/CBC/PKCS7"); 
-            CustomCipherFactory cipherObject = bouncyCastle.GetCipher(setupConfig); 
-            var result = cipherObject.EncryptTextToBytes("Hallo Welt");
-            Console.WriteLine(Convert.ToBase64String(result));
-            
-            var plain = cipherObject.DecryptBytesToText(result);
-            Console.WriteLine(plain);
-            //############################################################
-            
-            Console.WriteLine("Your encrypted text has been " +
+            Console.WriteLine("Your encrypted plainText has been " +
                               $"saved under '{fileName}.ste'\n" +
                               "with the following configuration:");
-
-            foreach (var entries in setupConfig)
+            foreach(var entries in _setupConfig)
             {
                 Console.WriteLine($"\n{entries.Key}:");
                 foreach (var value in entries.Value)
                 {
                     Console.WriteLine($"   {value.Key} - {value.Value}");
                 }
-
             }
         }
 
-        private static void ProcessConfig()
-        {
-            //TODO CALL CLASS TO HANDLE MAIN EXECUTION
-//            SteMainFactory(setupConfig);
-        }
-        
         private static void IntegrityDialog(string blockMode)
         {
             string IntegrityDetails(string selected)
@@ -177,8 +152,8 @@ namespace SecureTextEditor
             
             buffer = IntegrityDetails(selectedIntegrityMode);
             var selectedIntegrityOption = SteMenu.IntegrityMenuTree[selectedIntegrityMode][Convert.ToInt32(buffer)];
-            setupConfig.Add("Integrity",new Dictionary<string, string>(){{"Mode",selectedIntegrityMode}});
-            setupConfig["Integrity"].Add("Option", selectedIntegrityOption);
+            _setupConfig.Add("Integrity",new Dictionary<string, string>(){{"Mode",selectedIntegrityMode}});
+            _setupConfig["Integrity"].Add("Option", selectedIntegrityOption);
         }
 
         private static void PaddingDialog(string blockMode)
@@ -192,7 +167,7 @@ namespace SecureTextEditor
             }
             var buffer = Console.ReadLine();
             var selectedPadding = SteMenu.CipherOptionsMenuTree[blockMode][Convert.ToInt32(buffer)];
-            setupConfig["Cipher"].Add("Padding",selectedPadding);
+            _setupConfig["Cipher"].Add("Padding",selectedPadding);
         }
 
         private static void BlockModeDialog()
@@ -206,12 +181,12 @@ namespace SecureTextEditor
             }
             var buffer = Console.ReadLine();
             var selectedBlockMode = SteMenu.CipherOptionsMenuTree.Keys.ToList()[Convert.ToInt32(buffer)];
-            setupConfig["Cipher"].Add("BlockMode",selectedBlockMode);
+            _setupConfig["Cipher"].Add("BlockMode",selectedBlockMode);
         }
 
         private static void CipherDialog()
         {
-            const string ciperAlgorithm = "AES";
+            string cipherAlgorithm = SteMenu.CipherMenuTree.Keys.First();
             Console.WriteLine("Currently there is only AES available for encryption.\nWhich key length you wanna use?\n");
             foreach (var cipherCollection in SteMenu.CipherMenuTree)
             {
@@ -224,8 +199,8 @@ namespace SecureTextEditor
             }
             var buffer = Console.ReadLine();
             var selectedKeyLength = SteMenu.CipherMenuTree["AES"][Convert.ToInt32(buffer)];
-            setupConfig.Add("Cipher", new Dictionary<string, string>(){{"Algorithm",ciperAlgorithm}});
-            setupConfig["Cipher"].Add("KeySize",selectedKeyLength);
+            _setupConfig.Add("Cipher", new Dictionary<string, string>(){{"Algorithm",cipherAlgorithm}});
+            _setupConfig["Cipher"].Add("KeySize",selectedKeyLength);
         }
 
         private static void PasswordDialog()
@@ -234,7 +209,7 @@ namespace SecureTextEditor
             var userPassword = Console.ReadLine();
             //TODO change password input to some sort of CharArray
             //TODO WRITE Password to CharArray coming from readLine -> currently static string
-            setupConfig["PBE"].Add("Password",userPassword);
+            _setupConfig["PBE"].Add("Password",userPassword);
         }
 
         private static void PbeDialog()
@@ -248,10 +223,10 @@ namespace SecureTextEditor
             }
             var buffer = Console.ReadLine();
             var selectedPbe = SteMenu.PBEMenuTree.Keys.ToList()[Convert.ToInt32(buffer)];
-            setupConfig.Add("PBE", new Dictionary<string, string>(){{"Algorithm",selectedPbe}});
-//            setupConfig["PBE"].Add("Cipher",pbeCipher);
-//            setupConfig["PBE"].Add("Blockmode",pbeBlockMode);
-//            setupConfig["PBE"].Add("Padding",pbePadding);
+            _setupConfig.Add("PBE", new Dictionary<string, string>(){{"Algorithm",selectedPbe}});
+//            _setupConfig["PBE"].Add("Cipher",pbeCipher);
+//            _setupConfig["PBE"].Add("Blockmode",pbeBlockMode);
+//            _setupConfig["PBE"].Add("Padding",pbePadding);
         }
         
     }

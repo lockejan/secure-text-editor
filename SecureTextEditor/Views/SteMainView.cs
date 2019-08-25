@@ -1,13 +1,11 @@
 using System;
 using Medja.Controls;
-using Medja.Primitives;
 using Medja.Theming;
-using Medja.Utils;
 
-namespace SecureTextEditor
+namespace SecureTextEditor.Views
 {
     /// <summary>
-    /// Main view containing TextEditorControl, Save and Load Buttons
+    /// Main view containing TextEditorControl, Save and Load Buttons.
     /// </summary>
     public class SteMainView : ContentControl
     {
@@ -15,29 +13,23 @@ namespace SecureTextEditor
 
         private Button _loadBtn;
         private Button _saveBtn;
-
-//        private SecureTextEditorModel _cryptoFabric;
-
-        private TextEditor _textBox;
         
-        /// <summary>
-        /// 
-        /// </summary>
-        public string Text
+        private TextEditor _textBox;
+        private string Text
         {
             get => _textBox.GetText();
             set => _textBox.SetText(value);
         }
 
         /// <summary>
-        /// Creates mainView Component. Expects ControlFactory for component creation. 
+        /// Creates mainView Component.
+        /// Expects ControlFactory to create component. 
         /// </summary>
         /// <param name="controlFactory"></param>
         public SteMainView(IControlFactory controlFactory)
         {
             _controlFactory = controlFactory;
             _textBox = _controlFactory.Create<TextEditor>();
-//            _cryptoFabric = new SecureTextEditorModel();
 
             CreateButtons();
             RegisterButtonEvents();
@@ -63,21 +55,21 @@ namespace SecureTextEditor
             buttonStackPanel.Background = _textBox.Background;
             buttonStackPanel.Add(_loadBtn);
             buttonStackPanel.Add(_saveBtn);
-            buttonStackPanel.Margin.SetLeftAndRight(5);
-            buttonStackPanel.Margin.SetTopAndBottom(5);
+            buttonStackPanel.Margin.SetAll(5);
 
             return buttonStackPanel;
         }
-        
+   
         private void CreateButtons()
         {
-            _loadBtn = _controlFactory.Create<Button>();
-            _loadBtn.Position.Width = 100;
-            _loadBtn.Text = "Load";
+            void ConfigButton(Button btn,string label)
+            {
+                btn.Position.Width = 100;
+                btn.Text = label;
+            }
             
-            _saveBtn = _controlFactory.Create<Button>();
-            _saveBtn.Position.Width = 100;
-            _saveBtn.Text = "Save";
+            ConfigButton(_loadBtn=_controlFactory.Create<Button>(), "Load");
+            ConfigButton(_saveBtn=_controlFactory.Create<Button>(), "Save");
         }
 
         private void RegisterButtonEvents()
@@ -88,23 +80,20 @@ namespace SecureTextEditor
 
         private void OnLoadButtonClicked(object sender, EventArgs e)
         {
-//            Text = _cryptoFabric.LoadTextfile();
-//            Text = "blub";
-//            FocusManager.Default.SetFocus(_textBox);
-
-            DialogService.Show(
-                _controlFactory.Create<Dialog>(
-                    d =>
-                    {
-                        d.Content = new SteSaveDialog(_controlFactory);
-                    }));
+            Text = "blub";
+            FocusManager.Default.SetFocus(_textBox);
         }
 
         private void OnSaveButtonClicked(object sender, EventArgs e)
         {
-            SteSaveCli.SaveDialog();
+            SteSaveCli.SaveDialog(Text);
+//            DialogService.Show(
+//                _controlFactory.Create<Dialog>(
+//                    dialog =>
+//                    {
+//                        dialog.Content = new SteSaveDialog(_controlFactory);
+//                    }));
         }
-        
         
     }
 }

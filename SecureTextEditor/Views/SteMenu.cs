@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace SecureTextEditor
+namespace SecureTextEditor.Views
 {
     
     /// <summary>
