@@ -2,6 +2,7 @@
 using Medja.Controls;
 using Medja.OpenTk;
 using Medja.OpenTk.Themes.DarkBlue;
+using SecureTextEditor.Views;
 
 namespace SecureTextEditor
 {
