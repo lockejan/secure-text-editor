@@ -15,22 +15,9 @@ namespace SecureTextEditor.Views
     {
         private static Dictionary<string, Dictionary<string, string>> _setupConfig = new
             Dictionary<string, Dictionary<string, string>>();
-        
+
         private static char[] _userPassword;
 
-        /// <summary>
-        /// Interface which can be used by other classes to get back the full path of the working DIR.
-        /// </summary>
-        public static String WorkingDirectory
-        {
-            get
-            {
-                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
-                UriBuilder uri = new UriBuilder(codeBase);
-                string path = Uri.UnescapeDataString(uri.Path);
-                return Path.GetDirectoryName(path);
-            }
-        }
         /// <summary>
         /// Entry point of CLI saveDialog.
         /// Prints out welcome message and then hands over to main Dialog function.
@@ -39,68 +26,58 @@ namespace SecureTextEditor.Views
         {
             Console.WriteLine("\nYou just started the save dialog.\n" +
                               "A wizard will guide you through the options.\n");
-            bool userWantsMore = true;
             const string cipherMenu = "Password Based Encryption or just Cipher?\n" +
                                       " 0. PBE\n" +
                                       " 1. Cipher\n" +
                                       " 2. Get me out of here\n" +
                                       "\nEnter your selection:[0]";
-            
-            while (userWantsMore)
-            {
-                Console.WriteLine(cipherMenu);
-                var userInput = 0;
-                var buffer = Console.ReadLine();
-                try
-                {
-                    userInput = Convert.ToInt32(buffer);
-                }
-                catch (Exception)
-                {
-                    if (buffer != null && !buffer.Equals(""))
-                    {
-                        Console.WriteLine($"The provided input {buffer} is not valid.\nPlease try again.\n");
-                    }
-                    continue;
-                }
 
-                switch (userInput)
-                {
-                    case 0: 
-                        _setupConfig.Clear();
-                        PbeDialog();
-                        PasswordDialog();
-                        IntegrityDialog("");
-                        FileDialog(plainText);
-                        userWantsMore = false;
-                        break;
-                    case 1: 
-                        _setupConfig.Clear();
-                        CipherDialog();
-                        BlockModeDialog();
-                        PaddingDialog(_setupConfig["Cipher"]["BlockMode"]);
-                        IntegrityDialog(_setupConfig["Cipher"]["BlockMode"]);
-                        FileDialog(plainText);
-                        userWantsMore = false;
-                        break;
-                    case 2:
-                        Console.WriteLine("Alright. Cya next time. Bye bye.");
-                        userWantsMore = false;
-                        break;
-                }
+            _setupConfig.Clear();
+
+            Console.WriteLine(cipherMenu);
+            var userInput = ReadInt();
+
+            switch (userInput)
+            {
+                case 0:
+                    PbeDialog();
+                    PasswordDialog();
+                    IntegrityDialog("");
+                    FileDialog(plainText);
+                    break;
+                case 1:
+                    CipherDialog();
+                    BlockModeDialog();
+                    PaddingDialog(_setupConfig["Cipher"]["BlockMode"]);
+                    IntegrityDialog(_setupConfig["Cipher"]["BlockMode"]);
+                    FileDialog(plainText);
+                    break;
+                default: // all other 
+                    Console.WriteLine("Alright. Cya next time. Bye bye.");
+                    break;
             }
-            
         }
-        
+
+        private static int ReadInt()
+        {
+            int result;
+
+            while (!int.TryParse(Console.ReadLine(), out result))
+            {
+                Console.WriteLine($"The provided input is not valid.\nPlease try again.\n");
+            }
+
+            return result;
+        }
+
         private static void FileDialog(string plainText)
         {
             Console.WriteLine("\nYou are currently in the " +
-                              $"following directory:\n{WorkingDirectory}");
+                              $"following directory:\n{SteHelper.WorkingDirectory}");
             Console.WriteLine("Your file will be saved here.\n" +
                               "Please enter a filename to proceed:");
             var fileName = Console.ReadLine();
 
-            // model = CALL static class which then processes the config list and gives back some sort of object
             try
             {
                 SteCryptoHandler.ProcessConfigToSave(fileName, plainText, _setupConfig);
@@ -110,11 +87,11 @@ namespace SecureTextEditor.Views
                 Console.WriteLine(e);
                 throw;
             }
-            
+
             Console.WriteLine("Your encrypted plainText has been " +
                               $"saved under '{fileName}.ste'\n" +
                               "with the following configuration:");
-            foreach(var entries in _setupConfig)
+            foreach (var entries in _setupConfig)
             {
                 Console.WriteLine($"\n{entries.Key}:");
                 foreach (var value in entries.Value)
@@ -132,13 +109,13 @@ namespace SecureTextEditor.Views
                 int j = 0;
                 foreach (var option in SteMenu.IntegrityMenuTree[selected])
                 {
-                  Console.WriteLine($"{j}. {option}");
-                  j++;
+                    Console.WriteLine($"{j}. {option}");
+                    j++;
                 }
                 Console.WriteLine("\nPlease enter your selection:[0]");
                 return Console.ReadLine();
             }
-            
+
             if (blockMode.Equals("GCM")) return;
             Console.WriteLine("Please choose next which form of integrity should be used.\n");
             int i = 0;
@@ -149,10 +126,10 @@ namespace SecureTextEditor.Views
             }
             var buffer = Console.ReadLine();
             var selectedIntegrityMode = SteMenu.IntegrityMenuTree.Keys.ToList()[Convert.ToInt32(buffer)];
-            
+
             buffer = IntegrityDetails(selectedIntegrityMode);
             var selectedIntegrityOption = SteMenu.IntegrityMenuTree[selectedIntegrityMode][Convert.ToInt32(buffer)];
-            _setupConfig.Add("Integrity",new Dictionary<string, string>(){{"Mode",selectedIntegrityMode}});
+            _setupConfig.Add("Integrity", new Dictionary<string, string>() { { "Mode", selectedIntegrityMode } });
             _setupConfig["Integrity"].Add("Option", selectedIntegrityOption);
         }
 
@@ -167,7 +144,7 @@ namespace SecureTextEditor.Views
             }
             var buffer = Console.ReadLine();
             var selectedPadding = SteMenu.CipherOptionsMenuTree[blockMode][Convert.ToInt32(buffer)];
-            _setupConfig["Cipher"].Add("Padding",selectedPadding);
+            _setupConfig["Cipher"].Add("Padding", selectedPadding);
         }
 
         private static void BlockModeDialog()
@@ -181,7 +158,7 @@ namespace SecureTextEditor.Views
             }
             var buffer = Console.ReadLine();
             var selectedBlockMode = SteMenu.CipherOptionsMenuTree.Keys.ToList()[Convert.ToInt32(buffer)];
-            _setupConfig["Cipher"].Add("BlockMode",selectedBlockMode);
+            _setupConfig["Cipher"].Add("BlockMode", selectedBlockMode);
         }
 
         private static void CipherDialog()
@@ -199,8 +176,8 @@ namespace SecureTextEditor.Views
             }
             var buffer = Console.ReadLine();
             var selectedKeyLength = SteMenu.CipherMenuTree["AES"][Convert.ToInt32(buffer)];
-            _setupConfig.Add("Cipher", new Dictionary<string, string>(){{"Algorithm",cipherAlgorithm}});
-            _setupConfig["Cipher"].Add("KeySize",selectedKeyLength);
+            _setupConfig.Add("Cipher", new Dictionary<string, string>() { { "Algorithm", cipherAlgorithm } });
+            _setupConfig["Cipher"].Add("KeySize", selectedKeyLength);
         }
 
         private static void PasswordDialog()
@@ -209,7 +186,7 @@ namespace SecureTextEditor.Views
             var userPassword = Console.ReadLine();
             //TODO change password input to some sort of CharArray
             //TODO WRITE Password to CharArray coming from readLine -> currently static string
-            _setupConfig["PBE"].Add("Password",userPassword);
+            _setupConfig["PBE"].Add("Password", userPassword);
         }
 
         private static void PbeDialog()
@@ -223,31 +200,31 @@ namespace SecureTextEditor.Views
             }
             var buffer = Console.ReadLine();
             var selectedPbe = SteMenu.PBEMenuTree.Keys.ToList()[Convert.ToInt32(buffer)];
-            _setupConfig.Add("PBE", new Dictionary<string, string>(){{"Algorithm",selectedPbe}});
-//            _setupConfig["PBE"].Add("Cipher",pbeCipher);
-//            _setupConfig["PBE"].Add("Blockmode",pbeBlockMode);
-//            _setupConfig["PBE"].Add("Padding",pbePadding);
+            _setupConfig.Add("PBE", new Dictionary<string, string>() { { "Algorithm", selectedPbe } });
+            //            _setupConfig["PBE"].Add("Cipher",pbeCipher);
+            //            _setupConfig["PBE"].Add("Blockmode",pbeBlockMode);
+            //            _setupConfig["PBE"].Add("Padding",pbePadding);
         }
-        
+
     }
 
-//    public class NameValuePair
-//    {
-//        KeyValuePair<string, string> it;
-//
-//        public NameValuePair(string name, string value)
-//        {
-//            it = new KeyValuePair<string, string>( name, value );
-//        }
-//
-//        public string Name
-//        {
-//            get { return it.Key; }
-//        }
-//
-//        public string Value
-//        {
-//            get { return it.Value; }
-//        }
-//    }
+    //    public class NameValuePair
+    //    {
+    //        KeyValuePair<string, string> it;
+    //
+    //        public NameValuePair(string name, string value)
+    //        {
+    //            it = new KeyValuePair<string, string>( name, value );
+    //        }
+    //
+    //        public string Name
+    //        {
+    //            get { return it.Key; }
+    //        }
+    //
+    //        public string Value
+    //        {
+    //            get { return it.Value; }
+    //        }
+    //    }
 }

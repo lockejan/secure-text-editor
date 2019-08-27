@@ -21,8 +21,8 @@ namespace CryptoAdapter
         private byte[] _encryptedBytes;
 
         private readonly AesEngine _myAes;
-        private byte[] _myKey;
         private byte[] _myIv;
+        private byte[] _myKey;
 
         public BcCipher(Dictionary<string, string> config)
         {
@@ -44,8 +44,8 @@ namespace CryptoAdapter
             _padding = config["Padding"];
             
             _myAes = new AesEngine();
-            _myKey = Encoding.UTF8.GetBytes(key);
-            _myIv =  _blockmode.Equals("ECB") ? null : Encoding.UTF8.GetBytes(iv);
+            _myKey = Convert.FromBase64String(key);
+            _myIv =  _blockmode.Equals("ECB") ? null : Convert.FromBase64String(iv);
         }
         
         public override Dictionary<string,string> Result()
@@ -57,7 +57,8 @@ namespace CryptoAdapter
                 {"BlockMode", _blockmode},
                 {"Padding", _padding},
                 {"Iv", Convert.ToBase64String(_myIv)},
-                {"Cipher", Convert.ToBase64String(_encryptedBytes)}
+                {"Cipher", Convert.ToBase64String(_encryptedBytes)},
+                {"Key",Convert.ToBase64String(_myKey)}
             };
             
             return result;

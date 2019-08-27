@@ -12,6 +12,11 @@ namespace CryptoAdapter
             _config = config;
         }
 
+        public BcPbe(string config, string iv, Dictionary<string, string> dictionary)
+        {
+            throw new NotImplementedException();
+        }
+
         public override byte[] EncryptTextToBytes(string config)
         {
             Console.WriteLine("PBE-Encryption started");

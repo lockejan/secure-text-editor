@@ -5,9 +5,8 @@ using System.Reflection;
 using Medja.Controls;
 using Medja.Primitives;
 using Medja.Theming;
-using SecureTextEditor.Views;
 
-namespace SecureTextEditor
+namespace SecureTextEditor.Views
 {
     /// <summary>
     /// SaveDialog view class to gather all options which then should be forwarded to the cipherEngines.
@@ -38,18 +37,7 @@ namespace SecureTextEditor
 
         private Button _confirmButton;
         private Button _cancelButton;
-
-        private String _workingDirectory
-        {
-            get
-            {
-                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
-                UriBuilder uri = new UriBuilder(codeBase);
-                string path = Uri.UnescapeDataString(uri.Path);
-                return Path.GetDirectoryName(path);
-            }
-        }
-
+        
         /// <summary>
         /// Creates saveDialog Component. Expects ControlFactory for component creation. 
         /// </summary>
@@ -57,7 +45,7 @@ namespace SecureTextEditor
         public SteSaveDialog(IControlFactory controlFactory)
         {
             _controlFactory = controlFactory;
-            _currentDir = CreateTextBlock(_workingDirectory);
+            _currentDir = CreateTextBlock(SteHelper.WorkingDirectory);
 
             CreateButtons();
             CreateLabels();
@@ -199,7 +187,7 @@ namespace SecureTextEditor
             _digestComboBox = _controlFactory.Create<ComboBox>();
             _digestComboBox.Title = "Digest";
             _digestComboBox.Position.Width = 150;
-
+            _digestComboBox.Add("None");
             foreach (var option in SteMenu.IntegrityMenuTree["Digest"])
             {
                 _digestComboBox.Add(option);
@@ -208,7 +196,7 @@ namespace SecureTextEditor
             _signingComboBox = _controlFactory.Create<ComboBox>();
             _signingComboBox.Title = "Sign";
             _signingComboBox.Position.Width = 150;
-
+            _signingComboBox.Add("None");
             foreach (var option in SteMenu.IntegrityMenuTree["Digital Signature"])
             {
                 _signingComboBox.Add(option);
@@ -217,8 +205,8 @@ namespace SecureTextEditor
 
         private void RegisterEventHandler()
         {
-            _digestComboBox.PropertySelectedItem.PropertyChanged += HandleIntegrityOptions;
-            _signingComboBox.PropertySelectedItem.PropertyChanged += HandleIntegrityOptions;
+            _digestComboBox.PropertySelectedItem.PropertyChanged += HandleDigest;
+            _signingComboBox.PropertySelectedItem.PropertyChanged += HandleSigning;
             _confirmButton.InputState.Clicked += OnConfirmButtonClicked;
             _cancelButton.InputState.Clicked += OnCancelButtonClicked;
         }
@@ -233,24 +221,22 @@ namespace SecureTextEditor
             Console.WriteLine("Usually one could expect the window to close here.\n but not yet...");
         }
 
-        private void HandleIntegrityOptions(object sender, EventArgs e)
+        private void HandleSigning(object sender, EventArgs e)
         {
             string[] digestOptions = SteMenu.IntegrityMenuTree["Digest"];
-            string[] signOptions = SteMenu.IntegrityMenuTree["Digital Signature"];
-
             var currentDigestItem = (_digestComboBox.SelectedItem as ComboBoxMenuItem)?.Title;
+            
+            if (currentDigestItem != null && digestOptions.Contains(currentDigestItem))
+                _digestComboBox.SelectItem("None");
+        }
+        
+        private void HandleDigest(object sender, EventArgs e)
+        {
+            string[] signOptions = SteMenu.IntegrityMenuTree["Digital Signature"];
             var currentSignItem = (_signingComboBox.SelectedItem as ComboBoxMenuItem)?.Title;
-
+            
             if (currentSignItem != null && signOptions.Contains(currentSignItem))
-            {
-                if (signOptions.Contains(currentSignItem))
-                    _signingComboBox.SelectItem("None");
-            }
-            else if (currentDigestItem != null && digestOptions.Contains(currentDigestItem))
-            {
-                if (digestOptions.Contains(currentDigestItem))
-                    _digestComboBox.SelectItem("None");
-            }
+                _signingComboBox.SelectItem("None");
         }
         
         private void UpdateCombos(){

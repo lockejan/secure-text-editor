@@ -94,3 +94,5 @@ fabric.properties
 .vs
 SecureTextEditor/*.ste
 SecureTextEditor/bin/Debug/*
+.ionide/
+SecureTextEditor/*.key

@@ -7,6 +7,10 @@ namespace CryptoAdapter
             CustomCipherFactory ccf = CreateCryptor(cryptoConfig);
             return ccf; 
         }
+        public CustomCipherFactory GetCipher(string key, string iv,Dictionary<string, string> cryptoConfig) { 
+            CustomCipherFactory ccf = CreateCryptor(key, iv, cryptoConfig);
+            return ccf; 
+        }
         public DigestFactory GetDigest(Dictionary<string, Dictionary<string, string>> digestParams) { 
             DigestFactory df = CreateDigestor(digestParams);
             return df; 
@@ -16,8 +20,9 @@ namespace CryptoAdapter
             return cf; 
         }
         
-        protected abstract CustomCipherFactory CreateCryptor(Dictionary<string, Dictionary<string, string>> cryptoConfig); 
-        protected abstract DigestFactory CreateDigestor(Dictionary<string, Dictionary<string, string>> cryptoConfig); 
+        protected abstract CustomCipherFactory CreateCryptor(Dictionary<string, Dictionary<string, string>> cryptoConfig);
+        protected abstract CustomCipherFactory CreateCryptor(string key, string iv, Dictionary<string, string> config);
+        protected abstract DigestFactory CreateDigestor(Dictionary<string, Dictionary<string, string>> cryptoConfig);
         protected abstract CertificateFactory CreateCertifier(Dictionary<string, Dictionary<string, string>> cryptoConfig);
     }
         

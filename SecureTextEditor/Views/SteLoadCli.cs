@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Newtonsoft.Json;
@@ -8,15 +9,31 @@ namespace SecureTextEditor.Views
     /// <summary>
     /// 
     /// </summary>
-    public class SteLoadCli
+    public static class SteLoadCli
     {
-        private String LoadTextfile(String path)
+        private static SteModel _jsonModel;
+        private static string _key;
+        
+        private static String LoadTextfile(String path)
         {
-            if (File.Exists(path))
+            path = SteHelper.WorkingDirectory + "/../../../" + path;
+            if (File.Exists($"{path}.ste"))
             {
                 var cryptoData = File.ReadAllText($"{path}.ste", Encoding.UTF8);
-                Console.WriteLine(JsonConvert.DeserializeObject<SteModel>(cryptoData));
-                return "Please switch back to your editor";
+                _jsonModel = JsonConvert.DeserializeObject<SteModel>(cryptoData);
+                
+                Dictionary<string, string> param = new Dictionary<string, string>
+                {
+                    {"Algorithm", "AES"},
+                    {"KeySize", "192"},
+                    {"BlockMode", "CBC"},
+                    {"Padding", "PKCS7"},
+                    {"IvOrSalt", "oKqt6baRQ+6/m7J59TTDmizRKwVLybQz"},
+                    {"cipher", "q5ca6f0RDjljoMJa0zHBGQ=="}
+                };
+                
+                _key = File.ReadAllText($"{path}.key", Encoding.UTF8);
+                return SteCryptoHandler.ProcessConfigToLoad(_key, param);
             }
             return "File not found!";
         }
@@ -24,11 +41,10 @@ namespace SecureTextEditor.Views
         /// <summary>
         /// 
         /// </summary>
-        public void LoadTextDialog()
+        public static String LoadTextDialog()
         {
             Console.WriteLine("Please enter the file you wanna open:\n");
-            Console.WriteLine(LoadTextfile(Console.ReadLine()));
-            
+            return LoadTextfile(Console.ReadLine());
         }
 
     }
