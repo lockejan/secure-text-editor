@@ -92,10 +92,14 @@ fabric.properties
 # End of https://www.gitignore.io/api/rider,linux
 
 .vs
-SecureTextEditor/*.ste
-SecureTextEditor/bin/Debug/*
-SecureTextEditor/obj/Debug/*
 .ionide/
+*.DotSettings.user
+SecureTextEditor/*.ste
 SecureTextEditor/*.key
-CryptoAdapter/bin/*
-CryptoAdapter/obj/*
+packages/
+SecureTextEditor/bin/
+SecureTextEditor/obj/
+CryptoAdapter/bin/
+CryptoAdapter/obj/
+SecureTextEditorTests/bin/
+SecureTextEditorTests/obj/
