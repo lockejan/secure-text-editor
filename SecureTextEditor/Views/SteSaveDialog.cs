@@ -16,10 +16,13 @@ namespace SecureTextEditor.Views
     {
         private readonly IControlFactory _controlFactory;
 
+        private ComboBox _cipherModeComboBox;
         private ComboBox _cipherAlgorithmComboBox;
         private ComboBox _blockModeComboBox;
         private ComboBox _paddingComboBox;
         private TextBox _passwordInput;
+        
+        private TextBlock _cipherModeLabel;
         private TextBlock _cipherAlgorithmLabel;
         private TextBlock _blockModeLabel;
         private TextBlock _paddingLabel;
@@ -55,7 +58,7 @@ namespace SecureTextEditor.Views
             RegisterEventHandler();
 
             Content = CreateDockPanel();
-            FocusManager.Default.SetFocus(_cipherAlgorithmComboBox);
+            FocusManager.Default.SetFocus(_filenameInput);
         }
 
         private void InitStateOfCombos()
@@ -104,6 +107,8 @@ namespace SecureTextEditor.Views
 
         private TablePanel FillTablePanel(TablePanel grid)
         {
+            grid.Children.Add(_cipherModeLabel);
+            grid.Children.Add(_cipherModeComboBox);
             grid.Children.Add(_cipherAlgorithmLabel);
             grid.Children.Add(_cipherAlgorithmComboBox);
             grid.Children.Add(_blockModeLabel);
@@ -137,7 +142,8 @@ namespace SecureTextEditor.Views
         private void CreateLabels()
         {
             _blockModeLabel = CreateTextBlock("Blockmode:");
-            _cipherAlgorithmLabel = CreateTextBlock("Cipher/PBE:");
+            _cipherModeLabel = CreateTextBlock("Ciphermode:");
+            _cipherAlgorithmLabel = CreateTextBlock("Cipher:");
             _currentDirLabel = CreateTextBlock("Current DIR:");
             _digestLabel = CreateTextBlock("Digest:");
             _filenameInputLabel = CreateTextBlock("Filename:");
@@ -159,8 +165,16 @@ namespace SecureTextEditor.Views
 
         private void CreateComboBoxes()
         {
+            _cipherModeComboBox = _controlFactory.Create<ComboBox>();
+            _cipherModeComboBox.Title = "CipherMode";
+/*            foreach (var mode in SteMenu.CipherMode)
+            {
+                _cipherModeComboBox.Add(mode);
+            }*/
+
             _cipherAlgorithmComboBox = _controlFactory.Create<ComboBox>();
-            _cipherAlgorithmComboBox.Title = "Cipher/PBE";
+            _cipherAlgorithmComboBox.Title = "Cipher";
+            //cipherMode : BlockCipher | StreamCipher | PBE
             _cipherAlgorithmComboBox.Position.Width = 200;
 
             foreach (var option in SteMenu.CipherMenuTree)

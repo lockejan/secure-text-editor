@@ -1,8 +1,9 @@
+using System;
 using System.Collections.Generic;
 
 namespace SecureTextEditor.Views
 {
-    
+
     /// <summary>
     /// SteMenu properties for SaveDialog.
     /// These dictionaries are representing all possible configurations.
@@ -10,8 +11,73 @@ namespace SecureTextEditor.Views
     /// If additional options are being implemented these dictionaries
     /// have to be updated to make the menu recognize the internal updates.
     /// </summary>
-    public static class SteMenu
+    public class SteMenu
     {
+        int[] KeySize = {128, 192, 256, 40};
+        enum Cipher {AES, RC4};
+        enum BlockMode {ECB, CBC, GCM, OFB, CTS};
+        enum PBE {Yes, No};
+        enum PBECipher {PBKDF2, SCRYPT};
+        enum PBEDigest {SHA1,SHA256};
+
+        [Flags]
+        enum Padding{
+            NoPadding = 1,
+            ZeroBytePadding = 1 << 1,
+            PKCS7 = 1 << 2
+        }
+        
+        public static void enumTester()
+        {
+            var BlockModeDict = new Dictionary<BlockMode, Padding>()
+            {
+                {BlockMode.ECB, Padding.ZeroBytePadding | Padding.PKCS7},
+                {BlockMode.CBC, Padding.ZeroBytePadding | Padding.PKCS7},
+                {BlockMode.GCM, Padding.NoPadding},
+                {BlockMode.CTS, Padding.NoPadding},
+                {BlockMode.OFB, Padding.NoPadding}
+            };
+
+            /*
+            var BlockCipherDict = new Dictionary<CipherType, Dictionary<Cipher,Dictionary<BlockMode, Padding>>>()
+            {
+                {
+                    CipherType.CIPHER,
+                    new Dictionary<BlockMode, Padding>()
+                    {
+                        {BlockMode.ECB, Padding.ZeroBytePadding | Padding.PKCS7},
+                        {BlockMode.CBC, Padding.ZeroBytePadding | Padding.PKCS7},
+                        {BlockMode.GCM, Padding.NoPadding},
+                        {BlockMode.CTS, Padding.NoPadding},
+                        {BlockMode.OFB, Padding.NoPadding}}
+                },
+                {
+                    PBE.SCRYPT,
+                    new Dictionary<BlockMode, Padding>()
+                    {
+                        {BlockMode.ECB, Padding.ZeroBytePadding | Padding.PKCS7},
+                        {BlockMode.CBC, Padding.ZeroBytePadding | Padding.PKCS7},
+                        {BlockMode.GCM, Padding.NoPadding},
+                        {BlockMode.CTS, Padding.NoPadding},
+                        {BlockMode.OFB, Padding.NoPadding}}
+                },
+                
+            };
+            var StreamCipherDict = new Dictionary<Cipher, Padding>()
+            {
+                {Cipher.RC4, Padding.NoPadding}
+            };
+*/
+
+            //var value = BlockCipherDict[Cipher.AES];
+            
+            //if (value.HasFlag(Padding.NoPadding))
+            {
+                Console.WriteLine("Treffer A");    
+            }
+            
+        }
+        
         /// <summary>
         /// SteMenu entries for supported ciphers and their key lengths.
         /// </summary>

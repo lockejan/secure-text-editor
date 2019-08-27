@@ -54,6 +54,7 @@ namespace SecureTextEditor.Views
         {
             var buttonStackPanel = _controlFactory.Create<HorizontalStackPanel>();
             buttonStackPanel.ChildrenWidth = 80;
+            //buttonStackPanel.Ch
 //            buttonStackPanel.Position.Height = _loadBtn.Position.Height;
             buttonStackPanel.Background = _textBox.Background;
             buttonStackPanel.Add(_newBtn);
@@ -72,6 +73,8 @@ namespace SecureTextEditor.Views
                 btn.Text = label;
             }
 
+            //theme - klasse überladen - um buttonheight anzupassen
+            //alternative - padding manuell an btns setzen
             ConfigButton(_newBtn = _controlFactory.Create<Button>(), "New");
             ConfigButton(_loadBtn = _controlFactory.Create<Button>(), "Load");
             ConfigButton(_saveBtn = _controlFactory.Create<Button>(), "Save");
