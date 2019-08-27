@@ -119,12 +119,15 @@ namespace SecureTextEditor.Views
         //                        dialog.Content = new SteSaveDialog(_controlFactory)));
 
             var content = new SteSaveDialog(_controlFactory);
-            var dialog = _controlFactory.Create<Dialog>(
-                d => { d.Content = content; });
+            //var dialog = _controlFactory.Create<ConfirmableDialog>(
+              //  d => { d.Content = content; });
 
-
+            var dialog = _controlFactory.Create<ConfirmableDialog>();
+            var dockPanel = dialog.Content as DockPanel;
+            dockPanel.Add(Dock.Fill, content);
             ExecuteOnceOnClose(dialog, () =>
             {
+                content.ResetPassword();
                 // ...
 //                var settings = content.Settings;
 //                CryptoFile.Save(settings, fileName, fileContent);

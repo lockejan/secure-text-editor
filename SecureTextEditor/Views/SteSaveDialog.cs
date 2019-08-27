@@ -50,25 +50,30 @@ namespace SecureTextEditor.Views
             _controlFactory = controlFactory;
             _currentDir = CreateTextBlock(SteHelper.WorkingDirectory);
 
-            CreateButtons();
-            CreateLabels();
-            CreatInputs();
-            CreateComboBoxes();
-            InitStateOfCombos();
-            RegisterEventHandler();
-
+            CreateView();
             Content = CreateDockPanel();
             FocusManager.Default.SetFocus(_filenameInput);
         }
 
+        private void CreateView()
+        {
+            CreateButtons();
+            CreateLabels();
+            CreateInputs();
+            CreateComboBoxes();
+            InitStateOfCombos();
+            RegisterEventHandler();
+        }
+
         private void InitStateOfCombos()
         {
-            _blockModeComboBox.IsEnabled = false;
+            _blockModeComboBox.Visibility = Visibility.Hidden;
+            _blockModeLabel.Visibility = Visibility.Hidden;
             _paddingComboBox.IsEnabled = false;
             _passwordInput.IsEnabled = false;
         }
 
-        private void CreatInputs()
+        private void CreateInputs()
         {
             _filenameInput = CreateInput();
             _passwordInput = CreateInput();
@@ -107,6 +112,10 @@ namespace SecureTextEditor.Views
 
         private TablePanel FillTablePanel(TablePanel grid)
         {
+            grid.Children.Add(_currentDirLabel);
+            grid.Children.Add(_currentDir);
+            grid.Children.Add(_filenameInputLabel);
+            grid.Children.Add(_filenameInput);
             grid.Children.Add(_cipherModeLabel);
             grid.Children.Add(_cipherModeComboBox);
             grid.Children.Add(_cipherAlgorithmLabel);
@@ -115,16 +124,12 @@ namespace SecureTextEditor.Views
             grid.Children.Add(_blockModeComboBox);
             grid.Children.Add(_paddingLabel);
             grid.Children.Add(_paddingComboBox);
-            grid.Children.Add(_passwordLabel);
-            grid.Children.Add(_passwordInput);
+//            grid.Children.Add(_passwordLabel);
+//            grid.Children.Add(_passwordInput);
             grid.Children.Add(_digestLabel);
             grid.Children.Add(_digestComboBox);
             grid.Children.Add(_signingLabel);
             grid.Children.Add(_signingComboBox);
-            grid.Children.Add(_currentDirLabel);
-            grid.Children.Add(_currentDir);
-            grid.Children.Add(_filenameInputLabel);
-            grid.Children.Add(_filenameInput);
             grid.Children.Add(_confirmButton);
             grid.Children.Add(_cancelButton);
 
@@ -252,6 +257,11 @@ namespace SecureTextEditor.Views
             if (currentSignItem != null && signOptions.Contains(currentSignItem))
                 _signingComboBox.SelectItem("None");
         }
+
+        public void ResetPassword()
+        {
+            _passwordInput = null;
+        }
         
         private void UpdateCombos(){
                 
@@ -261,11 +271,11 @@ namespace SecureTextEditor.Views
 //                _blockModeComboBox.Add(kvp.Key);
 //            }
 
+//            _cipherComboBox.Clear();
+//            _keySizeComboBox.Clear();
 //            _blockModeComboBox.Clear();
-//            _paddingComboBox.Add("NoPadding");
-//            _paddingComboBox.Add("PKCS7");
-//            _paddingComboBox.Add("ZeroByte");
-
+//            _paddingComboBox.Clear();
+            //_integrityOptionsComboBox.Clear();
         }
     }
 

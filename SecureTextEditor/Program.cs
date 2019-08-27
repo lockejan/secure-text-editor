@@ -25,8 +25,9 @@ namespace SecureTextEditor
             window.Title = "NotYetSecureTextEditor";
             var container = DialogService.CreateContainer(controlFactory, new SteMainView(controlFactory));
             container.DialogPadding.SetAll(10);
+            container.DialogPadding.Bottom = 250;
             window.Content = container;
-//            window.Content = new SteSaveDialog(controlFactory);
+            //window.Content = new SteSaveDialog(controlFactory);
 
             application.MainWindow = window;
             application.Run();
