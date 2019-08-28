@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Medja;
+﻿using Medja;
 using Medja.Controls;
 using Medja.OpenTk;
 using Medja.OpenTk.Themes.DarkBlue;
@@ -21,11 +19,11 @@ namespace SecureTextEditor
 
             var window = application.CreateWindow();
             window.AutoSetContentAlignment = true;
-//            window.CenterOnScreen(800, 600);
+            //window.CenterOnScreen(800, 600);
             window.Title = "NotYetSecureTextEditor";
             var container = DialogService.CreateContainer(controlFactory, new SteMainView(controlFactory));
-            container.DialogPadding.SetAll(10);
-            container.DialogPadding.Bottom = 250;
+            container.DialogPadding.SetAll(5);
+            //container.DialogPadding.Bottom = 50;
             window.Content = container;
             //window.Content = new SteSaveDialog(controlFactory);
 

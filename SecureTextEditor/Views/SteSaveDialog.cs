@@ -16,30 +16,35 @@ namespace SecureTextEditor.Views
     {
         private readonly IControlFactory _controlFactory;
 
-        private ComboBox _cipherModeComboBox;
+        private TextBlock _currentDir;
+        private TextBox _filenameInput;
+        
+        private CheckBox _encryptionCheckBox;
+        private CheckBox _pbeCheckBox;
+        private CheckBox _integrityCheckBox;
+        
+        private TextBox _passwordInput;
+        private ComboBox _pbeSpecComboBox;
+        
         private ComboBox _cipherAlgorithmComboBox;
+        private ComboBox _cipherKeyLengthComboBox;
         private ComboBox _blockModeComboBox;
         private ComboBox _paddingComboBox;
-        private TextBox _passwordInput;
         
-        private TextBlock _cipherModeLabel;
+        private ComboBox _integrityComboBox;
+        private ComboBox _integritySpecComboBox;
+        
         private TextBlock _cipherAlgorithmLabel;
+        private TextBlock _cipherKeyLengthLabel;
         private TextBlock _blockModeLabel;
         private TextBlock _paddingLabel;
         private TextBlock _passwordLabel;
-
-        private TextBlock _digestLabel;
-        private TextBlock _signingLabel;
-        private ComboBox _digestComboBox;
-        private ComboBox _signingComboBox;
-
-        private TextBlock _currentDirLabel;
-        private readonly TextBlock _currentDir;
-        private TextBlock _filenameInputLabel;
-        private TextBox _filenameInput;
-
-        private Button _confirmButton;
-        private Button _cancelButton;
+        private TextBlock _pbeDigestLabel;
+        private TextBlock _pbeDigestInfo;
+        
+        private VerticalStackPanel _firstColumnStack;
+        private VerticalStackPanel _secColumnStack;
+        private VerticalStackPanel _thirdColumnStack;
         
         /// <summary>
         /// Creates saveDialog Component. Expects ControlFactory for component creation. 
@@ -48,21 +53,34 @@ namespace SecureTextEditor.Views
         public SteSaveDialog(IControlFactory controlFactory)
         {
             _controlFactory = controlFactory;
-            _currentDir = CreateTextBlock(SteHelper.WorkingDirectory);
+            _firstColumnStack = GetStackPanel(140);
+            _secColumnStack = GetStackPanel(140);
+            _thirdColumnStack = GetStackPanel(140);
 
-            CreateView();
+            CreateLabels();
+            CreateInputs();
+            CreateComboBoxes();
+            CreateCheckBoxes();
+            //InitStateOfCombos();
+            RegisterEventHandler();
+            FillStackPanels();
             Content = CreateDockPanel();
             FocusManager.Default.SetFocus(_filenameInput);
         }
 
-        private void CreateView()
+        private void CreateCheckBoxes()
         {
-            CreateButtons();
-            CreateLabels();
-            CreateInputs();
-            CreateComboBoxes();
-            InitStateOfCombos();
-            RegisterEventHandler();
+            CheckBox Init(string title)
+            {
+                var checkBox = _controlFactory.Create<CheckBox>();
+                checkBox.Text = title;
+                checkBox.Padding.SetTopAndBottom(5);
+                return checkBox;
+            }
+
+            _encryptionCheckBox = Init("Encryption?");
+            _pbeCheckBox = Init("PBE?");
+            _integrityCheckBox = Init("Integrity?");
         }
 
         private void InitStateOfCombos()
@@ -75,14 +93,13 @@ namespace SecureTextEditor.Views
 
         private void CreateInputs()
         {
-            _filenameInput = CreateInput();
-            _passwordInput = CreateInput();
-        }
-
-        private TextBox CreateInput()
-        {
-            var textBox = _controlFactory.Create<TextBox>();
-            return textBox;
+            TextBox CreateTextInput()
+            {
+                var textBox = _controlFactory.Create<TextBox>();
+                return textBox;
+            }
+            _filenameInput = CreateTextInput();
+            _passwordInput = CreateTextInput();
         }
 
         private Control CreateDockPanel()
@@ -90,174 +107,125 @@ namespace SecureTextEditor.Views
             var dockPanel = _controlFactory.Create<DockPanel>();
             dockPanel.HorizontalAlignment = HorizontalAlignment.Stretch;
             dockPanel.VerticalAlignment = VerticalAlignment.Stretch;
-            dockPanel.Add(Dock.Fill, CreateTablePanel());
+            dockPanel.Add(Dock.Left, _firstColumnStack);
+            dockPanel.Add(Dock.Left, _secColumnStack);
+            dockPanel.Add(Dock.Left, _thirdColumnStack);
 
             return dockPanel;
         }
 
-        private TablePanel CreateTablePanel()
+        private VerticalStackPanel GetStackPanel(int width)
         {
-            var tablePanel = _controlFactory.Create<TablePanel>();
-            const float rowHeight = 30;
+            var vertStack = _controlFactory.Create<VerticalStackPanel>();
+            vertStack.ChildrenHeight = 30;
+            vertStack.Position.Width = width;
+            //vertStack.Margin.SetAll(5);
+            vertStack.Padding.SetAll(5);
+            return vertStack;
+        }
 
-            tablePanel.Columns.Add(new ColumnDefinition(150));
-            tablePanel.Columns.Add(new ColumnDefinition(470));
-            for (int i = 0; i < 11; i++)
+        private void FillStackPanels()
+        {
+            void FillRow(Control first, Control sec, Control third)
             {
-                tablePanel.Rows.Add(new RowDefinition(rowHeight));
+                _firstColumnStack.Add(first ?? new Control());
+                _secColumnStack.Add(sec ?? new Control());
+                _thirdColumnStack.Add(third ?? new Control());
             }
-
-            return FillTablePanel(tablePanel);
+            
+            FillRow(GetLabel("Current DIR"), _currentDir,null);
+            FillRow(GetLabel("Filename"), _filenameInput,null);
+            //FillRow(GetLabel("Encryption"), _encryptionCheckBox, null);
+            FillRow( _encryptionCheckBox, null,null);
+            FillRow(_pbeCheckBox,null,_passwordInput);
+            FillRow(null,_pbeSpecComboBox, null);
+            FillRow(null,_pbeDigestLabel, _pbeDigestInfo);
+            FillRow(_cipherAlgorithmLabel, _cipherAlgorithmComboBox, _cipherKeyLengthComboBox);
+            FillRow(null, _blockModeComboBox, _paddingComboBox);
+            //FillRow(_passwordLabel, _passwordInput);
+            //FillRow(GetLabel("Integrity"), _integrityCheckBox,null);
+            FillRow( _integrityCheckBox,_integrityComboBox,null);
+//            FillRow(null,_integrityComboBox,null);
+            FillRow(null,_integritySpecComboBox,null);
+            
+            //vertStack.Background = _textBox.Background;
         }
 
-        private TablePanel FillTablePanel(TablePanel grid)
+        private TextBlock GetLabel(string text)
         {
-            grid.Children.Add(_currentDirLabel);
-            grid.Children.Add(_currentDir);
-            grid.Children.Add(_filenameInputLabel);
-            grid.Children.Add(_filenameInput);
-            grid.Children.Add(_cipherModeLabel);
-            grid.Children.Add(_cipherModeComboBox);
-            grid.Children.Add(_cipherAlgorithmLabel);
-            grid.Children.Add(_cipherAlgorithmComboBox);
-            grid.Children.Add(_blockModeLabel);
-            grid.Children.Add(_blockModeComboBox);
-            grid.Children.Add(_paddingLabel);
-            grid.Children.Add(_paddingComboBox);
-//            grid.Children.Add(_passwordLabel);
-//            grid.Children.Add(_passwordInput);
-            grid.Children.Add(_digestLabel);
-            grid.Children.Add(_digestComboBox);
-            grid.Children.Add(_signingLabel);
-            grid.Children.Add(_signingComboBox);
-            grid.Children.Add(_confirmButton);
-            grid.Children.Add(_cancelButton);
-
-            return grid;
+            return _controlFactory.CreateTextBlock(text);
         }
-
-        private TextBlock CreateTextBlock(String text)
-        {
-            var textBlock = _controlFactory.CreateTextBlock(text);
-//            textBlock.Text = text;
-//            textBlock.Renderer = new TextBlockRenderer(textBlock);
-            return textBlock;
-        }
-
         private void CreateLabels()
         {
-            _blockModeLabel = CreateTextBlock("Blockmode:");
-            _cipherModeLabel = CreateTextBlock("Ciphermode:");
-            _cipherAlgorithmLabel = CreateTextBlock("Cipher:");
-            _currentDirLabel = CreateTextBlock("Current DIR:");
-            _digestLabel = CreateTextBlock("Digest:");
-            _filenameInputLabel = CreateTextBlock("Filename:");
-            _paddingLabel = CreateTextBlock("Padding:");
-            _passwordLabel = CreateTextBlock("Password:");
-            _signingLabel = CreateTextBlock("Digital Sign:");
-        }
-
-        private void CreateButtons()
-        {
-            _confirmButton = _controlFactory.Create<Button>();
-            _confirmButton.Position.Width = 100;
-            _confirmButton.Text = "Confirm";
-
-            _cancelButton = _controlFactory.Create<Button>();
-            _cancelButton.Position.Width = 100;
-            _cancelButton.Text = "Cancel";
-        }
+            _currentDir = GetLabel(SteHelper.WorkingDirectory);
+            _cipherKeyLengthLabel = GetLabel("Key length");
+            _blockModeLabel = GetLabel("Blockmode");
+            _paddingLabel = GetLabel("Padding");
+            _passwordLabel = GetLabel("Password");
+            _pbeDigestLabel = GetLabel("used digest");
+            _pbeDigestInfo = GetLabel(null);
+            _cipherAlgorithmLabel = GetLabel("Cipher");
+    }
 
         private void CreateComboBoxes()
         {
-            _cipherModeComboBox = _controlFactory.Create<ComboBox>();
-            _cipherModeComboBox.Title = "CipherMode";
-/*            foreach (var mode in SteMenu.CipherMode)
+            ComboBox Init(string title, int width)
             {
-                _cipherModeComboBox.Add(mode);
-            }*/
+                var comboBox = _controlFactory.Create<ComboBox>();
+                comboBox.Title = title;
+                comboBox.Position.Width = width;
+                return comboBox;
+            }
 
-            _cipherAlgorithmComboBox = _controlFactory.Create<ComboBox>();
-            _cipherAlgorithmComboBox.Title = "Cipher";
-            //cipherMode : BlockCipher | StreamCipher | PBE
-            _cipherAlgorithmComboBox.Position.Width = 200;
+            _pbeSpecComboBox = Init("PBE", 100);
+            _cipherAlgorithmComboBox = Init("Cipher",100);
+            _cipherKeyLengthComboBox = Init("Select keysize",100);
 
-            foreach (var option in SteMenu.CipherMenuTree)
+            //foreach (var VARIABLE in Enum.GetNames(typeof(SteMenu.Cipher)))
+            {
+                
+            }
+            
+/*            foreach (var option in SteMenu.CipherMenuTree)
             {
                 foreach (var keyLength in option.Value)
                 {
                     _cipherAlgorithmComboBox.Add(option.Key + keyLength);
                 }
-            }
+            }*/
 
             foreach (var option in SteMenu.PBEMenuTree)
             {
                 _cipherAlgorithmComboBox.Add("PBE" + option.Key);
             }
 
-            _blockModeComboBox = _controlFactory.Create<ComboBox>();
-            _blockModeComboBox.Title = "Blockmode";
-            _blockModeComboBox.Position.Width = 130;
+            _blockModeComboBox = Init("Blockmode",130);
+            _paddingComboBox = Init("Padding",150);
+            _integrityComboBox = Init("Integrity", 150);
+            
+            //foreach (var option in SteMenu.IntegrityMenuTree["Digest"])
+            //{
+            //    _digestComboBox.Add(option);
+            //}
 
-            _paddingComboBox = _controlFactory.Create<ComboBox>();
-            _paddingComboBox.Title = "Padding";
-            _paddingComboBox.Position.Width = 150;
+            _integritySpecComboBox = Init("Please select",100);
 
-            _digestComboBox = _controlFactory.Create<ComboBox>();
-            _digestComboBox.Title = "Digest";
-            _digestComboBox.Position.Width = 150;
-            _digestComboBox.Add("None");
-            foreach (var option in SteMenu.IntegrityMenuTree["Digest"])
-            {
-                _digestComboBox.Add(option);
-            }
-
-            _signingComboBox = _controlFactory.Create<ComboBox>();
-            _signingComboBox.Title = "Sign";
-            _signingComboBox.Position.Width = 150;
-            _signingComboBox.Add("None");
-            foreach (var option in SteMenu.IntegrityMenuTree["Digital Signature"])
-            {
-                _signingComboBox.Add(option);
-            }
         }
 
         private void RegisterEventHandler()
         {
-            _digestComboBox.PropertySelectedItem.PropertyChanged += HandleDigest;
-            _signingComboBox.PropertySelectedItem.PropertyChanged += HandleSigning;
-            _confirmButton.InputState.Clicked += OnConfirmButtonClicked;
-            _cancelButton.InputState.Clicked += OnCancelButtonClicked;
+            _integrityComboBox.PropertySelectedItem.PropertyChanged += HandleIntegrity;
         }
 
-        private void OnConfirmButtonClicked(object sender, EventArgs e)
+        private void HandleIntegrity(object sender, EventArgs e)
         {
-            Console.WriteLine("Connection to next process isn't implemented yet.\n Come back later.");
-        }
-
-        private void OnCancelButtonClicked(object sender, EventArgs e)
-        {
-            Console.WriteLine("Usually one could expect the window to close here.\n but not yet...");
-        }
-
-        private void HandleSigning(object sender, EventArgs e)
-        {
-            string[] digestOptions = SteMenu.IntegrityMenuTree["Digest"];
+        /*    string[] digestOptions = SteMenu.IntegrityMenuTree["Digest"];
             var currentDigestItem = (_digestComboBox.SelectedItem as ComboBoxMenuItem)?.Title;
             
             if (currentDigestItem != null && digestOptions.Contains(currentDigestItem))
                 _digestComboBox.SelectItem("None");
-        }
+        */}
         
-        private void HandleDigest(object sender, EventArgs e)
-        {
-            string[] signOptions = SteMenu.IntegrityMenuTree["Digital Signature"];
-            var currentSignItem = (_signingComboBox.SelectedItem as ComboBoxMenuItem)?.Title;
-            
-            if (currentSignItem != null && signOptions.Contains(currentSignItem))
-                _signingComboBox.SelectItem("None");
-        }
-
         public void ResetPassword()
         {
             _passwordInput = null;

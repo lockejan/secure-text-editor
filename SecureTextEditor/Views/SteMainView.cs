@@ -14,7 +14,6 @@ namespace SecureTextEditor.Views
         private Button _loadBtn;
         private Button _saveBtn;
         private Button _newBtn;
-        private Button _closeBtn;
 
         private TextEditor _textBox;
 
@@ -53,14 +52,12 @@ namespace SecureTextEditor.Views
         private HorizontalStackPanel CreateButtonPanel()
         {
             var buttonStackPanel = _controlFactory.Create<HorizontalStackPanel>();
-            buttonStackPanel.ChildrenWidth = 80;
-            //buttonStackPanel.Ch
-//            buttonStackPanel.Position.Height = _loadBtn.Position.Height;
+            buttonStackPanel.ChildrenWidth = 90;
+            buttonStackPanel.Position.Height = _loadBtn.Position.Height;
             buttonStackPanel.Background = _textBox.Background;
             buttonStackPanel.Add(_newBtn);
             buttonStackPanel.Add(_loadBtn);
             buttonStackPanel.Add(_saveBtn);
-            buttonStackPanel.Add(_closeBtn);
             buttonStackPanel.Margin.SetAll(5);
 
             return buttonStackPanel;
@@ -78,7 +75,6 @@ namespace SecureTextEditor.Views
             ConfigButton(_newBtn = _controlFactory.Create<Button>(), "New");
             ConfigButton(_loadBtn = _controlFactory.Create<Button>(), "Load");
             ConfigButton(_saveBtn = _controlFactory.Create<Button>(), "Save");
-            ConfigButton(_closeBtn = _controlFactory.Create<Button>(), "Exit");
         }
 
         private void RegisterButtonEvents()
@@ -86,14 +82,8 @@ namespace SecureTextEditor.Views
             _newBtn.InputState.Clicked += OnNewButtonClicked;
             _loadBtn.InputState.Clicked += OnLoadButtonClicked;
             _saveBtn.InputState.Clicked += OnSaveButtonClicked;
-            _closeBtn.InputState.Clicked += OnCloseButtonClicked;
         }
-
-        private void OnCloseButtonClicked(object sender, EventArgs e)
-        {
-            Console.WriteLine("Editor will close...sometime...soon...ish");
-        }
-
+        
         private void OnNewButtonClicked(object sender, EventArgs e)
         {
             Console.WriteLine("This should clear the current view or present another tab");
@@ -102,11 +92,22 @@ namespace SecureTextEditor.Views
         private void OnLoadButtonClicked(object sender, EventArgs e)
         {
             //            Text = SteLoadCli.LoadTextDialog();
-            DialogService.Show(
-                _controlFactory.Create<Dialog>(
-                    dialog =>
-                        dialog.Content = new SteLoadDialog(_controlFactory)));
+            var content = new SteLoadDialog(_controlFactory);
+            //var dialog = _controlFactory.Create<ConfirmableDialog>(
+            //  d => { d.Content = content; });
 
+            var dialog = _controlFactory.Create<ConfirmableDialog>();
+            var dockPanel = dialog.Content as DockPanel;
+            dockPanel.Add(Dock.Fill, content);
+            ExecuteOnceOnClose(dialog, () =>
+            {
+                
+                // ...
+//                var settings = content.Settings;
+//                CryptoFile.Save(settings, fileName, fileContent);
+            });
+
+            DialogService.Show(dialog);
 //            FocusManager.Default.SetFocus(_textBox);
         }
 

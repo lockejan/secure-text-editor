@@ -24,9 +24,6 @@ namespace SecureTextEditor.Views
         private TextBlock _filenameInputLabel;
         private TextBox _filenameInput;
 
-        private Button _confirmButton;
-        private Button _cancelButton;
-
         private String _workingDirectory
         {
             get
@@ -47,10 +44,8 @@ namespace SecureTextEditor.Views
             _controlFactory = controlFactory;
             _currentDir = CreateTextBlock(_workingDirectory);
 
-            CreateButtons();
             CreateLabels();
             CreatInputs();
-            RegisterEventHandler();
 
             Content = CreateDockPanel();
             FocusManager.Default.SetFocus(_filenameInput);
@@ -102,8 +97,6 @@ namespace SecureTextEditor.Views
             grid.Children.Add(_currentDir);
             grid.Children.Add(_filenameInputLabel);
             grid.Children.Add(_filenameInput);
-            grid.Children.Add(_confirmButton);
-            grid.Children.Add(_cancelButton);
 
             return grid;
         }
@@ -120,34 +113,7 @@ namespace SecureTextEditor.Views
             _filenameInputLabel = CreateTextBlock("Filename:");
             _passwordLabel = CreateTextBlock("Password:");
         }
-
-        private void CreateButtons()
-        {
-            _confirmButton = _controlFactory.Create<Button>();
-            _confirmButton.Position.Width = 100;
-            _confirmButton.Text = "Confirm";
-
-            _cancelButton = _controlFactory.Create<Button>();
-            _cancelButton.Position.Width = 100;
-            _cancelButton.Text = "Cancel";
-        }
         
-        private void RegisterEventHandler()
-        {
-            _confirmButton.InputState.Clicked += OnConfirmButtonClicked;
-            _cancelButton.InputState.Clicked += OnCancelButtonClicked;
-        }
-
-        private void OnConfirmButtonClicked(object sender, EventArgs e)
-        {
-            Console.WriteLine("Connection to next process isn't implemented yet.\n Come back later.");
-        }
-
-        private void OnCancelButtonClicked(object sender, EventArgs e)
-        {
-            Console.WriteLine("Usually one could expect the window to close here.\n but not yet...");
-        }
-
     }
 
 }
