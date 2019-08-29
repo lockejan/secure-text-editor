@@ -54,8 +54,8 @@ namespace SecureTextEditor.Views
         {
             _controlFactory = controlFactory;
             _firstColumnStack = GetStackPanel(140);
-            _secColumnStack = GetStackPanel(140);
-            _thirdColumnStack = GetStackPanel(140);
+            _secColumnStack = GetStackPanel(150);
+            _thirdColumnStack = GetStackPanel(160);
 
             CreateLabels();
             CreateInputs();
@@ -78,9 +78,9 @@ namespace SecureTextEditor.Views
                 return checkBox;
             }
 
-            _encryptionCheckBox = Init("Encryption?");
-            _pbeCheckBox = Init("PBE?");
-            _integrityCheckBox = Init("Integrity?");
+            _encryptionCheckBox = Init("Encryption ?");
+            _pbeCheckBox = Init("PBE ?");
+            _integrityCheckBox = Init("Integrity ?");
         }
 
         private void InitStateOfCombos()
@@ -137,16 +137,20 @@ namespace SecureTextEditor.Views
             FillRow(GetLabel("Filename"), _filenameInput,null);
             //FillRow(GetLabel("Encryption"), _encryptionCheckBox, null);
             FillRow( _encryptionCheckBox, null,null);
-            FillRow(_pbeCheckBox,null,_passwordInput);
-            FillRow(null,_pbeSpecComboBox, null);
-            FillRow(null,_pbeDigestLabel, _pbeDigestInfo);
-            FillRow(_cipherAlgorithmLabel, _cipherAlgorithmComboBox, _cipherKeyLengthComboBox);
+            FillRow(_pbeCheckBox,null,null);
+            FillRow(_passwordLabel, _passwordInput, null);
+//            FillRow(null,_pbeSpecComboBox, null);
+            FillRow(_pbeSpecComboBox, _pbeDigestLabel, _pbeDigestInfo);
+//            FillRow(null,_pbeDigestLabel, _pbeDigestInfo);
+//            FillRow(_cipherAlgorithmLabel, _cipherAlgorithmComboBox, _cipherKeyLengthComboBox);
+            FillRow(null, _cipherAlgorithmComboBox, _cipherKeyLengthComboBox);
             FillRow(null, _blockModeComboBox, _paddingComboBox);
             //FillRow(_passwordLabel, _passwordInput);
             //FillRow(GetLabel("Integrity"), _integrityCheckBox,null);
-            FillRow( _integrityCheckBox,_integrityComboBox,null);
+            FillRow( _integrityCheckBox,null,null);
+            FillRow( _integrityComboBox,_integritySpecComboBox,null);
 //            FillRow(null,_integrityComboBox,null);
-            FillRow(null,_integritySpecComboBox,null);
+//            FillRow(null,_integritySpecComboBox,null);
             
             //vertStack.Background = _textBox.Background;
         }
@@ -178,38 +182,46 @@ namespace SecureTextEditor.Views
             }
 
             _pbeSpecComboBox = Init("PBE", 100);
+            foreach (var member in Enum.GetNames(typeof(SteMenu.PBECipher)))
+            {
+                _pbeSpecComboBox.Add(member);
+            }
+            
             _cipherAlgorithmComboBox = Init("Cipher",100);
-            _cipherKeyLengthComboBox = Init("Select keysize",100);
-
-            //foreach (var VARIABLE in Enum.GetNames(typeof(SteMenu.Cipher)))
+            foreach (var member in Enum.GetNames(typeof(SteMenu.Cipher)))
             {
-                
+                _cipherAlgorithmComboBox.Add(member);
             }
             
-/*            foreach (var option in SteMenu.CipherMenuTree)
+            _cipherKeyLengthComboBox = Init("Keysize",100);
+            foreach (var member in SteMenu.KeySize)
             {
-                foreach (var keyLength in option.Value)
-                {
-                    _cipherAlgorithmComboBox.Add(option.Key + keyLength);
-                }
-            }*/
-
-            foreach (var option in SteMenu.PBEMenuTree)
-            {
-                _cipherAlgorithmComboBox.Add("PBE" + option.Key);
+                _cipherKeyLengthComboBox.Add($"{Convert.ToString(member)} bit");
             }
-
+            
             _blockModeComboBox = Init("Blockmode",130);
-            _paddingComboBox = Init("Padding",150);
-            _integrityComboBox = Init("Integrity", 150);
+            foreach (var member in Enum.GetNames(typeof(SteMenu.BlockMode)))
+            {
+                _blockModeComboBox.Add(member);
+            }
             
-            //foreach (var option in SteMenu.IntegrityMenuTree["Digest"])
-            //{
-            //    _digestComboBox.Add(option);
-            //}
+            _paddingComboBox = Init("Padding",150);
+            foreach (var member in Enum.GetNames(typeof(SteMenu.Padding)))
+            {
+                _paddingComboBox.Add(member);
+            }
+            
+            _integrityComboBox = Init("Integrity", 150);
+            foreach (var option in Enum.GetNames(typeof(SteMenu.Integrity)))
+            {
+                _integrityComboBox.Add(option);
+            }
 
-            _integritySpecComboBox = Init("Please select",100);
-
+            _integritySpecComboBox = Init("Options",100);
+            foreach (var option in Enum.GetNames(typeof(SteMenu.DigestOptions)))
+            {
+                _integritySpecComboBox.Add(option);
+            }
         }
 
         private void RegisterEventHandler()

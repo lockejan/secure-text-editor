@@ -13,20 +13,64 @@ namespace SecureTextEditor.Views
     /// </summary>
     public class SteMenu
     {
-        int[] KeySize = {128, 192, 256, 40};
-        enum Cipher {AES, RC4};
-        enum BlockMode {ECB, CBC, GCM, OFB, CTS};
-        enum PBE {Yes, No};
-        enum PBECipher {PBKDF2, SCRYPT};
-        enum PBEDigest {SHA1,SHA256};
+        public static int[] KeySize = {128, 192, 256, 40};
+
+        public enum Cipher
+        {
+            AES,
+            RC4
+        };
+
+        public enum BlockMode
+        {
+            ECB,
+            CBC,
+            GCM,
+            OFB,
+            CTS
+        };
+
+        public enum PBE
+        {
+            Yes,
+            No
+        };
+
+        public enum PBECipher
+        {
+            PBKDF2,
+            SCRYPT
+        };
+
+        public enum PBEDigest
+        {
+            SHA1,
+            SHA256
+        };
+
+        public enum Integrity
+        {
+            Digest,
+            DSA
+        };
 
         [Flags]
-        enum Padding{
+        public enum DigestOptions
+        {
+            SHA256 = 1,
+            AESCMAC = 1 << 1,
+            HMACSHA256 = 1 << 2,
+//            SHA256withDSA = 1 << 3
+        };
+
+        [Flags]
+        public enum Padding
+        {
             NoPadding = 1,
             ZeroBytePadding = 1 << 1,
             PKCS7 = 1 << 2
         }
-        
+
         public static void enumTester()
         {
             var BlockModeDict = new Dictionary<BlockMode, Padding>()
@@ -70,95 +114,20 @@ namespace SecureTextEditor.Views
 */
 
             //var value = BlockCipherDict[Cipher.AES];
-            
+
             //if (value.HasFlag(Padding.NoPadding))
             {
-                Console.WriteLine("Treffer A");    
+                Console.WriteLine("Treffer A");
             }
-            
+
         }
-        
+
         /// <summary>
         /// SteMenu entries for supported ciphers and their key lengths.
         /// </summary>
         public static readonly IDictionary<string, string[]> CipherMenuTree = new Dictionary<string, string[]>()
         {
-            {"AES", new[] {"128", "192","256"}}
+            {"AES", new[] {"128", "192", "256"}}
         };
-        
-        /// <summary>
-        /// SteMenu entries for supported block modes and padding options.
-        /// Holds only valid combinations to prevent the user from bad decisions. 
-        /// </summary>
-        public static readonly IDictionary<string, string[]> CipherOptionsMenuTree = new Dictionary<string, string[]>()
-        {
-            {"ECB", new[] {"ZeroBytePadding", "PKCS7"}},
-            {"CBC", new[] {"ZeroBytePadding", "PKCS7"}},
-            {"GCM", new[] {"NoPadding"}},
-            {"OFB", new[] {"NoPadding"}},
-            {"CTS", new[] {"NoPadding"}}
-        };
-        
-        
-        /// <summary>
-        /// Holds menu part for password based encryption options.
-        /// Furthermore the dependent config parts for further processing are also defined here.
-        /// </summary>
-        public static readonly IDictionary<string, string[]> PBEMenuTree = new Dictionary<string, string[]>()
-        {
-            {"WithAES256-GCM-SCRYPT", new[] {"GCM","NoPadding"}},
-            {"WithSHA256And128Bit-AES-CBC-BC", new[] {"CBC", "PKCS7"}},
-            {"WithSHAAnd40BitRC4", new[] {"-","NoPadding"}}
-        };
-
-        /// <summary>
-        /// Holds menu part for integrity related options of the text editor.
-        /// For instance all digest modes and digital signature possibilities.
-        /// </summary>
-        public static readonly IDictionary<string, string[]> IntegrityMenuTree = new Dictionary<string, string[]>()
-        {
-            {"Digest", new[] {"SHA-256","AESCMAC","HMAC-SHA256"}},
-            {"Digital Signature", new[] {"SHA256withDSA"}},
-        };
-        
-//        public static readonly IDictionary<string, Dictionary<string, string[]>> EncryptMenuTree = new Dictionary<string, Dictionary<string, string[]>>()
-//        {
-//            {
-//                "AES",
-//                new Dictionary<string, string[]>()
-//                {
-//                    {"ECB", new[] {"ZeroBytePadding", "PKCS7"}},
-//                    {"CBC", new[] {"ZeroBytePadding", "PKCS7"}},
-//                    {"GCM", new[] {"NoPadding"}},
-//                    {"OFB", new[] {"NoPadding"}},
-//                    {"CTS", new[] {"NoPadding"}}
-//                }
-//            },
-//            {
-//                "PBE",
-//                new Dictionary<string, string[]>()
-//                {
-//                    {"WithAES256-GCM-SCRYPT", new[] {"NoPadding"}},
-//                    {"WithSHA256And128Bit-AES-CBC-BC", new[] {"PKCS7"}},
-//                    {"WithSHAAnd40BitRC4", new[] {"NoPadding"}}
-//                }
-//            }
-//        };
     }
 }
-
-
-//{
-//"AES",
-//new Dictionary<string, Dictionary<string> string[]>()
-//{
-//    {"Which key length of AES you wanna use?",new[] {"128","192","256"}},
-//    {"Which Blockmode should be used?", new[]{"ECB","CBC","GCM","OFB","CTS"}},
-//    {"Which Padding should be used?", new[]{"ECB","CBC","GCM","OFB","CTS"}}
-//    {"ECB", new[] {"ZeroBytePadding", "PKCS7"}},
-//    {"CBC", new[] {"ZeroBytePadding", "PKCS7"}},
-//    {"GCM", new[] {"NoPadding"}},
-//    {"OFB", new[] {"NoPadding"}},
-//    {"CTS", new[] {"ZeroBytePadding", "PKCS7", "NoPadding"}}
-//}
-//},
