@@ -16,24 +16,10 @@ namespace SecureTextEditor.Views
         private readonly IControlFactory _controlFactory;
 
         private TextBox _passwordInput;
-        private TextBlock _passwordLabel;
-
-        private TextBlock _currentDirLabel;
-        private readonly TextBlock _currentDir;
-        
-        private TextBlock _filenameInputLabel;
         private TextBox _filenameInput;
-
-        private String _workingDirectory
-        {
-            get
-            {
-                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
-                UriBuilder uri = new UriBuilder(codeBase);
-                string path = Uri.UnescapeDataString(uri.Path);
-                return Path.GetDirectoryName(path);
-            }
-        }
+                
+        private VerticalStackPanel _firstColumnStack;
+        private VerticalStackPanel _secColumnStack;
 
         /// <summary>
         /// Creates saveDialog Component. Expects ControlFactory for component creation. 
@@ -42,26 +28,27 @@ namespace SecureTextEditor.Views
         public SteLoadDialog(IControlFactory controlFactory)
         {
             _controlFactory = controlFactory;
-            _currentDir = CreateTextBlock(_workingDirectory);
+            _firstColumnStack = GetStackPanel(120);
+            _secColumnStack = GetStackPanel(150);
 
-            CreateLabels();
-            CreatInputs();
+            CreateInputs();
+            FillStackPanels();
 
             Content = CreateDockPanel();
             FocusManager.Default.SetFocus(_filenameInput);
         }
-
-        private void CreatInputs()
+        
+        private void CreateInputs()
         {
-            _filenameInput = CreateInput();
-            _passwordInput = CreateInput();
+            TextBox CreateTextInput()
+            {
+                var textBox = _controlFactory.Create<TextBox>();
+                return textBox;
+            }
+
+            _filenameInput = CreateTextInput();
+            _passwordInput = CreateTextInput();
             _passwordInput.IsEnabled = false;
-        }
-
-        private TextBox CreateInput()
-        {
-            var textBox = _controlFactory.Create<TextBox>();
-            return textBox;
         }
 
         private Control CreateDockPanel()
@@ -69,51 +56,40 @@ namespace SecureTextEditor.Views
             var dockPanel = _controlFactory.Create<DockPanel>();
             dockPanel.HorizontalAlignment = HorizontalAlignment.Stretch;
             dockPanel.VerticalAlignment = VerticalAlignment.Stretch;
-            dockPanel.Add(Dock.Fill, CreateTablePanel());
+            dockPanel.Add(Dock.Left, _firstColumnStack);
+            dockPanel.Add(Dock.Fill, _secColumnStack);
 
             return dockPanel;
         }
-
-        private TablePanel CreateTablePanel()
+        
+        private VerticalStackPanel GetStackPanel(int width)
         {
-            var tablePanel = _controlFactory.Create<TablePanel>();
-            const float rowHeight = 30;
-
-            tablePanel.Columns.Add(new ColumnDefinition(150));
-            tablePanel.Columns.Add(new ColumnDefinition(470));
-            for (int i = 0; i < 5; i++)
-            {
-                tablePanel.Rows.Add(new RowDefinition(rowHeight));
-            }
-
-            return FillTablePanel(tablePanel);
-        }
-
-        private TablePanel FillTablePanel(TablePanel grid)
-        {
-            grid.Children.Add(_passwordLabel);
-            grid.Children.Add(_passwordInput);
-            grid.Children.Add(_currentDirLabel);
-            grid.Children.Add(_currentDir);
-            grid.Children.Add(_filenameInputLabel);
-            grid.Children.Add(_filenameInput);
-
-            return grid;
-        }
-
-        private TextBlock CreateTextBlock(String text)
-        {
-            var textBlock = _controlFactory.CreateTextBlock(text);
-            return textBlock;
-        }
-
-        private void CreateLabels()
-        {
-            _currentDirLabel = CreateTextBlock("Current DIR:");
-            _filenameInputLabel = CreateTextBlock("Filename:");
-            _passwordLabel = CreateTextBlock("Password:");
+            var vertStack = _controlFactory.Create<VerticalStackPanel>();
+            vertStack.ChildrenHeight = 30;
+            vertStack.Position.Width = width;
+            vertStack.Padding.SetAll(5);
+            return vertStack;
         }
         
+        private TextBlock GetLabel(string text)
+        {
+            return _controlFactory.CreateTextBlock(text);
+        }
+
+        private void FillStackPanels()
+        {
+            void FillRow(Control first, Control sec)
+            {
+                _firstColumnStack.Add(first ?? new Control());
+                _secColumnStack.Add(sec ?? new Control());
+            }
+            
+            FillRow(GetLabel("Current DIR"), GetLabel(SteHelper.WorkingDirectory));
+            FillRow(GetLabel("Filename"), _filenameInput);
+            FillRow(GetLabel("Password"), _passwordInput);
+        }
+
+
     }
 
 }
