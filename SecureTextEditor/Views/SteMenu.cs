@@ -15,7 +15,7 @@ namespace SecureTextEditor.Views
     {
         public static int[] KeySize = {128, 192, 256, 40};
 
-        public enum Cipher
+        public enum CipherAlgorithm
         {
             AES,
             RC4
@@ -83,7 +83,7 @@ namespace SecureTextEditor.Views
             };
 
             /*
-            var BlockCipherDict = new Dictionary<CipherType, Dictionary<Cipher,Dictionary<BlockMode, Padding>>>()
+            var BlockCipherDict = new Dictionary<CipherType, Dictionary<CipherAlgorithm,Dictionary<BlockMode, Padding>>>()
             {
                 {
                     CipherType.CIPHER,
@@ -107,13 +107,13 @@ namespace SecureTextEditor.Views
                 },
                 
             };
-            var StreamCipherDict = new Dictionary<Cipher, Padding>()
+            var StreamCipherDict = new Dictionary<CipherAlgorithm, Padding>()
             {
-                {Cipher.RC4, Padding.NoPadding}
+                {CipherAlgorithm.RC4, Padding.NoPadding}
             };
 */
 
-            //var value = BlockCipherDict[Cipher.AES];
+            //var value = BlockCipherDict[CipherAlgorithm.AES];
 
             //if (value.HasFlag(Padding.NoPadding))
             {
