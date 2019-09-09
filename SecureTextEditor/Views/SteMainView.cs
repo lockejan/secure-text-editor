@@ -105,6 +105,12 @@ namespace SecureTextEditor.Views
                 // ...
 //                var settings = content.Settings;
 //                CryptoFile.Save(settings, fileName, fileContent);
+
+// NEW API PROPOSAL FOR LOAD
+//                var encryptedFileContent = "...";
+//                var crypt = CryptFactory.Create(settings);
+//                var result = crypt.Decrypt(settings);
+
             });
 
             DialogService.Show(dialog);
@@ -132,6 +138,11 @@ namespace SecureTextEditor.Views
                 // ...
 //                var settings = content.Settings;
 //                CryptoFile.Save(settings, fileName, fileContent);
+
+    // PROPOSAL FOR NEW APPROACH
+//                var textEditorContent = "....";
+//                var crypt = CryptFactory.Create(settings); <= config object
+//                var result = crypt.Encrypt(textEditorContent); <= process content using given params
             });
 
             DialogService.Show(dialog);
