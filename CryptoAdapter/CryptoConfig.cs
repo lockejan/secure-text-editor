@@ -43,8 +43,8 @@ namespace CryptoAdapter
     public class CryptoConfig
     {
 //        public static int[] KeySize = {128, 192, 256, 40};
+        public int KeySize { get; set; }
         public CipherAlgorithm Algorithm { get; set; }
-//        public int[] KeySize { get; set; }
         public BlockMode BlockMode { get; set; }
         public Padding Padding { get; set; }
         
@@ -53,7 +53,7 @@ namespace CryptoAdapter
         
         public override string ToString()
         {
-            return $"CipherAlgo: {Algorithm},\nBlockMode: {BlockMode},\nPadding: {Padding},\nOldConfig: {OldConfig}";
+            return $"CipherAlgo: {Algorithm},\nKeySize: {KeySize},\nBlockMode: {BlockMode},\nPadding: {Padding},\nOldConfig: {OldConfig}";
         }
     }
 }

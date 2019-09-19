@@ -65,7 +65,8 @@ namespace SecureTextEditor.Views
         public SteSaveDialog(IControlFactory controlFactory)
         {
             _controlFactory = controlFactory;
-            _config = new CryptoConfig();
+            _config = new CryptoConfig {KeySize = 128};
+
             _firstColumnStack = GetStackPanel(140);
             _secColumnStack = GetStackPanel(150);
             _thirdColumnStack = GetStackPanel(160);
@@ -328,6 +329,9 @@ namespace SecureTextEditor.Views
         private void ToggleIntegritySection(object sender, EventArgs e)
         {
             Console.WriteLine(_config.ToString());
+            Console.WriteLine(_config.Algorithm.ToString());
+            var crypt = new CryptoProcess(_config);
+            Console.WriteLine(crypt.EncryptTextToBytes(""));
             if (_integrityCheckBox.IsChecked)
             {
                 UpdateSectionVisibility(2, Visibility.Visible);
