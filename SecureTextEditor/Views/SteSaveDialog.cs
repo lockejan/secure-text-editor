@@ -329,7 +329,6 @@ namespace SecureTextEditor.Views
         private void ToggleIntegritySection(object sender, EventArgs e)
         {
             Console.WriteLine(_config.ToString());
-            Console.WriteLine(_config.Algorithm.ToString());
             var crypt = new CryptoProcess(_config);
             Console.WriteLine(crypt.EncryptTextToBytes(""));
             if (_integrityCheckBox.IsChecked)
