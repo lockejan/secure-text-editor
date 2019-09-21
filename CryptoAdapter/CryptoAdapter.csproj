@@ -47,8 +47,10 @@
     <Compile Include="BcDigest.cs" />
     <Compile Include="BcPbe.cs" />
     <Compile Include="BouncyCastleFactory.cs" />
+    <Compile Include="CryptFactory.cs" />
     <Compile Include="CryptoFactory.cs" />
     <Compile Include="CryptoConfig.cs" />
+    <Compile Include="CryptoKeySize.cs" />
     <Compile Include="CryptoProcess.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
