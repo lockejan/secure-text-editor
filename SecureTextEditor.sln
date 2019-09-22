@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecureTextEditorTests", "Se
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CryptoAdapter", "CryptoAdapter\CryptoAdapter.csproj", "{0D2AC5E6-4DCD-4F81-A91F-E4C33E9D45D6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BcFactory", "BcFactory\BcFactory.csproj", "{641C2037-FBE6-45F5-BE4E-4384025CA6BF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{0D2AC5E6-4DCD-4F81-A91F-E4C33E9D45D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0D2AC5E6-4DCD-4F81-A91F-E4C33E9D45D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0D2AC5E6-4DCD-4F81-A91F-E4C33E9D45D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{641C2037-FBE6-45F5-BE4E-4384025CA6BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{641C2037-FBE6-45F5-BE4E-4384025CA6BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{641C2037-FBE6-45F5-BE4E-4384025CA6BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{641C2037-FBE6-45F5-BE4E-4384025CA6BF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

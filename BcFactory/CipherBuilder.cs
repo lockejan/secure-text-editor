@@ -7,24 +7,23 @@ using Org.BouncyCastle.Crypto.Paddings;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 
-namespace CryptoAdapter
+namespace BcFactory
 {
-    public class CryptoProcess
+    public class CipherBuilder : ICrypto
     {
-        private CryptoConfig _config;
+        private readonly CryptoConfig _config;
 
         private byte[] _textBytes;
-        private string _cipherText;
         private byte[] _encryptedBytes;
+        private string _plainText;
 
         private readonly AesEngine _myAes;
-        private byte[] _myIv;
+        private readonly byte[] _myIv;
         private byte[] _myKey;
 
-        public CryptoProcess(CryptoConfig config)
+        public CipherBuilder(CryptoConfig config)
         {
             _config = config;
-            
             _myAes = new AesEngine();
             GenerateKey(_config.Algorithm.ToString()+_config.KeySize);
             _myIv = _config.BlockMode == BlockMode.ECB ? null : GenerateIv();
@@ -32,9 +31,8 @@ namespace CryptoAdapter
 
         private void GenerateKey(string cipher)
         {
-            CipherKeyGenerator gen = new CipherKeyGenerator();
-            gen = GeneratorUtilities.GetKeyGenerator(cipher);
-            _myKey = gen.GenerateKey(); 
+            var gen = GeneratorUtilities.GetKeyGenerator(cipher);
+            _myKey = gen.GenerateKey();
         }
 
         private byte[] GenerateIv()
@@ -49,7 +47,7 @@ namespace CryptoAdapter
         {
             return new ParametersWithIV(keyParam, _myIv, 0, 16);
         }
-
+        
         public byte[] EncryptTextToBytes(string input)
         {
             _textBytes = Encoding.UTF8.GetBytes(input);
@@ -113,6 +111,70 @@ namespace CryptoAdapter
             }
             return _encryptedBytes;
         }
-        
+
+        public string DecryptBytesToText(byte[] cipherBytes)
+        {
+            KeyParameter keyParam = new KeyParameter(_myKey);
+            
+            switch (_config.BlockMode)
+            {
+                case BlockMode.ECB:
+                    if (Padding.ZeroByte == _config.Padding)
+                    {
+                        var ecb = new PaddedBufferedBlockCipher(_myAes, new ZeroBytePadding());
+                        ecb.Init(false, keyParam);
+                        _plainText = Encoding.UTF8.GetString(ecb.DoFinal(cipherBytes));
+                    }
+                    else
+                    {
+                        var ecb = new PaddedBufferedBlockCipher(_myAes, new Pkcs7Padding());
+                        ecb.Init(false, keyParam);
+                        _plainText = Encoding.UTF8.GetString(ecb.DoFinal(cipherBytes));
+                    }
+                    break;
+
+                case BlockMode.CBC:
+                    if (Padding.ZeroByte == _config.Padding)
+                    {
+                        var cbc = new PaddedBufferedBlockCipher(new CbcBlockCipher(_myAes), new ZeroBytePadding());
+                        cbc.Init(false, GetKeyParamWithIv(keyParam));
+                        _plainText = Encoding.UTF8.GetString(cbc.DoFinal(cipherBytes));
+                    }
+                    else
+                    {
+                        var cbc = new PaddedBufferedBlockCipher(new CbcBlockCipher(_myAes), new Pkcs7Padding());
+                        cbc.Init(false, GetKeyParamWithIv(keyParam));
+                        _plainText = Encoding.UTF8.GetString(cbc.DoFinal(cipherBytes));
+                    }
+                    break;
+
+                case BlockMode.CTS:
+                    var cts = new CtsBlockCipher(new CbcBlockCipher(_myAes));
+                    cts.Init(false, GetKeyParamWithIv(keyParam));
+                    _plainText = Encoding.UTF8.GetString(cts.DoFinal(cipherBytes));
+                    break;
+
+                case BlockMode.OFB:
+                    var ofb = new BufferedBlockCipher(new OfbBlockCipher(_myAes,8));
+                    ofb.Init(false, GetKeyParamWithIv(keyParam));
+                    _plainText = Encoding.UTF8.GetString(ofb.DoFinal(cipherBytes));
+                    break;
+                
+                case BlockMode.GCM:
+                    var gcm = new GcmBlockCipher(_myAes);
+                    AeadParameters parameters = 
+                        new AeadParameters(new KeyParameter(_myKey), 128, _myIv, null);
+
+                    gcm.Init(false, parameters);
+
+                    byte[] decryptedBytes = new byte[gcm.GetOutputSize(cipherBytes.Length)];
+                    Int32 retLen = gcm.ProcessBytes
+                        (cipherBytes, 0, cipherBytes.Length, decryptedBytes, 0);
+                    gcm.DoFinal(decryptedBytes, retLen);
+                    _plainText = Encoding.UTF8.GetString(decryptedBytes).TrimEnd("\r\n\0".ToCharArray());
+                    break;
+            }
+            return _plainText;
+        }
     }
 }

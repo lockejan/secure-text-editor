@@ -1,7 +1,13 @@
 using System;
 
-namespace CryptoAdapter
+namespace BcFactory
 {
+    public static class KeySize
+    {
+        public static readonly int[] AES = {128, 192, 256};
+        public static readonly int[] RC4 = {40};
+    }
+    
     public enum PbeAlgorithm{PBKDF2, SCRYPT}
     
     public enum PbeDigest{GCM, SHA1, SHA256}

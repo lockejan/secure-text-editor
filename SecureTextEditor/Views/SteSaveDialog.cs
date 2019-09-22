@@ -6,7 +6,7 @@ using Medja.Primitives;
 using Medja.Theming;
 using Medja;
 using Medja.Properties;
-using CryptoAdapter;
+using BcFactory;
 
 namespace SecureTextEditor.Views
 {
@@ -289,7 +289,10 @@ namespace SecureTextEditor.Views
             _integrityComboBox.BindEnum(integrityProperty);
             _integrityComboBox.PropertySelectedItem.PropertyChanged += (s, e) => UpdateIntegrityOptions();
             
+            var integrityOptionsProperty = new PropertyWrapper<CryptoConfig, IntegrityOptions>(_config,
+                p => p.IntegrityOptions, (p, v) => p.IntegrityOptions = v);
             _integritySpecComboBox = Init("Options", 100);
+            _integritySpecComboBox.BindEnum(integrityOptionsProperty);
             UpdateIntegrityOptions();
         }
 
@@ -301,11 +304,11 @@ namespace SecureTextEditor.Views
             {
               case BlockMode.ECB:
               case BlockMode.CBC:
-                  _paddingComboBox.Add(CryptoAdapter.Padding.ZeroByte.ToString());
-                  _paddingComboBox.Add(CryptoAdapter.Padding.Pkcs7.ToString());
+                  _paddingComboBox.Add(BcFactory.Padding.ZeroByte.ToString());
+                  _paddingComboBox.Add(BcFactory.Padding.Pkcs7.ToString());
                   break;
               default:
-                  _paddingComboBox.Add(CryptoAdapter.Padding.None.ToString());
+                  _paddingComboBox.Add(BcFactory.Padding.None.ToString());
                   break;
             }
             _paddingComboBox.SelectedItem = _paddingComboBox.ItemsPanel.Children[0];
@@ -392,8 +395,8 @@ namespace SecureTextEditor.Views
         private int[] GetKeySizes()
         {
             if (_config.Algorithm == CipherAlgorithm.RC4)
-                return CryptoKeySize.RC4;
-            return CryptoKeySize.AES;
+                return KeySize.RC4;
+            return KeySize.AES;
         }
 
         private void OnKeyLengthSelectedItemChanged(object sender, PropertyChangedEventArgs e)
@@ -448,9 +451,28 @@ namespace SecureTextEditor.Views
 
         private void ToggleIntegritySection(object sender, EventArgs e)
         {
+            //#######################################
             Console.WriteLine(_config.ToString());
-            var crypt = new CryptoProcess(_config);
-            Console.WriteLine(Convert.ToBase64String(crypt.EncryptTextToBytes("")));
+
+            if (_config.IsEncryptActive)
+            {
+                var crypt = CryptoFactory.Create(_config);
+                var tester = "Hallo Welt";
+                var encrypted = crypt.EncryptTextToBytes(tester);
+                Console.WriteLine($"Cipher:{Convert.ToBase64String(encrypted)}");
+                var decrypted = crypt.DecryptBytesToText(encrypted);
+                Console.WriteLine($"Text: {decrypted}");
+            }
+
+            if (_config.IsIntegrityActive)
+            {
+                var sign = IntegrityFactory.Create(_config);
+                var digest = Convert.ToBase64String(sign.SignBytes("Hallo welt"));
+                var result = sign.VerifySign(digest, "Hallo Welt");
+                Console.WriteLine(result);
+            }
+            //#########################################
+            
             if (_integrityCheckBox.IsChecked)
             {
                 UpdateSectionVisibility(2, Visibility.Visible);
