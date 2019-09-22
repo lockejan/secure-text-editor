@@ -97,9 +97,5 @@ fabric.properties
 SecureTextEditor/*.ste
 SecureTextEditor/*.key
 packages/
-SecureTextEditor/bin/
-SecureTextEditor/obj/
-CryptoAdapter/bin/
-CryptoAdapter/obj/
-SecureTextEditorTests/bin/
-SecureTextEditorTests/obj/
+**/bin/
+**/obj/
