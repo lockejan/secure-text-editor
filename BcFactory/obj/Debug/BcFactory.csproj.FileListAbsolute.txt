@@ -1,0 +1,8 @@
+/home/smittie/Projects/0_CURRENT/secure-text-editor/BcFactory/obj/Debug/BcFactory.csproj.CoreCompileInputs.cache
+/home/smittie/Projects/0_CURRENT/secure-text-editor/BcFactory/bin/Debug/BcFactory.dll
+/home/smittie/Projects/0_CURRENT/secure-text-editor/BcFactory/bin/Debug/BcFactory.pdb
+/home/smittie/Projects/0_CURRENT/secure-text-editor/BcFactory/bin/Debug/BouncyCastle.Crypto.dll
+/home/smittie/Projects/0_CURRENT/secure-text-editor/BcFactory/obj/Debug/BcFactory.csproj.CopyComplete
+/home/smittie/Projects/0_CURRENT/secure-text-editor/BcFactory/obj/Debug/BcFactory.dll
+/home/smittie/Projects/0_CURRENT/secure-text-editor/BcFactory/obj/Debug/BcFactory.pdb
+/home/smittie/Projects/0_CURRENT/secure-text-editor/BcFactory/obj/Debug/BcFactory.csprojAssemblyReference.cache
