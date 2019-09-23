@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Engines;
@@ -18,15 +19,40 @@ namespace BcFactory
         private string _plainText;
 
         private readonly AesEngine _myAes;
+        private readonly RC4Engine _myRc4;
         private readonly byte[] _myIv;
         private byte[] _myKey;
 
         public CipherBuilder(CryptoConfig config)
         {
             _config = config;
-            _myAes = new AesEngine();
-            GenerateKey(_config.Algorithm.ToString()+_config.KeySize);
-            _myIv = _config.BlockMode == BlockMode.ECB ? null : GenerateIv();
+            
+            if (_config.CipherAlgorithm == CipherAlgorithm.RC4)
+            {
+                _myRc4 = new RC4Engine();
+                GenerateKey(_config.CipherAlgorithm.ToString());
+            }
+            else
+            {
+                _myAes = new AesEngine();
+                GenerateKey(_config.CipherAlgorithm.ToString()+_config.KeySize);
+                _myIv = _config.BlockMode == BlockMode.ECB ? null : GenerateIv();
+            }
+        } 
+        public CipherBuilder(CryptoConfig config, byte[] pbeKey)
+        {
+            _config = config;
+            _myKey = pbeKey;
+            
+            if (_config.CipherAlgorithm == CipherAlgorithm.RC4)
+            {
+                _myRc4 = new RC4Engine();
+            }
+            else
+            {
+                _myAes = new AesEngine();
+                _myIv = _config.BlockMode == BlockMode.ECB ? null : GenerateIv();
+            }
         }
 
         private void GenerateKey(string cipher)
@@ -52,6 +78,15 @@ namespace BcFactory
         {
             _textBytes = Encoding.UTF8.GetBytes(input);
             KeyParameter keyParam = new KeyParameter(_myKey);
+
+            if (_config.CipherAlgorithm == CipherAlgorithm.RC4)
+            {
+                byte[] outBuffer = new byte[_config.KeySize];
+                _myRc4.Init(true,keyParam);
+                _myRc4.ProcessBytes(_textBytes, 0, _textBytes.Length, outBuffer, 0);
+                //One occurence of broken cipherText with current LINQ. 
+                return outBuffer.Where(x => x != 0).ToArray();
+            }
 
             switch (_config.BlockMode)
             {
@@ -115,6 +150,14 @@ namespace BcFactory
         public string DecryptBytesToText(byte[] cipherBytes)
         {
             KeyParameter keyParam = new KeyParameter(_myKey);
+            
+            if (_config.CipherAlgorithm == CipherAlgorithm.RC4)
+            {
+                byte[] outBuffer = new byte[_config.KeySize];
+                _myRc4.Init(false,keyParam);
+                _myRc4.ProcessBytes(cipherBytes, 0, cipherBytes.Length, outBuffer, 0);
+                return Encoding.UTF8.GetString(outBuffer);
+            }
             
             switch (_config.BlockMode)
             {

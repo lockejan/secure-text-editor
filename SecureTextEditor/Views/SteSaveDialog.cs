@@ -45,13 +45,6 @@ namespace SecureTextEditor.Views
         private TextBlock _pbeDigestInfo;
 
         private readonly Control _pbeFill;
-        
-        // private int? bla;
-        // if(bla.HasValue) var value = bla.Value;
-        // if(bla == null)...
-        // var notNullValue = value ?? 0;
-        // 
-        // void Set(object value) { _localValue = value ??  throw new ArgumentNullException(nameof(value)); }
 
         private readonly VerticalStackPanel _firstColumnStack;
         private readonly VerticalStackPanel _secColumnStack;
@@ -67,7 +60,7 @@ namespace SecureTextEditor.Views
         public SteSaveDialog(IControlFactory controlFactory)
         {
             _controlFactory = controlFactory;
-            _config = new CryptoConfig();
+            _config = new CryptoConfig {PbePassword = "secret123".ToCharArray()};
 
             _firstColumnStack = GetStackPanel(140);
             _secColumnStack = GetStackPanel(150);
@@ -80,7 +73,6 @@ namespace SecureTextEditor.Views
             CreateInputs();
             CreateAndBindComboBoxes();
             CreateCheckBoxes();
-            RegisterEventHandler();
             FillStackPanels();
             UpdateSectionVisibility(0, Visibility.Collapsed);
             UpdateSectionVisibility(1, Visibility.Collapsed);
@@ -146,14 +138,20 @@ namespace SecureTextEditor.Views
             var isEncryptActiveProperty = new PropertyWrapper<CryptoConfig, bool>(_config,
                 p => p.IsEncryptActive, (p, v) => p.IsEncryptActive = v);
             isEncryptActiveProperty.BindTo(_encryptionCheckBox.PropertyIsChecked);
+            _encryptionCheckBox.InputState.Clicked += ToggleEncryptionSection;
 
             var isPbeActiveProperty = new PropertyWrapper<CryptoConfig, bool>(_config,
                 p => p.IsPbeActive, (p, v) => p.IsPbeActive = v);
             isPbeActiveProperty.BindTo(_pbeCheckBox.PropertyIsChecked);
-            
+            _pbeCheckBox.InputState.Clicked += TogglePbeSection;
+            _pbeCheckBox.PropertyIsChecked.PropertyChanged += (s, e) => UpdateKeySizeComboBox();
+            _pbeCheckBox.PropertyIsChecked.PropertyChanged += (s, e) => UpdateBlockComboBox();
+            _pbeCheckBox.PropertyIsChecked.PropertyChanged += (s, e) => UpdatePaddingComboBox();
+
             var isIntegrityActiveProperty = new PropertyWrapper<CryptoConfig, bool>(_config,
                 p => p.IsIntegrityActive, (p, v) => p.IsIntegrityActive = v);
             isIntegrityActiveProperty.BindTo(_integrityCheckBox.PropertyIsChecked);
+            _integrityCheckBox.InputState.Clicked += ToggleIntegritySection;
         }
         
         private void CreateInputs()
@@ -252,21 +250,24 @@ namespace SecureTextEditor.Views
             _pbeSpecComboBox = Init("PBE", 100);
             _pbeSpecComboBox.BindEnum(pbeAlgorithmProperty);
             _pbeSpecComboBox.PropertySelectedItem.PropertyChanged += (s, e) => UpdateUsedDigestInfo();
-            UpdateUsedDigestInfo();
+            _pbeSpecComboBox.PropertySelectedItem.PropertyChanged += (s, e) => UpdateCipherAlgorithm();
+            _pbeSpecComboBox.PropertySelectedItem.PropertyChanged += (s, e) => UpdateBlockComboBox();
+            _pbeSpecComboBox.PropertySelectedItem.PropertyChanged += (s, e) => UpdateKeySizeComboBox();
             
             
             var cipherAlgorithmProperty = new PropertyWrapper<CryptoConfig, CipherAlgorithm>(_config,
-                p => p.Algorithm, (p, v) => p.Algorithm = v);
+                p => p.CipherAlgorithm, (p, v) => p.CipherAlgorithm = v);
 
             _cipherAlgorithmComboBox = Init("Cipher", 100);
             _cipherAlgorithmComboBox.BindEnum(cipherAlgorithmProperty);
             _cipherAlgorithmComboBox.PropertySelectedItem.PropertyChanged += (s, e) => UpdateKeySizeComboBox();
-            
+            _cipherAlgorithmComboBox.PropertySelectedItem.PropertyChanged += (s, e) => UpdateBlockComboBox();
+            _cipherAlgorithmComboBox.PropertySelectedItem.PropertyChanged += (s, e) => UpdateUsedDigestInfo();
+            UpdateUsedDigestInfo();
 
             _cipherKeyLengthComboBox = Init("Keysize", 100);
             _cipherKeyLengthComboBox.PropertySelectedItem.PropertyChanged += OnKeyLengthSelectedItemChanged;
             UpdateKeySizeComboBox();
-            //UpdateBlockModeOptions();
 
             
             var blockModeProperty = new PropertyWrapper<CryptoConfig, BlockMode>(_config,
@@ -280,6 +281,7 @@ namespace SecureTextEditor.Views
                 p => p.Padding, (p, v) => p.Padding = v);
             _paddingComboBox = Init("Padding", 150);
             _paddingComboBox.BindEnum(paddingProperty);
+            UpdateBlockComboBox();
             UpdatePaddingComboBox();
 
             
@@ -296,6 +298,50 @@ namespace SecureTextEditor.Views
             UpdateIntegrityOptions();
         }
 
+        private void UpdateCipherAlgorithm()
+        {
+            _cipherAlgorithmComboBox.Clear();
+
+            _cipherAlgorithmComboBox.Add(CipherAlgorithm.AES.ToString());
+
+            if (_config.PbeAlgorithm == PbeAlgorithm.PBKDF2)
+                _cipherAlgorithmComboBox.Add(CipherAlgorithm.RC4.ToString());
+            
+            _cipherAlgorithmComboBox.SelectedItem = _cipherAlgorithmComboBox.ItemsPanel.Children[0];
+        }
+
+        private void UpdateBlockComboBox()
+        {
+            _blockModeComboBox.Clear();
+
+            switch (_config.CipherAlgorithm)
+            {
+                case CipherAlgorithm.AES:
+                    if (_config.IsPbeActive)
+                    {
+                        if (_config.PbeAlgorithm == PbeAlgorithm.PBKDF2)
+                            _blockModeComboBox.Add(BlockMode.CBC.ToString());
+                        if (_config.PbeAlgorithm == PbeAlgorithm.SCRYPT)
+                            _blockModeComboBox.Add(BlockMode.GCM.ToString());
+                    }
+                    
+                    if (!_config.IsPbeActive)
+                    {
+                        foreach (var value in Enum.GetValues(typeof(BlockMode))
+                            .Cast<BlockMode>()
+                            .Where(val => val!=BlockMode.None))
+                        {
+                            _blockModeComboBox.Add(value.ToString());
+                        }
+                    }
+                    break;
+                case CipherAlgorithm.RC4:
+                    _blockModeComboBox.Add(BlockMode.None.ToString());
+                    break;
+            }
+            _blockModeComboBox.SelectedItem = _blockModeComboBox.ItemsPanel.Children[0];
+        }
+        
         private void UpdatePaddingComboBox()
         {
             _paddingComboBox.Clear();
@@ -304,8 +350,9 @@ namespace SecureTextEditor.Views
             {
               case BlockMode.ECB:
               case BlockMode.CBC:
-                  _paddingComboBox.Add(BcFactory.Padding.ZeroByte.ToString());
                   _paddingComboBox.Add(BcFactory.Padding.Pkcs7.ToString());
+                  if (!_config.IsPbeActive)
+                    _paddingComboBox.Add(BcFactory.Padding.ZeroByte.ToString());
                   break;
               default:
                   _paddingComboBox.Add(BcFactory.Padding.None.ToString());
@@ -339,43 +386,15 @@ namespace SecureTextEditor.Views
                 }
         }
         
-        private IEnumerable<BlockMode> UpdateBlockModeOptions()
-        {
-            if (_config.IsPbeActive)
-            {
-                switch (_config.PbeAlgorithm)
-                {
-                case PbeAlgorithm.PBKDF2:
-                    yield return _config.Algorithm == CipherAlgorithm.RC4 ? BlockMode.CBC : BlockMode.OFB;
-                    break;
-                case PbeAlgorithm.SCRYPT:
-                    yield return BlockMode.GCM;
-                    break;
-                }   
-                yield break;
-            }
-            
-            if(_config.Algorithm == CipherAlgorithm.RC4) yield break;
-            
-            foreach (var value in Enum.GetValues(typeof(BlockMode))
-                .Cast<BlockMode>())
-            {
-                yield return value;
-            }
-        }
-
         private void UpdateUsedDigestInfo()
         {
-            PbeDigest value;
-            if (_config.PbeAlgorithm == PbeAlgorithm.PBKDF2)
+            String GetDigestInfo()
             {
-                value = _config.Algorithm == CipherAlgorithm.AES ? PbeDigest.SHA256 : PbeDigest.SHA1;
+                if (_config.PbeAlgorithm == PbeAlgorithm.PBKDF2)
+                    return _config.CipherAlgorithm == CipherAlgorithm.AES ? PbeDigest.SHA256.ToString() : PbeDigest.SHA1.ToString();;
+                return PbeDigest.GCM.ToString();;
             }
-            else
-            {
-                value = PbeDigest.GCM;
-            }
-            _pbeDigestInfo.Text = value.ToString();
+            _pbeDigestInfo.Text = GetDigestInfo();
         }
 
         private void UpdateKeySizeComboBox()
@@ -383,19 +402,25 @@ namespace SecureTextEditor.Views
             _cipherKeyLengthComboBox.Clear();
             
             var keySizes = GetKeySizes();
-            
+//            keySizes.Select(i => _cipherKeyLengthComboBox.Add($"{Convert.ToString(i)} bit"));
             foreach (var keySize in keySizes)
             {
                 _cipherKeyLengthComboBox.Add($"{Convert.ToString(keySize)} bit");
             }
             _cipherKeyLengthComboBox.SelectedItem = _cipherKeyLengthComboBox.ItemsPanel.Children[0];
-            
         }
 
         private int[] GetKeySizes()
         {
-            if (_config.Algorithm == CipherAlgorithm.RC4)
+            if (_config.CipherAlgorithm == CipherAlgorithm.RC4)
                 return KeySize.RC4;
+
+            if (_config.IsPbeActive && _config.PbeAlgorithm == PbeAlgorithm.SCRYPT)
+                return KeySize.AES.Where(x => x == 256).ToArray();
+
+            if (_config.IsPbeActive && _config.PbeAlgorithm == PbeAlgorithm.PBKDF2 && _config.CipherAlgorithm == CipherAlgorithm.AES)
+                return KeySize.AES.Where(x => x == 128).ToArray();
+
             return KeySize.AES;
         }
 
@@ -414,14 +439,6 @@ namespace SecureTextEditor.Views
             value = value.Substring(0, value.IndexOf(" bit"));
             return int.Parse(value);
         }
-
-        private void RegisterEventHandler()
-        {
-            _encryptionCheckBox.InputState.Clicked += ToggleEncryptionSection;
-            _pbeCheckBox.InputState.Clicked += TogglePbeSection;
-            _integrityCheckBox.InputState.Clicked += ToggleIntegritySection;
-        }
-
 
         private void ToggleEncryptionSection(object sender, EventArgs e)
         {
@@ -445,7 +462,6 @@ namespace SecureTextEditor.Views
                 UpdateSectionVisibility(1, Visibility.Visible);
                 return;
             }
-
             UpdateSectionVisibility(1, Visibility.Collapsed);
         }
 
@@ -453,24 +469,41 @@ namespace SecureTextEditor.Views
         {
             //#######################################
             Console.WriteLine(_config.ToString());
-
+            
             if (_config.IsEncryptActive)
             {
-                var crypt = CryptoFactory.Create(_config);
-                var tester = "Hallo Welt";
-                var encrypted = crypt.EncryptTextToBytes(tester);
-                Console.WriteLine($"Cipher:{Convert.ToBase64String(encrypted)}");
-                var decrypted = crypt.DecryptBytesToText(encrypted);
-                Console.WriteLine($"Text: {decrypted}");
+                if (_config.IsPbeActive)
+                {
+                    var pbecrypt = CryptoFactory.Create(_config);
+                    // JUST FOR TESTING - CHANGE SIGNATURE TO ACCEPT CHAR[]   
+                    var pbeKey = pbecrypt.EncryptTextToBytes(_config.PbePassword.ToString());
+                    var tester = "Hallo Welt";
+                    var crypt = CryptoFactory.Create(_config, pbeKey);
+                    var encrypted = crypt.EncryptTextToBytes(tester);
+
+                    Console.WriteLine($"Cipher:{Convert.ToBase64String(encrypted)}");
+                    var decrypted = crypt.DecryptBytesToText(encrypted);
+                    Console.WriteLine($"Text: {decrypted}");
+                }
+                else
+                {
+                    var tester = "Hallo Welt";
+                    var crypt = CryptoFactory.Create(_config);
+                    var encrypted = crypt.EncryptTextToBytes(tester);
+
+                    Console.WriteLine($"Cipher:{Convert.ToBase64String(encrypted)}");
+                    var decrypted = crypt.DecryptBytesToText(encrypted);
+                    Console.WriteLine($"Text: {decrypted}");
+                }
             }
 
-            if (_config.IsIntegrityActive)
-            {
-                var sign = IntegrityFactory.Create(_config);
-                var digest = Convert.ToBase64String(sign.SignBytes("Hallo welt"));
-                var result = sign.VerifySign(digest, "Hallo Welt");
-                Console.WriteLine(result);
-            }
+//            if (_config.IsIntegrityActive)
+//            {
+//                var sign = IntegrityFactory.Create(_config);
+//                var digest = Convert.ToBase64String(sign.SignBytes("Hallo Welt"));
+//                var result = sign.VerifySign(digest, "Hallo Welt");
+//                Console.WriteLine(result);
+//            }
             //#########################################
             
             if (_integrityCheckBox.IsChecked)
@@ -478,7 +511,6 @@ namespace SecureTextEditor.Views
                 UpdateSectionVisibility(2, Visibility.Visible);
                 return;
             }
-
             UpdateSectionVisibility(2, Visibility.Collapsed);
         }
 

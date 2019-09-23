@@ -47,7 +47,7 @@
     <Compile Include="CryptoConfig.cs" />
     <Compile Include="CipherBuilder.cs" />
     <Compile Include="DigestBuilder.cs" />
-    <Compile Include="PbeCipherBuilder.cs" />
+    <Compile Include="PbeBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -6,6 +6,7 @@ namespace BcFactory
     {
         public static readonly int[] AES = {128, 192, 256};
         public static readonly int[] RC4 = {40};
+//        public static readonly int[] RC4 = {40, 128, 256, 512, 1024, 2048};
     }
     
     public enum PbeAlgorithm{PBKDF2, SCRYPT}
@@ -13,20 +14,16 @@ namespace BcFactory
     public enum PbeDigest{GCM, SHA1, SHA256}
     
     public enum CipherAlgorithm{AES,RC4}
-    public enum BlockMode{ECB,CBC,GCM,OFB,CTS}
+    public enum BlockMode{None,ECB,CBC,GCM,OFB,CTS}
     
     public enum Padding
     {
         None = 0,
-        ZeroByte = 1,
-        Pkcs7 = 2
+        Pkcs7 = 1,
+        ZeroByte = 2
     }
     
-    public enum Integrity
-    {
-        Digest,
-        Dsa
-    };
+    public enum Integrity{Digest,Dsa};
     
     public enum IntegrityOptions
     {
@@ -38,7 +35,7 @@ namespace BcFactory
     public class CryptoConfig
     {
         public bool IsEncryptActive { get; set; }
-        public CipherAlgorithm Algorithm { get; set; }
+        public CipherAlgorithm CipherAlgorithm { get; set; }
         public int KeySize { get; set; }
         public BlockMode BlockMode { get; set; }
         public Padding Padding { get; set; }
@@ -57,7 +54,7 @@ namespace BcFactory
                    $"PbePassword: {PbePassword},\n" +
                    $"PbeAlgo: {PbeAlgorithm},\n" +
                    $"PbeDigest: {PbeDigest},\n" +
-                   $"CipherAlgo: {Algorithm},\n" +
+                   $"CipherAlgo: {CipherAlgorithm},\n" +
                    $"KeySize: {KeySize},\n" +
                    $"BlockMode: {BlockMode},\n" +
                    $"Padding: {Padding},\n" +

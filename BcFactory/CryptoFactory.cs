@@ -49,8 +49,18 @@ namespace BcFactory
             if (settings.IsEncryptActive)
             {
                 if (settings.IsPbeActive)
-                    return new PbeCipherBuilder(settings);
+                    return new PbeBuilder(settings);
                 return new CipherBuilder(settings);
+            }
+//            throw new NotSupportedException("The given settings combination is not supported");
+            return null;
+        }
+        public static ICrypto Create(CryptoConfig settings, byte[] pbeKey)
+        {
+            if (settings.IsEncryptActive)
+            {
+                if (settings.IsPbeActive)
+                    return new CipherBuilder(settings, pbeKey);
             }
 //            throw new NotSupportedException("The given settings combination is not supported");
             return null;

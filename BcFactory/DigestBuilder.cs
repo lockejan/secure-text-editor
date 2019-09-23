@@ -18,7 +18,7 @@ namespace BcFactory
             _config = config;
             _myAes = new AesEngine();
             // TODO: check which combo of aes is usually used
-            GenerateKey(_config.Algorithm.ToString()+_config.KeySize);
+            GenerateKey(_config.CipherAlgorithm.ToString()+_config.KeySize);
         }
 
         private void GenerateKey(string cipher)
@@ -63,7 +63,6 @@ namespace BcFactory
             Sha256Digest sha256 = new Sha256Digest();
             
             sha256.BlockUpdate(data, 0, data.Length);
-            
             byte[] hash = new byte[sha256.GetDigestSize()];
             sha256.DoFinal(hash, 0);
             
@@ -77,9 +76,7 @@ namespace BcFactory
             
             mac.Init(keyParam);
             mac.BlockUpdate(data, 0, data.Length);
-            
             byte[] hash = new byte[mac.GetMacSize()];
-            
             mac.DoFinal(hash,0);
 
             return hash;
@@ -93,9 +90,7 @@ namespace BcFactory
             
             hMac.Init(keyParam);
             hMac.BlockUpdate(data, 0, data.Length);
-            
             byte[] hash = new byte[hMac.GetMacSize()];
-            
             hMac.DoFinal(hash,0);
 
             return hash;
