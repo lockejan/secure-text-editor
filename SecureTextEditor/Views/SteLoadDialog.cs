@@ -18,8 +18,8 @@ namespace SecureTextEditor.Views
         private TextBox _passwordInput;
         private TextBox _filenameInput;
                 
-        private VerticalStackPanel _firstColumnStack;
-        private VerticalStackPanel _secColumnStack;
+        private readonly VerticalStackPanel _firstColumnStack;
+        private readonly VerticalStackPanel _secColumnStack;
 
         /// <summary>
         /// Creates saveDialog Component. Expects ControlFactory for component creation. 

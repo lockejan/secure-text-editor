@@ -49,6 +49,8 @@ namespace SecureTextEditor.Views
         private readonly VerticalStackPanel _firstColumnStack;
         private readonly VerticalStackPanel _secColumnStack;
         private readonly VerticalStackPanel _thirdColumnStack;
+
+
         private TextBlock _pbeSpecLabel;
         private TextBlock _integrityLabel;
         private TextBlock _integritySpecLabel;
@@ -197,9 +199,14 @@ namespace SecureTextEditor.Views
                 _secColumnStack.Add(sec ?? customFill);
                 _thirdColumnStack.Add(third ?? customFill);
             }
+            void Rowspan(Control first, Control sec)
+            {
+                _firstColumnStack.Add(first);
+                _secColumnStack.Add(sec);
+            }
 
-            FillRow(GetLabel("Current DIR"), _currentDir, new Control());
-            FillRow(GetLabel("Filename"), _filenameInput, new Control());
+            Rowspan(GetLabel("Current DIR"), _currentDir);
+            Rowspan(GetLabel("Filename"), _filenameInput);
             FillRow(_encryptionCheckBox, null, null);
             FillRow(_pbeCheckBox, null, null);
             FillRow(_passwordLabel, _passwordInput, _pbeFill);
