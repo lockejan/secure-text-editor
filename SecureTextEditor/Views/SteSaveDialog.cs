@@ -497,13 +497,13 @@ namespace SecureTextEditor.Views
                 }
             }
 
-//            if (_config.IsIntegrityActive)
-//            {
-//                var sign = IntegrityFactory.Create(_config);
-//                var digest = Convert.ToBase64String(sign.SignBytes("Hallo Welt"));
-//                var result = sign.VerifySign(digest, "Hallo Welt");
-//                Console.WriteLine(result);
-//            }
+            if (_config.IsIntegrityActive)
+            {
+                var sign = IntegrityFactory.Create(_config);
+                var digest = Convert.ToBase64String(sign.SignBytes("Hallo Welt"));
+                var result = sign.VerifySign(digest, "Hallo Welt");
+                Console.WriteLine(result);
+            }
             //#########################################
             
             if (_integrityCheckBox.IsChecked)

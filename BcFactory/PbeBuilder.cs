@@ -9,8 +9,8 @@ namespace BcFactory
 {
     public class PbeBuilder : ICrypto
     {
-        private CryptoConfig _config;
-        private byte[] _salt;
+        private readonly CryptoConfig _config;
+        private readonly byte[] _salt;
         
         public PbeBuilder(CryptoConfig config)
         {
