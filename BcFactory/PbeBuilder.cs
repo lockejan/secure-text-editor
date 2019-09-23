@@ -70,8 +70,8 @@ namespace BcFactory
             generator.Init(PbeParametersGenerator.Pkcs5PasswordToUtf8Bytes(password),
                 salt,
                 iterationCount);
-
-            return ((KeyParameter)generator.GenerateDerivedParameters(256)).GetKey();
+            
+            return ((KeyParameter)generator.GenerateDerivedParameters(_config.CipherAlgorithm.ToString(),256)).GetKey();
         }
 
         private byte[] BcPKCS5Scheme(char[] password, byte[] salt,
@@ -83,7 +83,7 @@ namespace BcFactory
             generator.Init(PbeParametersGenerator.Pkcs5PasswordToUtf8Bytes(password),
                 salt,
                 iterationCount);
-            return ((KeyParameter)generator.GenerateDerivedParameters(160)).GetKey();
+            return ((KeyParameter)generator.GenerateDerivedParameters(_config.CipherAlgorithm.ToString(),160)).GetKey();
         }
 
     }
