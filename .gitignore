@@ -99,3 +99,4 @@ SecureTextEditor/*.key
 packages/
 **/bin/
 **/obj/
+docs/
