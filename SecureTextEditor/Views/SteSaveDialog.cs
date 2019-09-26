@@ -206,8 +206,8 @@ namespace SecureTextEditor.Views
                 _secColumnStack.Add(sec);
             }
 
-            Rowspan(GetLabel("Current DIR"), _currentDir);
-            Rowspan(GetLabel("Filename"), _filenameInput);
+            FillRow(GetLabel("Current DIR"), _currentDir, new Control());
+            FillRow(GetLabel("Filename"), _filenameInput, new Control());
             FillRow(_encryptionCheckBox, null, null);
             FillRow(_pbeCheckBox, null, null);
             FillRow(_passwordLabel, _passwordInput, _pbeFill);
