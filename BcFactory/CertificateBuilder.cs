@@ -30,9 +30,11 @@ namespace BcFactory
             try
             {
 				DsaKeyPairGenerator dsaKeyPairGen = new DsaKeyPairGenerator();
-                dsaKeyPairGen.Init(new KeyGenerationParameters(new SecureRandom(),2048));
+                DsaParametersGenerator dsaParamGen = new DsaParametersGenerator();
+                dsaParamGen.Init(512,12, new SecureRandom());
+                dsaKeyPairGen.Init(new DsaKeyGenerationParameters(new SecureRandom(),dsaParamGen.GenerateParameters()));
 //                AsymmetricCipherKeyPair keyPair = dsaKeyPairGen.GenerateKeyPair();
-                DsaKAsymmetricCipherKeyPair keyPair = dsaKeyPairGen.GenerateKeyPair();
+                AsymmetricCipherKeyPair keyPair = dsaKeyPairGen.GenerateKeyPair();
 
 //                DsaKeyParameters privateKey = (DsaKeyParameters)keyPair.Private;
 //                DsaKeyParameters publicKey = (DsaKeyParameters)keyPair.Public;
@@ -40,12 +42,13 @@ namespace BcFactory
                 AsymmetricKeyParameter publicKey = keyPair.Public;
                 
                 //To print the public key in pem format
-//                TextWriter textWriter = new StringWriter();
-//                PemWriter pemWriter = new Org.BouncyCastle.OpenSsl.PemWriter(textWriter);
-//                pemWriter.WriteObject(publicKey);
-//                pemWriter.Writer.Flush();
-//                
-                Console.WriteLine($"Public key is: {publicKey.ToString()}");
+                TextWriter textWriter = new StringWriter();
+                var pemWriter = new PemWriter(textWriter);
+                pemWriter.WriteObject(publicKey);
+                pemWriter.Writer.Flush();
+
+                Console.WriteLine($"Private key is: {privateKey.GetHashCode()}");
+                Console.WriteLine($"Public key is: {publicKey}");
 
 
                 // Generation of digital signature
@@ -54,7 +57,7 @@ namespace BcFactory
                 sign.Init(true, privateKey);
                 sign.BlockUpdate(tmpSource, 0, tmpSource.Length);
                 byte[] signature = sign.GenerateSignature();
-                Console.WriteLine($"Public key is: {Convert.ToString(signature)}");
+                Console.WriteLine($"Public key is: {Convert.ToBase64String(signature)}");
 
 //                DsaParametersGenerator dParamGen = new DsaParametersGenerator();
 //                dParamGen.Init(512, 25, new SecureRandom());
