@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
-namespace SecureTextEditor
+namespace SecureTextEditor.FileHandler
 {
     /// <summary>
     /// Model for STE which contains all necessary parameters and attributes to be stored on disk or in memory

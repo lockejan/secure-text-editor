@@ -7,6 +7,7 @@ using Medja.Theming;
 using Medja;
 using Medja.Properties;
 using BcFactory;
+using SecureTextEditor.FileHandler;
 
 namespace SecureTextEditor.Views
 {

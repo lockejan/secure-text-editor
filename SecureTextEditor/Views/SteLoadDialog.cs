@@ -4,6 +4,7 @@ using System.Reflection;
 using Medja.Controls;
 using Medja.Primitives;
 using Medja.Theming;
+using SecureTextEditor.FileHandler;
 
 namespace SecureTextEditor.Views
 {

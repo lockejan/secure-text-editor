@@ -3,11 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
-namespace SecureTextEditor
+namespace SecureTextEditor.FileHandler
 {
-    /// <summary>
-    /// 
-    /// </summary>
     public static class SteHelper
     {
         /// <summary>

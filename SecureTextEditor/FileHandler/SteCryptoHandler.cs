@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using CryptoAdapter;
 using Newtonsoft.Json;
+using SecureTextEditor.FileHandler;
 
 namespace SecureTextEditor
 {
