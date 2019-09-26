@@ -19,6 +19,10 @@ namespace SecureTextEditor.Views
     {
         private readonly IControlFactory _controlFactory;
         private readonly CryptoConfig _config;
+        public CryptoConfig Config
+        {
+            get => _config;
+        }
 
         private TextBlock _currentDir;
         private TextBox _filenameInput;
@@ -65,9 +69,9 @@ namespace SecureTextEditor.Views
             _controlFactory = controlFactory;
             _config = new CryptoConfig {PbePassword = "secret123".ToCharArray()};
 
-            _firstColumnStack = GetStackPanel(140);
-            _secColumnStack = GetStackPanel(150);
-            _thirdColumnStack = GetStackPanel(160);
+            _firstColumnStack = GetVertStackPanel(140);
+            _secColumnStack = GetVertStackPanel(150);
+            _thirdColumnStack = GetVertStackPanel(160);
 
             //Filler CREATION
             _pbeFill = new Control();
@@ -86,39 +90,39 @@ namespace SecureTextEditor.Views
 
         private void UpdateSectionVisibility(int section, Visibility visibility)
         {
-            switch (section)
-            {
-            case 0:
-                _firstColumnStack.Children[7].Visibility = visibility;
-                _secColumnStack.Children[7].Visibility = visibility;
-                _thirdColumnStack.Children[7].Visibility = visibility;
-                _firstColumnStack.Children[8].Visibility = visibility;
-                _secColumnStack.Children[8].Visibility = visibility;
-                _thirdColumnStack.Children[8].Visibility = visibility;
-                _firstColumnStack.Children[9].Visibility = visibility;
-                _secColumnStack.Children[9].Visibility = visibility;
-                _thirdColumnStack.Children[9].Visibility = visibility;
-                break;
-            case 1:
-                _firstColumnStack.Children[4].Visibility = visibility;
-                _secColumnStack.Children[4].Visibility = visibility;
-                _thirdColumnStack.Children[4].Visibility = visibility;
-                _firstColumnStack.Children[5].Visibility = visibility;
-                _secColumnStack.Children[5].Visibility = visibility;
-                _thirdColumnStack.Children[5].Visibility = visibility;
-                _firstColumnStack.Children[6].Visibility = visibility;
-                _secColumnStack.Children[6].Visibility = visibility;
-                _thirdColumnStack.Children[6].Visibility = visibility;
-                break;
-            case 2:
-                _firstColumnStack.Children[11].Visibility = visibility;
-                _secColumnStack.Children[11].Visibility = visibility;
-                _thirdColumnStack.Children[11].Visibility = visibility;
-                _firstColumnStack.Children[12].Visibility = visibility;
-                _secColumnStack.Children[12].Visibility = visibility;
-                _thirdColumnStack.Children[12].Visibility = visibility;
-                break;
-            }
+//            switch (section)
+//            {
+//            case 0:
+//                _firstColumnStack.Children[7].Visibility = visibility;
+//                _secColumnStack.Children[7].Visibility = visibility;
+//                _thirdColumnStack.Children[7].Visibility = visibility;
+//                _firstColumnStack.Children[8].Visibility = visibility;
+//                _secColumnStack.Children[8].Visibility = visibility;
+//                _thirdColumnStack.Children[8].Visibility = visibility;
+//                _firstColumnStack.Children[9].Visibility = visibility;
+//                _secColumnStack.Children[9].Visibility = visibility;
+//                _thirdColumnStack.Children[9].Visibility = visibility;
+//                break;
+//            case 1:
+//                _firstColumnStack.Children[4].Visibility = visibility;
+//                _secColumnStack.Children[4].Visibility = visibility;
+//                _thirdColumnStack.Children[4].Visibility = visibility;
+//                _firstColumnStack.Children[5].Visibility = visibility;
+//                _secColumnStack.Children[5].Visibility = visibility;
+//                _thirdColumnStack.Children[5].Visibility = visibility;
+//                _firstColumnStack.Children[6].Visibility = visibility;
+//                _secColumnStack.Children[6].Visibility = visibility;
+//                _thirdColumnStack.Children[6].Visibility = visibility;
+//                break;
+//            case 2:
+//                _firstColumnStack.Children[11].Visibility = visibility;
+//                _secColumnStack.Children[11].Visibility = visibility;
+//                _thirdColumnStack.Children[11].Visibility = visibility;
+//                _firstColumnStack.Children[12].Visibility = visibility;
+//                _secColumnStack.Children[12].Visibility = visibility;
+//                _thirdColumnStack.Children[12].Visibility = visibility;
+//                break;
+//            }
             // enforce layout update
             IsLayoutUpdated = false;
         }
@@ -171,16 +175,38 @@ namespace SecureTextEditor.Views
         private Control CreateDockPanel()
         {
             var dockPanel = _controlFactory.Create<DockPanel>();
-            dockPanel.HorizontalAlignment = HorizontalAlignment.Stretch;
-            dockPanel.VerticalAlignment = VerticalAlignment.Stretch;
+            //dockPanel.HorizontalAlignment = HorizontalAlignment.Stretch;
+            //dockPanel.VerticalAlignment = VerticalAlignment.Stretch;
+            
+            var horiStackPanel = GetHorStackPanel(80);
+            var labelCol = GetVertStackPanel(140);
+            var contentCol = GetVertStackPanel(410);
+            labelCol.Padding.SetAll(0);
+            contentCol.Padding.SetAll(0);
+            
+            labelCol.Add(GetLabel("Current DIR"));
+            labelCol.Add(GetLabel("Filename"));
+            contentCol.Add(_currentDir);
+            contentCol.Add(_filenameInput);
+
+            horiStackPanel.Add(labelCol);
+            horiStackPanel.Add(contentCol);
+
+            dockPanel.Add(Dock.Top, horiStackPanel);
             dockPanel.Add(Dock.Left, _firstColumnStack);
             dockPanel.Add(Dock.Left, _secColumnStack);
             dockPanel.Add(Dock.Left, _thirdColumnStack);
 
             return dockPanel;
         }
-
-        private VerticalStackPanel GetStackPanel(int width)
+        private HorizontalStackPanel GetHorStackPanel(int height)
+        {
+            var horStack = _controlFactory.Create<HorizontalStackPanel>();
+            horStack.Position.Height = height;
+            return horStack;
+        }
+        
+        private VerticalStackPanel GetVertStackPanel(int width)
         {
             var vertStack = _controlFactory.Create<VerticalStackPanel>();
             vertStack.ChildrenHeight = 30;
@@ -191,7 +217,7 @@ namespace SecureTextEditor.Views
 
         private void FillStackPanels()
         {
-            void FillRow(Control first, Control sec, Control third)
+            void FillColumn(Control first, Control sec, Control third)
             {
                 var customFill = new Control();
                 customFill.Margin.SetTopAndBottom(5);
@@ -200,25 +226,18 @@ namespace SecureTextEditor.Views
                 _secColumnStack.Add(sec ?? customFill);
                 _thirdColumnStack.Add(third ?? customFill);
             }
-            void Rowspan(Control first, Control sec)
-            {
-                _firstColumnStack.Add(first);
-                _secColumnStack.Add(sec);
-            }
-
-            FillRow(GetLabel("Current DIR"), _currentDir, new Control());
-            FillRow(GetLabel("Filename"), _filenameInput, new Control());
-            FillRow(_encryptionCheckBox, null, null);
-            FillRow(_pbeCheckBox, null, null);
-            FillRow(_passwordLabel, _passwordInput, _pbeFill);
-            FillRow(_pbeSpecLabel, _pbeSpecComboBox, new Control());
-            FillRow(_pbeDigestLabel, _pbeDigestInfo, new Control());
-            FillRow(_cipherAlgorithmLabel, _cipherAlgorithmComboBox, _cipherKeyLengthComboBox);
-            FillRow(_blockModeLabel, _blockModeComboBox,new Control());
-            FillRow(_paddingLabel, _paddingComboBox, new Control());
-            FillRow(_integrityCheckBox, null, null);
-            FillRow(_integrityLabel, _integrityComboBox, new Control());
-            FillRow(_integritySpecLabel, _integritySpecComboBox, new Control());
+            
+            FillColumn(_encryptionCheckBox, null, null);
+            FillColumn(_pbeCheckBox, null, null);
+            FillColumn(_passwordLabel, _passwordInput, _pbeFill);
+            FillColumn(_pbeSpecLabel, _pbeSpecComboBox, new Control());
+            FillColumn(_pbeDigestLabel, _pbeDigestInfo, new Control());
+            FillColumn(_cipherAlgorithmLabel, _cipherAlgorithmComboBox, _cipherKeyLengthComboBox);
+            FillColumn(_blockModeLabel, _blockModeComboBox,new Control());
+            FillColumn(_paddingLabel, _paddingComboBox, new Control());
+            FillColumn(_integrityCheckBox, null, null);
+            FillColumn(_integrityLabel, _integrityComboBox, new Control());
+            FillColumn(_integritySpecLabel, _integritySpecComboBox, new Control());
         }
 
         private TextBlock GetLabel(string text)

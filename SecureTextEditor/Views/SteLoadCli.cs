@@ -34,7 +34,8 @@ namespace SecureTextEditor.Views
                 };
                 
                 _key = File.ReadAllText($"{path}.key", Encoding.UTF8);
-                return SteCryptoHandler.ProcessConfigToLoad(_key, param);
+                //return SteCryptoHandler.ProcessConfigToLoad(_key, param);
+                return "blub";
             }
             return "File not found!";
         }

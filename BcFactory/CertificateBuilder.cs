@@ -17,7 +17,7 @@ namespace BcFactory
 {
     public class CertificateBuilder : IIntegrity
     {
-        private byte[] tmpSource = Encoding.UTF8.GetBytes("Hallo cipher");
+        private byte[] toBeSealedInput = Encoding.UTF8.GetBytes("Hallo cipher");
         public CertificateBuilder(CryptoConfig config)
         {
             
@@ -26,36 +26,33 @@ namespace BcFactory
         public byte[] SignBytes(string content)
         {
             Console.WriteLine("Signing process started...");
-//            KeyPairGen();
+
             try
             {
 				DsaKeyPairGenerator dsaKeyPairGen = new DsaKeyPairGenerator();
                 DsaParametersGenerator dsaParamGen = new DsaParametersGenerator();
                 dsaParamGen.Init(512,12, new SecureRandom());
                 dsaKeyPairGen.Init(new DsaKeyGenerationParameters(new SecureRandom(),dsaParamGen.GenerateParameters()));
-//                AsymmetricCipherKeyPair keyPair = dsaKeyPairGen.GenerateKeyPair();
                 AsymmetricCipherKeyPair keyPair = dsaKeyPairGen.GenerateKeyPair();
-
-//                DsaKeyParameters privateKey = (DsaKeyParameters)keyPair.Private;
-//                DsaKeyParameters publicKey = (DsaKeyParameters)keyPair.Public;
+                
                 AsymmetricKeyParameter privateKey = keyPair.Private;
                 AsymmetricKeyParameter publicKey = keyPair.Public;
                 
                 //To print the public key in pem format
-                TextWriter textWriter = new StringWriter();
+/*                TextWriter textWriter = new StringWriter();
                 var pemWriter = new PemWriter(textWriter);
                 pemWriter.WriteObject(publicKey);
                 pemWriter.Writer.Flush();
 
                 Console.WriteLine($"Private key is: {privateKey.GetHashCode()}");
                 Console.WriteLine($"Public key is: {publicKey}");
-
+*/
 
                 // Generation of digital signature
 //                ISigner sign = SignerUtilities.GetSigner(PkcsObjectIdentifiers.sa)
                 ISigner sign = SignerUtilities.GetSigner("SHA256withDSA");
                 sign.Init(true, privateKey);
-                sign.BlockUpdate(tmpSource, 0, tmpSource.Length);
+                sign.BlockUpdate(toBeSealedInput, 0, toBeSealedInput.Length);
                 byte[] signature = sign.GenerateSignature();
                 Console.WriteLine($"Public key is: {Convert.ToBase64String(signature)}");
 

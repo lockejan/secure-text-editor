@@ -79,16 +79,11 @@ namespace SecureTextEditor.Views
 
         private void RegisterButtonEvents()
         {
-            _newBtn.InputState.Clicked += OnNewButtonClicked;
+            _newBtn.InputState.Clicked += (s,e) => {Text = "";};
             _loadBtn.InputState.Clicked += OnLoadButtonClicked;
             _saveBtn.InputState.Clicked += OnSaveButtonClicked;
         }
         
-        private void OnNewButtonClicked(object sender, EventArgs e)
-        {
-            Console.WriteLine("This should clear the current view or present another tab");
-        }
-
         private void OnLoadButtonClicked(object sender, EventArgs e)
         {
             //            Text = SteLoadCli.LoadTextDialog();
@@ -135,11 +130,14 @@ namespace SecureTextEditor.Views
             ExecuteOnceOnClose(dialog, () =>
             {
                 content.ResetPassword();
-                // ...
+                Console.WriteLine(content.Config);
+
+
+//                ...
 //                var settings = content.Settings;
 //                CryptoFile.Save(settings, fileName, fileContent);
 
-    // PROPOSAL FOR NEW APPROACH
+//                PROPOSAL FOR NEW APPROACH
 //                var textEditorContent = "....";
 //                var crypt = CryptFactory.Create(settings); <= config object
 //                var result = crypt.Encrypt(textEditorContent); <= process content using given params
