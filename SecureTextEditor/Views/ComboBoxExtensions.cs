@@ -1,10 +1,9 @@
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Medja.Controls;
 
-namespace SecureTextEditor
+namespace SecureTextEditor.Views
 {
     static class ComboBoxExtensions
     {
