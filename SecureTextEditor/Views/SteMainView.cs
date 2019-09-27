@@ -1,4 +1,5 @@
 using System;
+using BcFactory;
 using Medja.Controls;
 using Medja.Theming;
 
@@ -129,9 +130,37 @@ namespace SecureTextEditor.Views
             dockPanel.Add(Dock.Fill, content);
             ExecuteOnceOnClose(dialog, () =>
             {
-                content.ResetPassword();
+                //#######################################
                 Console.WriteLine(content.Config);
 
+                if (content.Config.IsEncryptActive)
+                {
+                    if (content.Config.IsPbeActive)
+                    {
+                        var pbecrypt = CryptoFactory.Create(content.Config);
+                        // JUST FOR TESTING - CHANGE SIGNATURE TO ACCEPT CHAR[]   
+                        var pbeKey = pbecrypt.EncryptTextToBytes(content.Config.PbePassword.ToString());
+                        content.Config.PbeKey = pbeKey;
+                    }
+
+                    var tester = "Hallo Welttttttt";
+                    var crypt = CryptoFactory.Create(content.Config);
+                    var encrypted = crypt.EncryptTextToBytes(tester);
+
+                    Console.WriteLine($"Cipher:{Convert.ToBase64String(encrypted)}");
+                    var decrypted = crypt.DecryptBytesToText(encrypted);
+                    Console.WriteLine($"Text: {decrypted}");
+                }
+
+                if (content.Config.IsIntegrityActive)
+                {
+                    var sign = IntegrityFactory.Create(content.Config);
+                    var digest = Convert.ToBase64String(sign.SignBytes("Hallo Welt"));
+                    var result = sign.VerifySign(digest, "Hallo Welt");
+                    Console.WriteLine(result);
+                }
+                //#########################################
+                content.ResetPassword();
 
 //                ...
 //                var settings = content.Settings;

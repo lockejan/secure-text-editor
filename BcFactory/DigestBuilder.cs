@@ -13,6 +13,7 @@ namespace BcFactory
         private readonly CryptoConfig _config;
         private byte[] _myKey;
         private readonly AesEngine _myAes;
+        private IIntegrity _integrityImplementation;
         private const string AesAlgo= "AES"; 
         private const string AesKeySize = "256"; 
         public DigestBuilder(CryptoConfig config)
@@ -27,6 +28,11 @@ namespace BcFactory
         {
             var gen = GeneratorUtilities.GetKeyGenerator(cipher);
             _myKey = gen.GenerateKey();
+        }
+
+        public void CreateCertificate()
+        {
+            throw new NotImplementedException();
         }
 
         public byte[] SignBytes(string content)
@@ -53,11 +59,12 @@ namespace BcFactory
             return digestBytes;
         }
 
-        public string VerifySign(string sign, string input)
+        public bool VerifySign(string sign, string input)
         {
             Console.WriteLine("Digest-Verifikation startet");
             bool result = sign != Convert.ToBase64String(SignBytes(input));
-            return $"Integrity tampered: {result}";
+            Console.WriteLine($"Integrity tampered: {result}");
+            return result;
         }
 
         private byte[] Sha256(byte[] data)

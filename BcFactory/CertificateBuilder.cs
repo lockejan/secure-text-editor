@@ -22,7 +22,12 @@ namespace BcFactory
         {
             
         }
-        
+
+        public void CreateCertificate()
+        {
+            throw new NotImplementedException();
+        }
+
         public byte[] SignBytes(string content)
         {
             Console.WriteLine("Signing process started...");
@@ -73,10 +78,10 @@ namespace BcFactory
             return new byte[1];
         }
 
-        public string VerifySign(string sign, string input)
+        public bool VerifySign(string sign, string input)
         {
             Console.WriteLine("Verification process started");
-            return "verification...?";
+            return true;
         }
         
         public void CreateCert(string config)

@@ -1,62 +1,10 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace BcFactory
 {
-    public static class KeySize
-    {
-        public static readonly int[] AES = {128, 192, 256};
-        public static readonly int[] RC4 = {40};
-//        public static readonly int[] RC4 = {40, 128, 256, 512, 1024, 2048};
-    }
-    
-    /// <summary>
-    /// Holds all available PBE algorithm which can be used by the editor. 
-    /// </summary>
-    public enum PbeAlgorithm{PBKDF2, SCRYPT}
-    
-    /// <summary>
-    /// Holds all PBE possible forms of hashes or other algorithms which provide any sort of integrity. 
-    /// </summary>
-    public enum PbeDigest{GCM, SHA1, SHA256}
-    
-    /// <summary>
-    /// Holds all available Cipher algorithm which can be used by the editor.
-    /// Just a handful of symmetric and stream ciphers are currently available. 
-    /// </summary>
-    public enum CipherAlgorithm{AES,RC4}
-    
-    /// <summary>
-    /// Holds all available Blockmodes which can be used with symmetric cipher algorithms.
-    /// </summary>
-    public enum BlockMode{None,ECB,CBC,GCM,OFB,CTS}
-    
-    /// <summary>
-    /// Holds all sort of paddings which are available for cipher processing. 
-    /// </summary>
-    public enum Padding
-    {
-        None = 0,
-        Pkcs7 = 1,
-        ZeroByte = 2
-    }
-    
-    /// <summary>
-    /// Holds all available forms of integrity related functions.
-    /// For e.g. Digests and PublicKeyCryptography like DSA. 
-    /// </summary>
-    public enum Integrity{Digest,Dsa};
-    
-    /// <summary>
-    /// All available Digests and Algorithms which are available to be used with DSA or just as Digest.
-    /// Not all combinations are possible. The related business logic is implemented somewhere else. 
-    /// </summary>
-    public enum IntegrityOptions
-    {
-        Sha256 = 0,
-        AesCmac = 1,
-        HmacSha256 = 2,
-    };
-
     /// <summary>
     /// Configuration class which holds all relevant attributes for further processing.
     /// Properties are just having basic getter and setter.
@@ -73,24 +21,149 @@ namespace BcFactory
         public PbeAlgorithm PbeAlgorithm { get; set; }
         public PbeDigest PbeDigest { get; set; }
         public char[] PbePassword { get; set; }
+
+        //[JSONIgnore]
+        public byte[] PbeKey { get; set; }
+
         public bool IsIntegrityActive { get; set; }
         public Integrity Integrity { get; set; }
         public IntegrityOptions IntegrityOptions { get; set; }
-        
+
+        /// <summary>
+        /// Custom ToString to display state of CryptoConfig.
+        /// </summary>
+        /// <returns>String representation of current CryptoConfig.</returns>
         public override string ToString()
         {
-            return $"IsEncrypActive: {IsEncryptActive},\n" +
+            return $"IsEncryptActive: {IsEncryptActive},\n" +
                    $"IsPbeActive: {IsPbeActive},\n" +
                    $"PbePassword: {PbePassword},\n" +
-                   $"PbeAlgo: {PbeAlgorithm},\n" +
+                   $"PbeAlgorithm: {PbeAlgorithm},\n" +
                    $"PbeDigest: {PbeDigest},\n" +
-                   $"CipherAlgo: {CipherAlgorithm},\n" +
+                   $"CipherAlgorithm: {CipherAlgorithm},\n" +
                    $"KeySize: {KeySize},\n" +
                    $"BlockMode: {BlockMode},\n" +
                    $"Padding: {Padding},\n" +
                    $"IsIntegrityActive: {IsIntegrityActive},\n" +
                    $"Integrity: {Integrity},\n" +
                    $"IntegrityOptions: {IntegrityOptions},\n";
+        }
+
+        /// <summary>
+        /// Determines which CipherAlgorithms are supported for given PBE-Algorithms.
+        /// </summary>
+        /// <returns>Enum holding valid CipherAlgorithms</returns>
+        public IEnumerable<CipherAlgorithm> GetValidAlgorithms()
+        {
+            yield return CipherAlgorithm.AES;
+
+            if (PbeAlgorithm == PbeAlgorithm.PBKDF2)
+                yield return CipherAlgorithm.RC4;
+        }
+
+        /// <summary>
+        /// Determines valid Blockmodes for given Cipher- or/and PBE-Algorithms.
+        /// </summary>
+        /// <returns>Enum holding valid BlockModes</returns>
+        public IEnumerable<BlockMode> GetValidBlockModes()
+        {
+            // https://alexatnet.com/cs8-switch-statement/
+            switch (CipherAlgorithm)
+            {
+                case CipherAlgorithm.AES:
+                    if (IsPbeActive)
+                    {
+                        if (PbeAlgorithm == PbeAlgorithm.PBKDF2)
+                            yield return BlockMode.CBC;
+                        if (PbeAlgorithm == PbeAlgorithm.SCRYPT)
+                            yield return BlockMode.GCM;
+                    }
+                    else
+                    {
+                        foreach (var value in EnumExtensions.ValuesExcept(BlockMode.None))
+                            yield return value;
+                    }
+                    break;
+                case CipherAlgorithm.RC4:
+                    yield return BlockMode.None;
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Determines valid Paddings for given Blockmodes.
+        /// </summary>
+        /// <returns>Enum holding valid Paddings</returns>
+        public IEnumerable<Padding> GetValidPaddings()
+        {
+            switch (BlockMode)
+            {
+                case BlockMode.ECB:
+                case BlockMode.CBC:
+                    yield return Padding.Pkcs7;
+
+                    if (!IsPbeActive)
+                        yield return Padding.ZeroByte;
+                    break;
+                default:
+                    yield return Padding.None;
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Determines valid IntegrityOptions for given Integrity selection.
+        /// </summary>
+        /// <returns>Enum holding valid IntegrityOptions</returns>
+        public IEnumerable<IntegrityOptions> GetIntegrityOptions()
+        {
+            yield return IntegrityOptions.Sha256;
+
+            if (Integrity != Integrity.Digest)
+                yield break;
+
+            foreach (var value in EnumExtensions.ValuesExcept(IntegrityOptions.Sha256))
+                yield return value;
+        }
+
+        /// <summary>
+        /// Determines valid IntegrityLabels for given PBE-Parameters.
+        /// </summary>
+        /// <returns>Enum entry holding the related Digest</returns>
+        public PbeDigest GetDigest()
+        {
+            if (PbeAlgorithm == PbeAlgorithm.PBKDF2)
+                return CipherAlgorithm == CipherAlgorithm.AES
+                    ? PbeDigest.SHA256
+                    : PbeDigest.SHA1;
+
+            return PbeDigest.GCM;
+        }
+
+        /// <summary>
+        /// Determines valid Keysizes based on given Cipher- and/or PBE-Algorithms.
+        /// </summary>
+        /// <returns>Enum holding valid IntegrityOptions</returns>
+        public int[] GetKeySizes()
+        {
+            if (CipherAlgorithm == CipherAlgorithm.RC4)
+                return BcFactory.KeySize.RC4;
+
+            if (IsPbeActive)
+            {
+                if (PbeAlgorithm == PbeAlgorithm.SCRYPT)
+                    return new[] { 256 };
+
+                if (PbeAlgorithm == PbeAlgorithm.PBKDF2)
+                {
+                    if (CipherAlgorithm == CipherAlgorithm.AES)
+                        return new[] { 128 };
+
+                    if (CipherAlgorithm == CipherAlgorithm.RC4)
+                        return new[] { 40 };
+                }
+            }
+            return BcFactory.KeySize.AES;
         }
     }
 }

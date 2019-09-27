@@ -11,6 +11,7 @@
     <AssemblyName>BcFactory</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <LangVersion>8</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -49,8 +50,17 @@
     <Compile Include="CryptoConfig.cs" />
     <Compile Include="CipherBuilder.cs" />
     <Compile Include="DigestBuilder.cs" />
+    <Compile Include="EnumExtensions.cs" />
     <Compile Include="PbeBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Ressources\BlockMode.cs" />
+    <Compile Include="Ressources\CipherAlgorithm.cs" />
+    <Compile Include="Ressources\Integrity.cs" />
+    <Compile Include="Ressources\IntegrityOptions.cs" />
+    <Compile Include="Ressources\KeySize.cs" />
+    <Compile Include="Ressources\Padding.cs" />
+    <Compile Include="Ressources\PbeAlgorithm.cs" />
+    <Compile Include="Ressources\PbeDigest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
