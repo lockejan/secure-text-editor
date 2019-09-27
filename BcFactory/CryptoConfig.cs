@@ -15,19 +15,25 @@ namespace BcFactory
         private string FormatVersion { get; } = "0.1";
 
         [JsonProperty(Required = Required.Always)]
-        private string Encoding { get; }
+        public string Encoding { get; }
 
         [JsonProperty(Required = Required.Default)]
-        private string IvOrSalt { get; }
+        public string IvOrSalt { get; set; }
 
         [JsonProperty(Required = Required.Default)]
-        private string SignaturePublicKey { get; }
+        public string SignaturePublicKey { get; set; }
+        
+        [JsonIgnoreAttribute]
+        public string SignaturePrivateKey { get; set; }
 
         [JsonProperty(Required = Required.Default)]
-        private string Signature { get; }
+        private string Signature { get; set; }
 
+        /// <summary>
+        /// Generated cipher of cipher engine.
+        /// </summary>
         [JsonProperty(Required = Required.Always)]
-        private string Cipher { get; }
+        public string Cipher { get; set; }
         
         /// <summary>
         /// Referring to whether or not encryption is activated.
@@ -68,11 +74,11 @@ namespace BcFactory
         [JsonProperty(Required = Required.Default)]
         public PbeDigest PbeDigest { get; set; }
         
-        [JsonIgnore]
+        [JsonIgnoreAttribute]
         public char[] PbePassword { get; set; }
 
-        [JsonIgnore]
-        public byte[] PbeKey { get; set; }
+        [JsonIgnoreAttribute]
+        public byte[] Key { get; set; }
         
         [JsonProperty(Required = Required.Always)]
         public bool IsIntegrityActive { get; set; }
@@ -89,15 +95,23 @@ namespace BcFactory
         /// <returns>String representation of current CryptoConfig.</returns>
         public override string ToString()
         {
-            return $"IsEncryptActive: {IsEncryptActive},\n" +
-                   $"IsPbeActive: {IsPbeActive},\n" +
-                   $"PbePassword: {PbePassword},\n" +
-                   $"PbeAlgorithm: {PbeAlgorithm},\n" +
-                   $"PbeDigest: {PbeDigest},\n" +
+            return $"FormatVersion: {FormatVersion},\n" +
+                   $"Encoding: {Encoding},\n" +
+                   $"IvOrSalt: {IvOrSalt},\n" +
+                   $"SignaturePublicKey: {SignaturePublicKey},\n" +
+                   $"SignaturePrivateKey: {SignaturePrivateKey},\n" +
+                   $"Signature: {Signature},\n" +
+                   $"Cipher: {Cipher},\n" +
+                   $"IsEncryptActive: {IsEncryptActive},\n" +
                    $"CipherAlgorithm: {CipherAlgorithm},\n" +
                    $"KeySize: {KeySize},\n" +
                    $"BlockMode: {BlockMode},\n" +
                    $"Padding: {Padding},\n" +
+                   $"IsPbeActive: {IsPbeActive},\n" +
+                   $"PbeAlgorithm: {PbeAlgorithm},\n" +
+                   $"PbeDigest: {PbeDigest},\n" +
+                   $"PbePassword: {PbePassword},\n" +
+                   $"Key: {Key},\n" +
                    $"IsIntegrityActive: {IsIntegrityActive},\n" +
                    $"Integrity: {Integrity},\n" +
                    $"IntegrityOptions: {IntegrityOptions},\n";
@@ -145,7 +159,7 @@ namespace BcFactory
         }
 
         /// <summary>
-        /// Determines valid Paddings for given Blockmodes.
+        /// Determines valid Paddings for given Blockmode.
         /// </summary>
         /// <returns>Enum holding valid Paddings</returns>
         public IEnumerable<Padding> GetValidPaddings()
@@ -166,7 +180,7 @@ namespace BcFactory
         }
 
         /// <summary>
-        /// Determines valid IntegrityOptions for given Integrity selection.
+        /// Determines valid integrity options for given integrity selection (like certificate or digest).
         /// </summary>
         /// <returns>Enum holding valid IntegrityOptions</returns>
         public IEnumerable<IntegrityOptions> GetIntegrityOptions()
@@ -181,7 +195,7 @@ namespace BcFactory
         }
 
         /// <summary>
-        /// Determines valid IntegrityLabels for given PBE-Parameters.
+        /// Determines valid integrity labels for given PBE-Parameters.
         /// </summary>
         /// <returns>Enum entry holding the related Digest</returns>
         public PbeDigest GetDigest()
@@ -195,7 +209,7 @@ namespace BcFactory
         }
 
         /// <summary>
-        /// Determines valid Keysizes based on given Cipher- and/or PBE-Algorithms.
+        /// Determines valid key sizes based on given Cipher- and/or PBE-Algorithms.
         /// </summary>
         /// <returns>Enum holding valid IntegrityOptions</returns>
         public int[] GetKeySizes()

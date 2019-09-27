@@ -27,9 +27,8 @@ namespace BcFactory.Factories
             return salt;
         }
         
-        public byte[] EncryptTextToBytes(string content)
+        public byte[] GenerateKeyBytes(char[] passwordChars)
         {
-            var passwordChars = content.ToCharArray();
             byte[] keyBytes;
             
             switch (_config.PbeAlgorithm)
@@ -43,7 +42,6 @@ namespace BcFactory.Factories
                     keyBytes = _config.CipherAlgorithm == CipherAlgorithm.RC4 ? BcPKCS5Scheme(passwordChars, _salt,128) : BcPKCS5Scheme2(passwordChars, _salt,128);
                     break;
             }
-            Console.WriteLine(Convert.ToBase64String(keyBytes));
             return keyBytes;
         }
 

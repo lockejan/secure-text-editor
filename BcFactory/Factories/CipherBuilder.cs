@@ -32,8 +32,8 @@ namespace BcFactory.Factories
 
             var keySizeString = GetKeySizeString();
 
-            if (_config.PbeKey == null)
-                GenerateKey(_config.CipherAlgorithm.ToString() + keySizeString);
+            if (_config.Key == null)
+                GenerateKey(_config.CipherAlgorithm + keySizeString);
 
             InitEngine();
         }
@@ -88,64 +88,56 @@ namespace BcFactory.Factories
                 _myRc4.ProcessBytes(_textBytes, 0, _textBytes.Length, outBuffer, 0);
                 //One occurence of broken cipherText with current LINQ. 
                 return outBuffer.Where(x => x != 0).ToArray();
+                //UpdateEncryptedBytes(outBuffer);
             }
-
+            
+            IBufferedCipher cipher = null;
+            IBlockCipherPadding padding;
+            
             switch (_config.BlockMode)
             {
                 case BlockMode.ECB:
-                    if (Padding.ZeroByte == _config.Padding)
-                    {
-                        PaddedBufferedBlockCipher ecb = new PaddedBufferedBlockCipher(_myAes, new ZeroBytePadding());
-                        ecb.Init(true, keyParam);
-                        _encryptedBytes = ecb.DoFinal(_textBytes);
-                    }
-                    else
-                    {
-                        PaddedBufferedBlockCipher ecb = new PaddedBufferedBlockCipher(_myAes, new Pkcs7Padding());
-                        ecb.Init(true, keyParam);
-                        _encryptedBytes = ecb.DoFinal(_textBytes);
-                    }
+                    padding = GetBlockCipherPadding();
+                    var ecb = new PaddedBufferedBlockCipher(_myAes, padding);
+                    ecb.Init(true, keyParam);
+                    cipher = ecb;
                     break;
-                case BlockMode.CBC:
-                    if (Padding.ZeroByte == _config.Padding)
-                    {
-                        var cbc = new PaddedBufferedBlockCipher(new CbcBlockCipher(_myAes), new ZeroBytePadding());
-                        cbc.Init(true, GetKeyParamWithIv(keyParam));
-                        _encryptedBytes = cbc.DoFinal(_textBytes);
-                    }
-                    else
-                    {
-                        var cbc = new PaddedBufferedBlockCipher(new CbcBlockCipher(_myAes), new Pkcs7Padding());
-                        cbc.Init(true, GetKeyParamWithIv(keyParam));
-                        _encryptedBytes = cbc.DoFinal(_textBytes);
-                    }
 
+                case BlockMode.CBC:
+                    padding = GetBlockCipherPadding();
+                    var cbc = new PaddedBufferedBlockCipher(new CbcBlockCipher(_myAes), padding);
+                    cbc.Init(true, GetKeyParamWithIv(keyParam));
+                    cipher = cbc;
                     break;
+
                 case BlockMode.CTS:
                     var cts = new CtsBlockCipher(new CbcBlockCipher(_myAes));
                     cts.Init(true, GetKeyParamWithIv(keyParam));
-                    _encryptedBytes = cts.DoFinal(_textBytes);
+                    cipher = cts;
                     break;
 
                 case BlockMode.OFB:
                     var ofb = new BufferedBlockCipher(new OfbBlockCipher(_myAes, 8));
                     ofb.Init(true, GetKeyParamWithIv(keyParam));
-                    _encryptedBytes = ofb.DoFinal(_textBytes);
+                    cipher = ofb;
                     break;
 
                 case BlockMode.GCM:
                     var gcm = new GcmBlockCipher(_myAes);
-                    AeadParameters parameters =
-                        new AeadParameters(new KeyParameter(_myKey), 128, _myIv, null);
-
+                    var parameters = new AeadParameters(new KeyParameter(_myKey), 128, _myIv, null);
                     gcm.Init(true, parameters);
 
                     _encryptedBytes = new byte[gcm.GetOutputSize(_textBytes.Length)];
-                    Int32 returnedLength = gcm.ProcessBytes
-                        (_textBytes, 0, _textBytes.Length, _encryptedBytes, 0);
+                    Int32 returnedLength = gcm.ProcessBytes(_textBytes, 0, _textBytes.Length, _encryptedBytes, 0);
                     gcm.DoFinal(_encryptedBytes, returnedLength);
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(_config.BlockMode));
             }
+            
+            if (cipher != null)
+                UpdateEncryptedBytes(cipher);
+
             return _encryptedBytes;
         }
 
@@ -164,7 +156,6 @@ namespace BcFactory.Factories
             {
                 IBufferedCipher cipher = null;
                 IBlockCipherPadding padding;
-                //int byteCount = -1;
 
                 switch (_config.BlockMode)
                 {
@@ -226,6 +217,11 @@ namespace BcFactory.Factories
         private void UpdatePlainText(byte[] decryptedBytes)
         {
             _plainText = Encoding.UTF8.GetString(decryptedBytes);
+        } 
+        
+        private void UpdateEncryptedBytes(IBufferedCipher cipher)
+        {
+            _encryptedBytes = cipher.DoFinal(_textBytes);
         }
 
         private IBlockCipherPadding GetBlockCipherPadding()
