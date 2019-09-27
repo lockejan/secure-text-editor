@@ -2,6 +2,7 @@ using System;
 using BcFactory;
 using Medja.Controls;
 using Medja.Theming;
+using SecureTextEditor.FileHandler;
 
 namespace SecureTextEditor.Views
 {
@@ -16,7 +17,9 @@ namespace SecureTextEditor.Views
         private Button _saveBtn;
         private Button _newBtn;
 
-        private TextEditor _textBox;
+        private CryptoConfig _config;
+
+        private readonly TextEditor _textBox;
 
         private string Text
         {
@@ -28,7 +31,7 @@ namespace SecureTextEditor.Views
         /// Creates mainView Component.
         /// Expects ControlFactory to create component. 
         /// </summary>
-        /// <param name="controlFactory">Factory coming from medja.UI which is needed to provide control creation</param>
+        /// <param name="controlFactory">Factory coming from medja.UI which is needed for control creation</param>
         public SteMainView(IControlFactory controlFactory)
         {
             _controlFactory = controlFactory;
@@ -59,7 +62,7 @@ namespace SecureTextEditor.Views
             buttonStackPanel.Add(_newBtn);
             buttonStackPanel.Add(_loadBtn);
             buttonStackPanel.Add(_saveBtn);
-            buttonStackPanel.Margin.SetAll(5);
+            buttonStackPanel.Margin.Left = 5;
 
             return buttonStackPanel;
         }
@@ -69,10 +72,12 @@ namespace SecureTextEditor.Views
             void ConfigButton(Button btn, string label)
             {
                 btn.Text = label;
+                btn.Margin.SetTopAndBottom(5);
+                btn.Padding.Top = 5;
             }
 
-            //theme - klasse überladen - um buttonheight anzupassen
-            //alternative - padding manuell an btns setzen
+            //theme - overload class to change button height
+            //alternative - set padding manually at btn-control
             ConfigButton(_newBtn = _controlFactory.Create<Button>(), "New");
             ConfigButton(_loadBtn = _controlFactory.Create<Button>(), "Load");
             ConfigButton(_saveBtn = _controlFactory.Create<Button>(), "Save");
@@ -80,96 +85,51 @@ namespace SecureTextEditor.Views
 
         private void RegisterButtonEvents()
         {
-            _newBtn.InputState.Clicked += (s,e) => {Text = "";};
+            _newBtn.InputState.Clicked += (s, e) =>
+            {
+                _textBox.SetText("");
+                _textBox.SetCaretPosition(0,0);
+                FocusManager.Default.SetFocus(_textBox);
+            };
+            
             _loadBtn.InputState.Clicked += OnLoadButtonClicked;
             _saveBtn.InputState.Clicked += OnSaveButtonClicked;
         }
         
         private void OnLoadButtonClicked(object sender, EventArgs e)
         {
-            //            Text = SteLoadCli.LoadTextDialog();
             var content = new SteLoadDialog(_controlFactory);
-            //var dialog = _controlFactory.Create<ConfirmableDialog>(
-            //  d => { d.Content = content; });
-
             var dialog = _controlFactory.Create<ConfirmableDialog>();
             var dockPanel = dialog.Content as DockPanel;
-            dockPanel.Add(Dock.Fill, content);
+            
+            dockPanel?.Add(Dock.Fill, content);
+            
             ExecuteOnceOnClose(dialog, () =>
             {
-                
-                // ...
-//                var settings = content.Settings;
-//                CryptoFile.Save(settings, fileName, fileContent);
-
-// NEW API PROPOSAL FOR LOAD
-//                var encryptedFileContent = "...";
-//                var crypt = CryptFactory.Create(settings);
-//                var result = crypt.Decrypt(settings);
-
+                if (dialog.IsConfirmed)
+                {
+                    _config = SteCryptoHandler.LoadSteFile(content.Filename.Text);
+                    Text = SteCryptoHandler.ProcessConfigToLoad(_config);
+                }
+                FocusManager.Default.SetFocus(_textBox);
             });
-
             DialogService.Show(dialog);
-//            FocusManager.Default.SetFocus(_textBox);
         }
 
         private void OnSaveButtonClicked(object sender, EventArgs e)
         {
-        //            SteSaveCli.SaveDialog(Text);
-        //            DialogService.Show(
-        //                  _controlFactory.Create<Dialog>(
-        //                    dialog =>
-        //                        dialog.Content = new SteSaveDialog(_controlFactory)));
-
             var content = new SteSaveDialog(_controlFactory);
-            //var dialog = _controlFactory.Create<ConfirmableDialog>(
-              //  d => { d.Content = content; });
-
             var dialog = _controlFactory.Create<ConfirmableDialog>();
             var dockPanel = dialog.Content as DockPanel;
-            dockPanel.Add(Dock.Fill, content);
+            
+            dockPanel?.Add(Dock.Fill, content);
+            
             ExecuteOnceOnClose(dialog, () =>
             {
-                //#######################################
-                Console.WriteLine(content.Config);
-
-                if (content.Config.IsEncryptActive)
+                if (dialog.IsConfirmed)
                 {
-                    if (content.Config.IsPbeActive)
-                    {
-                        var pbecrypt = CryptoFactory.Create(content.Config);
-                        // JUST FOR TESTING - CHANGE SIGNATURE TO ACCEPT CHAR[]   
-                        var pbeKey = pbecrypt.EncryptTextToBytes(content.Config.PbePassword.ToString());
-                        content.Config.Key = pbeKey;
-                    }
-
-                    var tester = "Hallo Welttttttt";
-                    var crypt = CryptoFactory.Create(content.Config);
-                    var encrypted = crypt.EncryptTextToBytes(tester);
-
-                    Console.WriteLine($"Cipher:{Convert.ToBase64String(encrypted)}");
-                    var decrypted = crypt.DecryptBytesToText(encrypted);
-                    Console.WriteLine($"Text: {decrypted}");
+                    SteCryptoHandler.ProcessConfigToSave(content.Filename.Text, Text, _config);
                 }
-
-                if (content.Config.IsIntegrityActive)
-                {
-                    var sign = IntegrityFactory.Create(content.Config);
-                    var digest = Convert.ToBase64String(sign.SignBytes("Hallo Welt"));
-                    var result = sign.VerifySign(digest, "Hallo Welt");
-                    Console.WriteLine(result);
-                }
-                //#########################################
-                content.ResetPassword();
-
-//                ...
-//                var settings = content.Settings;
-//                CryptoFile.Save(settings, fileName, fileContent);
-
-//                PROPOSAL FOR NEW APPROACH
-//                var textEditorContent = "....";
-//                var crypt = CryptFactory.Create(settings); <= config object
-//                var result = crypt.Encrypt(textEditorContent); <= process content using given params
             });
 
             DialogService.Show(dialog);
