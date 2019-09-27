@@ -15,7 +15,8 @@ namespace SecureTextEditor.Views
 
         private TextBox _passwordInput;
         private TextBox _filenameInput;
-                
+        public TextBox Filename => _filenameInput;
+
         private readonly VerticalStackPanel _firstColumnStack;
         private readonly VerticalStackPanel _secColumnStack;
 
