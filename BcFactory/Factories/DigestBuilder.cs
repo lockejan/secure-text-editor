@@ -6,7 +6,7 @@ using Org.BouncyCastle.Crypto.Macs;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 
-namespace BcFactory
+namespace BcFactory.Factories
 {
     public class DigestBuilder : IIntegrity
     {

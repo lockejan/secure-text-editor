@@ -8,7 +8,7 @@ using Org.BouncyCastle.Crypto.Paddings;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 
-namespace BcFactory
+namespace BcFactory.Factories
 {
     /// <inheritdoc />
     public class CipherBuilder : ICrypto

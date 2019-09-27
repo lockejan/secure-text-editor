@@ -5,9 +5,9 @@ using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 
-namespace BcFactory
+namespace BcFactory.Factories
 {
-    public class PbeBuilder : ICrypto
+    internal class PbeBuilder
     {
         private readonly CryptoConfig _config;
         private readonly byte[] _salt;

@@ -1,10 +1,18 @@
-using System;
 using System.Text;
+using BcFactory.Factories;
 
 namespace BcFactory
 {
+    /// <summary>
+    /// Factory class for Cipher Processing.
+    /// </summary>
     public static class CryptoFactory
     {
+        /// <summary>
+        /// Gets a CryptoProcessor-Object from some factory.
+        /// </summary>
+        /// <param name="settings">CryptoConfig Object which holds all parameters needed for processing</param>
+        /// <returns>Object of some cryptoProcessing class.</returns>
         public static ICrypto Create(CryptoConfig settings)
         {
             if (settings.IsEncryptActive)
@@ -14,6 +22,9 @@ namespace BcFactory
         }
     }
 
+    /// <summary>
+    /// Factory class for Digests and Certificates.
+    /// </summary>
     public static class IntegrityFactory
     {
         public static IIntegrity Create(CryptoConfig settings)
@@ -76,11 +87,10 @@ namespace BcFactory
     }
 
     /// <summary>
-    /// 
+    /// Interface which defines essential functions to.
     /// </summary>
     public interface IIntegrity
     {
-        void CreateCertificate();
         /// <summary>
         /// 
         /// </summary>
