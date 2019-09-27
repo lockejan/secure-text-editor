@@ -1,7 +1,6 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
+using BcFactory.Resources;
+using Newtonsoft.Json;
 
 namespace BcFactory
 {
@@ -12,21 +11,76 @@ namespace BcFactory
     /// </summary>
     public class CryptoConfig
     {
+        [JsonProperty(Required = Required.Always)]
+        private string FormatVersion { get; } = "0.1";
+
+        [JsonProperty(Required = Required.Always)]
+        private string Encoding { get; }
+
+        [JsonProperty(Required = Required.Default)]
+        private string IvOrSalt { get; }
+
+        [JsonProperty(Required = Required.Default)]
+        private string SignaturePublicKey { get; }
+
+        [JsonProperty(Required = Required.Default)]
+        private string Signature { get; }
+
+        [JsonProperty(Required = Required.Always)]
+        private string Cipher { get; }
+        
+        /// <summary>
+        /// Referring to whether or not encryption is activated.
+        /// </summary>
+        [JsonProperty(Required = Required.Always)]
         public bool IsEncryptActive { get; set; }
+        
+        /// <summary>
+        /// Representing the used cipher algorithm.
+        /// </summary>
+        [JsonProperty(Required = Required.Default)]
         public CipherAlgorithm CipherAlgorithm { get; set; }
+        
+        /// <summary>
+        /// Representing the key size used by related cipher algorithm.
+        /// </summary>
+        [JsonProperty(Required = Required.Default)]
         public int KeySize { get; set; }
+        
+        /// <summary>
+        /// Representing the block mode used by the cipher engine.
+        /// </summary>
+        [JsonProperty(Required = Required.Default)]
         public BlockMode BlockMode { get; set; }
+        
+        /// <summary>
+        /// Representing the padding used by the cipher engine.
+        /// </summary>
+        [JsonProperty(Required = Required.Default)]
         public Padding Padding { get; set; }
+        
+        [JsonProperty(Required = Required.Always)]
         public bool IsPbeActive { get; set; }
+        
+        [JsonProperty(Required = Required.Default)]
         public PbeAlgorithm PbeAlgorithm { get; set; }
+        
+        [JsonProperty(Required = Required.Default)]
         public PbeDigest PbeDigest { get; set; }
+        
+        [JsonIgnore]
         public char[] PbePassword { get; set; }
 
-        //[JSONIgnore]
+        [JsonIgnore]
         public byte[] PbeKey { get; set; }
-
+        
+        [JsonProperty(Required = Required.Always)]
         public bool IsIntegrityActive { get; set; }
+        
+        [JsonProperty(Required = Required.Default)]
         public Integrity Integrity { get; set; }
+        
+        [JsonProperty(Required = Required.Default)]
         public IntegrityOptions IntegrityOptions { get; set; }
 
         /// <summary>
@@ -147,7 +201,7 @@ namespace BcFactory
         public int[] GetKeySizes()
         {
             if (CipherAlgorithm == CipherAlgorithm.RC4)
-                return BcFactory.KeySize.RC4;
+                return Resources.KeySize.RC4;
 
             if (IsPbeActive)
             {
@@ -163,7 +217,7 @@ namespace BcFactory
                         return new[] { 40 };
                 }
             }
-            return BcFactory.KeySize.AES;
+            return Resources.KeySize.AES;
         }
     }
 }

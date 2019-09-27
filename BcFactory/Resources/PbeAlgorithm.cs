@@ -1,4 +1,4 @@
-namespace BcFactory
+namespace BcFactory.Resources
 {
     /// <summary>
     /// Holds all available PBE algorithm which can be used by the editor. 

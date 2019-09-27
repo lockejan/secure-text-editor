@@ -1,4 +1,4 @@
-namespace BcFactory
+namespace BcFactory.Resources
 {
     /// <summary>
     /// All available Keysizes for given block and stream ciphers.

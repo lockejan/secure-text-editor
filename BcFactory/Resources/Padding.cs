@@ -1,4 +1,4 @@
-namespace BcFactory
+namespace BcFactory.Resources
 {
     /// <summary>
     /// Holds all sort of paddings which are available for cipher processing. 

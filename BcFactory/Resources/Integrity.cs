@@ -1,4 +1,4 @@
-namespace BcFactory
+namespace BcFactory.Resources
 {
     /// <summary>
     /// Holds all available forms of integrity related functions.

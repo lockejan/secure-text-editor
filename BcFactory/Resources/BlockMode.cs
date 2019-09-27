@@ -1,4 +1,4 @@
-namespace BcFactory
+namespace BcFactory.Resources
 {
     /// <summary>
     /// Holds all available Blockmodes which can be used with symmetric cipher algorithms.

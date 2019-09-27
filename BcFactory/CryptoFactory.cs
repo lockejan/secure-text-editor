@@ -1,5 +1,6 @@
 using System.Text;
 using BcFactory.Factories;
+using BcFactory.Resources;
 
 namespace BcFactory
 {

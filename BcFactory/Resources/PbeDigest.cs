@@ -1,4 +1,4 @@
-namespace BcFactory
+namespace BcFactory.Resources
 {
     /// <summary>
     /// All PBE related forms of hashes or other algorithms which provide any sort of integrity. 

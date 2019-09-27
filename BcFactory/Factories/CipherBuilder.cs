@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Text;
+using BcFactory.Resources;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Modes;

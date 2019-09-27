@@ -1,4 +1,4 @@
-namespace BcFactory
+namespace BcFactory.Resources
 {
     /// <summary>
     /// All available Digests and Algorithms which are available to be used with DSA or just as Digest.
