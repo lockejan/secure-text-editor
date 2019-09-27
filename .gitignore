@@ -96,6 +96,9 @@ fabric.properties
 *.DotSettings.user
 SecureTextEditor/*.ste
 SecureTextEditor/*.key
+*.ste
+*.key
+*.pem
 packages/
 **/bin/
 **/obj/

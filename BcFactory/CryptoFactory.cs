@@ -46,6 +46,8 @@ namespace BcFactory
     /// </summary>
     public interface ICrypto
     {
+        string MyIv { get; }
+        byte[] MyKey { get; }
         /// <summary>
         /// 
         /// </summary>
@@ -65,7 +67,12 @@ namespace BcFactory
     /// </summary>
     public class NoopCrypto : ICrypto
     {
-        
+        /// <inheritdoc />
+        public string MyIv { get; }
+
+        /// <inheritdoc />
+        public byte[] MyKey { get; }
+
         /// <summary>
         /// 
         /// </summary>
