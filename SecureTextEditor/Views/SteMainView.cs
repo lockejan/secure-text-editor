@@ -113,6 +113,7 @@ namespace SecureTextEditor.Views
                 }
                 FocusManager.Default.SetFocus(_textBox);
             });
+            
             DialogService.Show(dialog);
         }
 
@@ -130,6 +131,7 @@ namespace SecureTextEditor.Views
                 {
                     SteCryptoHandler.ProcessConfigToSave(content.Filename.Text, Text, _config);
                 }
+                FocusManager.Default.SetFocus(_textBox);
             });
 
             DialogService.Show(dialog);

@@ -1,3 +1,4 @@
+#pragma warning disable 1591
 namespace SecureTextEditor.Views
 {
     /// <summary>
@@ -6,7 +7,7 @@ namespace SecureTextEditor.Views
     public enum Sections
     {
         Encryption,
-        PBE,
+        Pbe,
         Integrity
     }
 }
