@@ -8,7 +8,7 @@ namespace SecureTextEditor
 {
     class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             var library = new MedjaOpenTkLibrary(new DarkBlueTheme());
 
@@ -16,17 +16,13 @@ namespace SecureTextEditor
             var application = MedjaApplication.Create(library);
 
             var window = application.CreateWindow();
-            //            window.CenterOnScreen(800, 600);
-            /*window.Position.Width = 800;
-            window.Position.Height = 600;*/
-            window.Title = "NotYetSecureTextEditor";
+            //window.CenterOnScreen(800, 600);
+            window.Title = "SecureTextEditor";
             window.AutoSetContentAlignment = true;
 
             var container = DialogService.CreateContainer(controlFactory, new SteMainView(controlFactory));
             container.DialogPadding.SetAll(5);
-            //container.DialogPadding.Bottom = 50;
             window.Content = container;
-            //window.Content = new SteSaveDialog(controlFactory);
 
             application.MainWindow = window;
             application.Run();
