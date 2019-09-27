@@ -6,6 +6,7 @@ using Medja.Theming;
 using Medja;
 using Medja.Properties;
 using BcFactory;
+using BcFactory.Resources;
 using SecureTextEditor.FileHandler;
 
 namespace SecureTextEditor.Views
@@ -143,7 +144,6 @@ namespace SecureTextEditor.Views
             _encryptionCheckBox = Init("Encryption ?");
             _encryptionCheckBox.IsChecked = true;
             _pbeCheckBox = Init("PBE ?");
-            //_pbeCheckBox.IsEnabled = false;
             _integrityCheckBox = Init("Integrity ?");
 
             var isEncryptActiveProperty = new PropertyWrapper<CryptoConfig, bool>(_config,
@@ -426,7 +426,7 @@ namespace SecureTextEditor.Views
 
         public void ResetPassword()
         {
-            _passwordInput = null;
+            _passwordInput.Text = "";
         }
 
     }

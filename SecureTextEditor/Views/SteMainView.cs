@@ -140,7 +140,7 @@ namespace SecureTextEditor.Views
                         var pbecrypt = CryptoFactory.Create(content.Config);
                         // JUST FOR TESTING - CHANGE SIGNATURE TO ACCEPT CHAR[]   
                         var pbeKey = pbecrypt.EncryptTextToBytes(content.Config.PbePassword.ToString());
-                        content.Config.PbeKey = pbeKey;
+                        content.Config.Key = pbeKey;
                     }
 
                     var tester = "Hallo Welttttttt";
