@@ -1,5 +1,6 @@
 using System;
 using BcFactory;
+using BcFactory.Resources;
 using SecureTextEditor.FileHandler;
 
 namespace SecureTextEditor.CLI
@@ -44,7 +45,7 @@ namespace SecureTextEditor.CLI
                 case 1:
                     CipherDialog();
                     BlockModeDialog();
-                    PaddingDialog(_config.BlockMode);
+                    PaddingDialog();
                     IntegrityDialog(_config.BlockMode);
                     FileDialog(plainText);
                     break;
@@ -92,62 +93,57 @@ namespace SecureTextEditor.CLI
 
         private void IntegrityDialog(BlockMode blockMode)
         {
-            string IntegrityDetails(string selected)
+            IntegrityOptions IntegrityOptions()
             {
                 Console.WriteLine("\nThese are your current options:\n");
                 int j = 0;
-                foreach (var option in SteMenu.IntegrityMenuTree[selected])
+                foreach (var option in _config.GetIntegrityOptions())
                 {
                     Console.WriteLine($"{j}. {option}");
                     j++;
                 }
                 Console.WriteLine("\nPlease enter your selection:[0]");
-                return Console.ReadLine();
+                var selected = Console.ReadLine();
+                return (IntegrityOptions) Convert.ToInt32(selected);
             }
 
             if (blockMode == BlockMode.GCM) return;
             Console.WriteLine("Please choose next which form of integrity should be used.\n");
             int i = 0;
-            foreach (var integrityOptions in SteMenu.IntegrityMenuTree)
+            foreach (Integrity options in Enum.GetValues(typeof(Integrity)))
             {
-                Console.WriteLine($"{i}. {integrityOptions.Key}");
+                Console.WriteLine($"{i}. {options}");
                 i++;
             }
             var buffer = Console.ReadLine();
-            var selectedIntegrityMode = SteMenu.IntegrityMenuTree.Keys.ToList()[Convert.ToInt32(buffer)];
-
-            buffer = IntegrityDetails(selectedIntegrityMode);
-            var selectedIntegrityOption = SteMenu.IntegrityMenuTree[selectedIntegrityMode][Convert.ToInt32(buffer)];
-            _config.Integrity = selectedIntegrityMode;
-            _config.IntegrityOptions = selectedIntegrityOption;
+            _config.Integrity = (Integrity)Convert.ToInt32(buffer);
+            _config.IntegrityOptions = IntegrityOptions();
         }
 
-        private void PaddingDialog(BlockMode blockMode)
+        private void PaddingDialog()
         {
             Console.WriteLine("Please choose next which padding should be used.\n");
             int i = 0;
-            foreach (var padding in SteMenu.CipherOptionsMenuTree[blockMode])
+            foreach (var padding in _config.GetValidPaddings())
             {
                 Console.WriteLine($"{i}. {padding}");
                 i++;
             }
             var buffer = Console.ReadLine();
-            var selectedPadding = SteMenu.CipherOptionsMenuTree[blockMode][Convert.ToInt32(buffer)];
-            _config.Padding = selectedPadding;
+            _config.Padding = (Padding)Convert.ToInt32(buffer);
         }
 
         private void BlockModeDialog()
         {
             Console.WriteLine("Please choose next which block mode should be used.\n");
             int i = 0;
-            foreach (var blockMode in SteMenu.CipherOptionsMenuTree)
+            foreach (var blockMode in _config.GetValidBlockModes())
             {
-                Console.WriteLine($"{i}. {blockMode.Key}");
+                Console.WriteLine($"{i}. {blockMode}");
                 i++;
             }
             var buffer = Console.ReadLine();
-            var selectedBlockMode = SteMenu.CipherOptionsMenuTree.Keys.ToList()[Convert.ToInt32(buffer)];
-            _config.BlockMode = selectedBlockMode;
+            _config.BlockMode = (BlockMode)Convert.ToInt32(buffer);
         }
 
         private void CipherDialog()
@@ -155,7 +151,7 @@ namespace SecureTextEditor.CLI
             CipherAlgorithm cipherAlgorithm = CipherAlgorithm.AES;
             Console.WriteLine("Currently there is only AES available for encryption.\nWhich key length you wanna use?\n");
             int i = 0;
-            foreach (var keySize in KeySize.AES)
+            foreach (var keySize in _config.GetKeySizes())
             {
                 Console.WriteLine($"{i}. {keySize} bit");
                 i++;
@@ -178,14 +174,13 @@ namespace SecureTextEditor.CLI
         {
             Console.WriteLine("Which PBE option you wanna use?\n");
             int i = 0;
-            foreach (var pbeAlgorithm in SteMenu.PBEMenuTree)
+            foreach (PbeAlgorithm algorithm in Enum.GetValues(typeof(PbeAlgorithm)))
             {
-                Console.WriteLine($"{i}. PBE{pbeAlgorithm.Key}");
+                Console.WriteLine($"{i}. {algorithm}");
                 i++;
             }
             var buffer = Console.ReadLine();
-            var selectedPbe = SteMenu.PBEMenuTree.Keys.ToList()[Convert.ToInt32(buffer)];
-            _config.PbeAlgorithm = selectedPbe;
+            _config.PbeAlgorithm = (PbeAlgorithm)Convert.ToInt32(buffer);
         }
 
     }
