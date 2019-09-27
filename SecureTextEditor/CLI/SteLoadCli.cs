@@ -1,52 +1,47 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using BcFactory;
 using Newtonsoft.Json;
 using SecureTextEditor.FileHandler;
 
-namespace SecureTextEditor.Views
+namespace SecureTextEditor.CLI
 {
-    /// <summary>
-    /// 
-    /// </summary>
+
     public static class SteLoadCli
     {
-        private static SteModel _jsonModel;
-        private static string _key;
-        
-        private static String LoadTextfile(String path)
+        private static CryptoConfig _config;
+        private static String LoadSteFile(String path)
         {
-            path = SteHelper.WorkingDirectory + "/../../../" + path;
+            path = SteHelper.WorkingDirectory + path;
             if (File.Exists($"{path}.ste"))
             {
-                var cryptoData = File.ReadAllText($"{path}.ste", Encoding.UTF8);
-                _jsonModel = JsonConvert.DeserializeObject<SteModel>(cryptoData);
-                
-                Dictionary<string, string> param = new Dictionary<string, string>
+                try
                 {
-                    {"Algorithm", "AES"},
-                    {"KeySize", "192"},
-                    {"BlockMode", "CBC"},
-                    {"Padding", "PKCS7"},
-                    {"IvOrSalt", "oKqt6baRQ+6/m7J59TTDmizRKwVLybQz"},
-                    {"cipher", "q5ca6f0RDjljoMJa0zHBGQ=="}
-                };
-                
-                _key = File.ReadAllText($"{path}.key", Encoding.UTF8);
-                //return SteCryptoHandler.ProcessConfigToLoad(_key, param);
-                return "blub";
+                    var cryptoData = File.ReadAllText($"{path}.ste", Encoding.UTF8);
+                    _config = JsonConvert.DeserializeObject<CryptoConfig>(cryptoData);
+                    
+                    if (File.Exists($"{path}.key"))
+                        _config.Key = File.ReadAllBytes($"{path}.key");
+                    
+                    if (_config.IsIntegrityActive && File.Exists($"{path}.pem"))
+                        _config.SignaturePublicKey = File.ReadAllText($"{path}.pem");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+
+                return SteCryptoHandler.ProcessConfigToLoad(_config);
             }
             return "File not found!";
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
+        
         public static String LoadTextDialog()
         {
             Console.WriteLine("Please enter the file you wanna open:\n");
-            return LoadTextfile(Console.ReadLine());
+            return LoadSteFile(Console.ReadLine());
         }
 
     }
