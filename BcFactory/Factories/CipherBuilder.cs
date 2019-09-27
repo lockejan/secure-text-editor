@@ -23,7 +23,11 @@ namespace BcFactory.Factories
         private AesEngine _myAes;
         private RC4Engine _myRc4;
         private byte[] _myIv;
-        private byte[] _myKey;
+
+        string? ICrypto.MyIv => _myIv == null ? null : Convert.ToBase64String(_myIv);
+
+        //private byte[] _myKey;
+        byte[] ICrypto.MyKey => _config.Key;
 
         /// <inheritdoc />
         public CipherBuilder(CryptoConfig config)
@@ -48,7 +52,7 @@ namespace BcFactory.Factories
         private void GenerateKey(string cipher)
         {
             var gen = GeneratorUtilities.GetKeyGenerator(cipher);
-            _myKey = gen.GenerateKey();
+            _config.Key = gen.GenerateKey();
         }
 
         private void InitEngine()
@@ -58,15 +62,23 @@ namespace BcFactory.Factories
             else
             {
                 _myAes = new AesEngine();
-                _myIv = _config.BlockMode == BlockMode.ECB ? null : GenerateIv();
+                if (_config.IvOrSalt != null)
+                {
+                    _myIv = Convert.FromBase64String(_config.IvOrSalt);
+                }
+                else
+                {
+                    _myIv = _config.BlockMode == BlockMode.ECB ? null : GenerateIv();
+                }
             }
         }
 
         private byte[] GenerateIv()
         {
             SecureRandom random = new SecureRandom();
-            var iv = new byte[_myKey.Length];
+            var iv = new byte[_config.Key.Length];
             random.NextBytes(iv);
+            _config.IvOrSalt = Convert.ToBase64String(iv);
             return iv;
         }
 
@@ -79,7 +91,7 @@ namespace BcFactory.Factories
         public byte[] EncryptTextToBytes(string input)
         {
             _textBytes = Encoding.UTF8.GetBytes(input);
-            KeyParameter keyParam = new KeyParameter(_myKey);
+            KeyParameter keyParam = new KeyParameter(_config.Key);
 
             if (_config.CipherAlgorithm == CipherAlgorithm.RC4)
             {
@@ -124,7 +136,7 @@ namespace BcFactory.Factories
 
                 case BlockMode.GCM:
                     var gcm = new GcmBlockCipher(_myAes);
-                    var parameters = new AeadParameters(new KeyParameter(_myKey), 128, _myIv, null);
+                    var parameters = new AeadParameters(new KeyParameter(_config.Key), 128, _myIv, null);
                     gcm.Init(true, parameters);
 
                     _encryptedBytes = new byte[gcm.GetOutputSize(_textBytes.Length)];
@@ -143,7 +155,7 @@ namespace BcFactory.Factories
 
         public string DecryptBytesToText(byte[] cipherBytes)
         {
-            KeyParameter keyParam = new KeyParameter(_myKey);
+            KeyParameter keyParam = new KeyParameter(_config.Key);
 
             if (_config.CipherAlgorithm == CipherAlgorithm.RC4)
             {
@@ -187,7 +199,7 @@ namespace BcFactory.Factories
 
                     case BlockMode.GCM:
                         var gcm = new GcmBlockCipher(_myAes);
-                        var parameters = new AeadParameters(new KeyParameter(_myKey), 128, _myIv, null);
+                        var parameters = new AeadParameters(new KeyParameter(_config.Key), 128, _myIv, null);
                         gcm.Init(false, parameters);
 
                         byte[] decryptedBytes = new byte[gcm.GetOutputSize(cipherBytes.Length)];
