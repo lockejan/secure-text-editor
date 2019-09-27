@@ -20,12 +20,15 @@ namespace SecureTextEditor.Views
         private readonly IControlFactory _controlFactory;
         private readonly CryptoConfig _config;
         /// <summary>
-        /// Public getter to CryptoConfig-Object.
+        /// Public interface to get CryptoConfig-Object.
         /// </summary>
         public CryptoConfig Config => _config;
 
         private TextBlock _currentDir;
         private TextBox _filenameInput;
+        /// <summary>
+        /// Public interface to get entered filename string.
+        /// </summary>
         public TextBox Filename => _filenameInput;
 
         private CheckBox _encryptionCheckBox;
@@ -33,6 +36,10 @@ namespace SecureTextEditor.Views
         private CheckBox _integrityCheckBox;
 
         private TextBox _passwordInput;
+        /// <summary>
+        /// Public interface to get provided password in saveDialog.
+        /// </summary>
+        public TextBox Password => _passwordInput;
         private ComboBox _pbeSpecComboBox;
 
         private ComboBox _cipherAlgorithmComboBox;
@@ -64,12 +71,12 @@ namespace SecureTextEditor.Views
         /// <summary>
         /// Creates saveDialog Component. Expects ControlFactory for component creation. 
         /// </summary>
-        /// <param name="controlFactory"></param>
+        /// <param name="controlFactory">medja.UI object which is needed for control creation.</param>
         public SteSaveDialog(IControlFactory controlFactory)
         {
             _controlFactory = controlFactory;
-            // TODO remove test
-            _config = new CryptoConfig { PbePassword = "secret123".ToCharArray() };
+            
+            _config = new CryptoConfig();
 
             _firstColumnStack = GetVertStackPanel(140);
             _secColumnStack = GetVertStackPanel(150);
@@ -94,42 +101,34 @@ namespace SecureTextEditor.Views
         {
             switch (section)
             {
-                case Sections.Encryption:
-                    const int idx = 5;
-                    _firstColumnStack.Children[idx].Visibility = visibility;
-                    _secColumnStack.Children[idx].Visibility = visibility;
-                    _thirdColumnStack.Children[idx].Visibility = visibility;
-                    _firstColumnStack.Children[idx + 1].Visibility = visibility;
-                    _secColumnStack.Children[idx + 1].Visibility = visibility;
-                    _thirdColumnStack.Children[idx + 1].Visibility = visibility;
-                    _firstColumnStack.Children[idx + 2].Visibility = visibility;
-                    _secColumnStack.Children[idx + 2].Visibility = visibility;
-                    _thirdColumnStack.Children[idx + 2].Visibility = visibility;
-                    break;
                 case Sections.Pbe:
-                    const int idx2 = 2;
-                    _firstColumnStack.Children[idx2].Visibility = visibility;
-                    _secColumnStack.Children[idx2].Visibility = visibility;
-                    _thirdColumnStack.Children[idx2].Visibility = visibility;
-                    _firstColumnStack.Children[idx2 + 1].Visibility = visibility;
-                    _secColumnStack.Children[idx2 + 1].Visibility = visibility;
-                    _thirdColumnStack.Children[idx2 + 1].Visibility = visibility;
-                    _firstColumnStack.Children[idx2 + 2].Visibility = visibility;
-                    _secColumnStack.Children[idx2 + 2].Visibility = visibility;
-                    _thirdColumnStack.Children[idx2 + 2].Visibility = visibility;
+                    for (int i = 2; i < 5; i++)
+                    {
+                        _firstColumnStack.Children[i].Visibility = visibility;
+                        _secColumnStack.Children[i].Visibility = visibility;
+                        _thirdColumnStack.Children[i].Visibility = visibility;
+                    }
+                    break;
+                case Sections.Encryption:
+                    for (int i = 5; i < 8; i++)
+                    {
+                        _firstColumnStack.Children[i].Visibility = visibility;
+                        _secColumnStack.Children[i].Visibility = visibility;
+                        _thirdColumnStack.Children[i].Visibility = visibility;
+                    }
                     break;
                 case Sections.Integrity:
-                    const int idx3 = 9;
-                    _firstColumnStack.Children[idx3].Visibility = visibility;
-                    _secColumnStack.Children[idx3].Visibility = visibility;
-                    _thirdColumnStack.Children[idx3].Visibility = visibility;
-                    _firstColumnStack.Children[idx3 + 1].Visibility = visibility;
-                    _secColumnStack.Children[idx3 + 1].Visibility = visibility;
-                    _thirdColumnStack.Children[idx3 + 1].Visibility = visibility;
+                    for (int i = 9; i < 11; i++)
+                    {
+                        _firstColumnStack.Children[i].Visibility = visibility;
+                        _secColumnStack.Children[i].Visibility = visibility;
+                        _thirdColumnStack.Children[i].Visibility = visibility;
+                    }
                     break;
             }
             // enforce layout update
             IsLayoutUpdated = false;
+            FocusManager.Default.SetFocus(_filenameInput);
         }
 
         private void CreateCheckBoxes()
@@ -386,7 +385,7 @@ namespace SecureTextEditor.Views
             if (string.IsNullOrEmpty(value))
                 return -1;
 
-            value = value.Substring(0, value.IndexOf(" bit"));
+            value = value.Substring(0, value.IndexOf(" bit", StringComparison.Ordinal));
             return int.Parse(value);
         }
 

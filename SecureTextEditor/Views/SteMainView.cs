@@ -129,7 +129,10 @@ namespace SecureTextEditor.Views
             {
                 if (dialog.IsConfirmed)
                 {
-                    SteCryptoHandler.ProcessConfigToSave(content.Filename.Text, Text, _config);
+                    if (content.Password.Text != null)
+                        content.Config.PbePassword = content.Password.Text.ToCharArray();
+                    
+                    SteCryptoHandler.ProcessConfigToSave(content.Filename.Text, Text, content.Config);
                 }
                 FocusManager.Default.SetFocus(_textBox);
             });
