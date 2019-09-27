@@ -26,6 +26,7 @@ namespace SecureTextEditor.Views
 
         private TextBlock _currentDir;
         private TextBox _filenameInput;
+        public TextBox Filename => _filenameInput;
 
         private CheckBox _encryptionCheckBox;
         private CheckBox _pbeCheckBox;
@@ -83,7 +84,7 @@ namespace SecureTextEditor.Views
             CreateCheckBoxes();
             FillStackPanels();
             UpdateSectionVisibility(Sections.Encryption, Visibility.Visible);
-            UpdateSectionVisibility(Sections.PBE, Visibility.Collapsed);
+            UpdateSectionVisibility(Sections.Pbe, Visibility.Collapsed);
             UpdateSectionVisibility(Sections.Integrity, Visibility.Collapsed);
             Content = CreateDockPanel();
             FocusManager.Default.SetFocus(_filenameInput);
@@ -105,7 +106,7 @@ namespace SecureTextEditor.Views
                     _secColumnStack.Children[idx + 2].Visibility = visibility;
                     _thirdColumnStack.Children[idx + 2].Visibility = visibility;
                     break;
-                case Sections.PBE:
+                case Sections.Pbe:
                     const int idx2 = 2;
                     _firstColumnStack.Children[idx2].Visibility = visibility;
                     _secColumnStack.Children[idx2].Visibility = visibility;
@@ -399,7 +400,7 @@ namespace SecureTextEditor.Views
             }
 
             UpdateSectionVisibility(Sections.Encryption, Visibility.Collapsed);
-            UpdateSectionVisibility(Sections.PBE, Visibility.Collapsed);
+            UpdateSectionVisibility(Sections.Pbe, Visibility.Collapsed);
             _pbeCheckBox.IsChecked = false;
             _pbeCheckBox.IsEnabled = false;
         }
@@ -408,10 +409,10 @@ namespace SecureTextEditor.Views
         {
             if (_pbeCheckBox.IsChecked)
             {
-                UpdateSectionVisibility(Sections.PBE, Visibility.Visible);
+                UpdateSectionVisibility(Sections.Pbe, Visibility.Visible);
                 return;
             }
-            UpdateSectionVisibility(Sections.PBE, Visibility.Collapsed);
+            UpdateSectionVisibility(Sections.Pbe, Visibility.Collapsed);
         }
 
         private void ToggleIntegritySection(object sender, EventArgs e)
@@ -423,12 +424,7 @@ namespace SecureTextEditor.Views
             }
             UpdateSectionVisibility(Sections.Integrity, Visibility.Collapsed);
         }
-
-        public void ResetPassword()
-        {
-            _passwordInput.Text = "";
-        }
-
+        
     }
 
 }
