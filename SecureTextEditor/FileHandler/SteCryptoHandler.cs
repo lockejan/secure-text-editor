@@ -26,60 +26,40 @@ namespace SecureTextEditor.FileHandler
         /// <param name="config">CryptoConfig object which holds parameters and results needed to further process</param>
         public static void ProcessConfigToSave(string fileName, string plainText, CryptoConfig config)
         {
+            fileName = SteHelper.WorkingDirectory + fileName;
+
             if (config.IsEncryptActive)
             {
                 if (config.IsPbeActive)
                 {
                     var pbeEncrypt = CryptoFactory.Create(config);
                     // JUST FOR TESTING - CHANGE SIGNATURE TO ACCEPT CHAR[]   
-                    var pbeKey = pbeEncrypt.EncryptTextToBytes(config.PbePassword.ToString());
+                    config.Key = pbeEncrypt.EncryptTextToBytes(config.PbePassword.ToString());
                 }
 
                 var crypt = CryptoFactory.Create(config);
-                config.Cipher = Convert.ToBase64String(crypt.EncryptTextToBytes(plainText)); 
-        
-                var decrypted = crypt.DecryptBytesToText(Encoding.UTF8.GetBytes(config.Cipher));
+                config.Cipher = Convert.ToBase64String(crypt.EncryptTextToBytes(plainText));
+                config.IvOrSalt = crypt.MyIv;
+                config.Key = crypt.MyKey;
+                
+                var decrypted = crypt.DecryptBytesToText(Convert.FromBase64String(config.Cipher));
                 Console.WriteLine($"Decrypted cipher: {decrypted}");
             }
 
             if (config.IsIntegrityActive)
             {
                 var sign = IntegrityFactory.Create(config);
-                var digest = Convert.ToBase64String(sign.SignBytes("Hallo Welt"));
+                config.Signature = Convert.ToBase64String(sign.SignBytes(config.Cipher));
                 
-                var verified = sign.VerifySign(digest, "Hallo Welt");
-                Console.WriteLine($"Signature/Digest verified: {verified}");
+                //var verified = sign.VerifySign(config.Signature, config);
+                //Console.WriteLine($"Signature/Digest verified: {verified}");
+                if (config.IsIntegrityActive)
+                    SavePrivateCert(fileName,config.SignaturePrivateKey);
             }
-            
+
             SaveKey(fileName, config.Key);
             
             SaveFile(fileName,config);
-            
-            if (config.SignaturePrivateKey != "")
-                SavePrivateCert(fileName,config.SignaturePrivateKey);
-            
-        }
-        
-        public static string ProcessConfigToLoad(CryptoConfig config)
-        {
-            var cryptoConfig = CryptoFactory.Create(config);
-            return cryptoConfig.DecryptBytesToText(Convert.FromBase64String(config.Cipher));
-        }
-        
-        private static void SaveKey(string path, byte[] key)
-        {
-            File.WriteAllBytes($"./{path}.key", key);
-        }
-        private static void SavePrivateCert(string path, string privateKey)
-        {
-            File.WriteAllText($"./{path}.pkey", privateKey, Encoding.UTF8);
-        }
-        
-        private static void SaveFile(string path, CryptoConfig config)
-        {
-            string json = JsonConvert.SerializeObject(config,Formatting.Indented,
-                new JsonSerializerSettings { DefaultValueHandling = DefaultValueHandling.Ignore });
-            File.WriteAllText($"./{path}.ste", json, Encoding.UTF8);
         }
         
         public static CryptoConfig LoadSteFile(String path)
@@ -107,7 +87,28 @@ namespace SecureTextEditor.FileHandler
                     Console.WriteLine(e);
                     throw;
                 }
-//                return ProcessConfigToLoad(_config);
+        }
+        
+        public static string ProcessConfigToLoad(CryptoConfig config)
+        {
+            var cryptoConfig = CryptoFactory.Create(config);
+            return cryptoConfig.DecryptBytesToText(Convert.FromBase64String(config.Cipher));
+        }
+        
+        private static void SaveKey(string path, byte[] key)
+        {
+            File.WriteAllBytes($"{path}.key", key);
+        }
+        private static void SavePrivateCert(string path, string privateKey)
+        {
+            File.WriteAllText($"{path}.pkey", privateKey, Encoding.UTF8);
+        }
+        
+        private static void SaveFile(string path, CryptoConfig config)
+        {
+            string json = JsonConvert.SerializeObject(config, Formatting.Indented,
+                new JsonSerializerSettings { DefaultValueHandling = DefaultValueHandling.Include });
+            File.WriteAllText($"{path}.ste", json, Encoding.UTF8);
         }
 
     }

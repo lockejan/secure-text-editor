@@ -18,7 +18,7 @@ namespace SecureTextEditor.FileHandler
                 string codeBase = Directory.GetCurrentDirectory() + "/../../../../";
                 UriBuilder uri = new UriBuilder(codeBase);
                 string path = Uri.UnescapeDataString(uri.Path);
-                return Path.GetDirectoryName(path);
+                return $"{Path.GetDirectoryName(path)}/";
             }
         }
     }

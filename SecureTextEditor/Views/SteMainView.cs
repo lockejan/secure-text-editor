@@ -37,8 +37,7 @@ namespace SecureTextEditor.Views
             _controlFactory = controlFactory;
             _textBox = _controlFactory.Create<TextEditor>();
 
-            CreateButtons();
-            RegisterButtonEvents();
+            CreateAndRegisterButtons();
             Content = CreateDockPanel();
             FocusManager.Default.SetFocus(_textBox);
         }
@@ -67,7 +66,7 @@ namespace SecureTextEditor.Views
             return buttonStackPanel;
         }
 
-        private void CreateButtons()
+        private void CreateAndRegisterButtons()
         {
             void ConfigButton(Button btn, string label)
             {
@@ -81,19 +80,16 @@ namespace SecureTextEditor.Views
             ConfigButton(_newBtn = _controlFactory.Create<Button>(), "New");
             ConfigButton(_loadBtn = _controlFactory.Create<Button>(), "Load");
             ConfigButton(_saveBtn = _controlFactory.Create<Button>(), "Save");
-        }
-
-        private void RegisterButtonEvents()
-        {
-            _newBtn.InputState.Clicked += (s, e) =>
-            {
-                _textBox.SetText("");
-                _textBox.SetCaretPosition(0,0);
-                FocusManager.Default.SetFocus(_textBox);
-            };
-            
+            _newBtn.InputState.Clicked += OnNewButtonClicked;
             _loadBtn.InputState.Clicked += OnLoadButtonClicked;
             _saveBtn.InputState.Clicked += OnSaveButtonClicked;
+        }
+
+        private void OnNewButtonClicked(object sender, EventArgs e)
+        {
+            _textBox.SetText("");
+            _textBox.SetCaretPosition(0,0);
+            FocusManager.Default.SetFocus(_textBox);
         }
         
         private void OnLoadButtonClicked(object sender, EventArgs e)
@@ -129,7 +125,7 @@ namespace SecureTextEditor.Views
             {
                 if (dialog.IsConfirmed)
                 {
-                    if (content.Password.Text != null)
+                    if (content.Config.IsPbeActive && content.Password.Text != null)
                         content.Config.PbePassword = content.Password.Text.ToCharArray();
                     
                     SteCryptoHandler.ProcessConfigToSave(content.Filename.Text, Text, content.Config);
