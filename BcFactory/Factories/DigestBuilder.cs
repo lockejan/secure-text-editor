@@ -14,14 +14,12 @@ namespace BcFactory.Factories
         private readonly CryptoConfig _config;
         private byte[] _myKey;
         private readonly AesEngine _myAes;
-        private IIntegrity _integrityImplementation;
         private const string AesAlgo= "AES"; 
         private const string AesKeySize = "256"; 
         public DigestBuilder(CryptoConfig config)
         {
             _config = config;
             _myAes = new AesEngine();
-            // TODO: check which combo of aes is usually used
             GenerateKey(AesAlgo + AesKeySize);
         }
 
