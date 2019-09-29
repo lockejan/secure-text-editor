@@ -88,7 +88,6 @@ namespace BcFactory.Factories
                 
                 _config.Cipher = Convert.ToBase64String(outBuffer.Where(x => x != 0).ToArray());
                 return _config;
-                //UpdateEncryptedBytes(outBuffer);
             }
             
             IBufferedCipher cipher = null;
@@ -148,7 +147,7 @@ namespace BcFactory.Factories
 
         public string DecryptBytesToText(byte[] cipherBytes)
         {
-            KeyParameter keyParam = new KeyParameter(_config.Key);
+            var keyParam = new KeyParameter(_config.Key);
 
             if (_config.CipherAlgorithm == CipherAlgorithm.RC4)
             {
@@ -196,7 +195,7 @@ namespace BcFactory.Factories
                         gcm.Init(false, parameters);
 
                         byte[] decryptedBytes = new byte[gcm.GetOutputSize(cipherBytes.Length)];
-                        Int32 returnedLength = gcm.ProcessBytes(cipherBytes, 0, cipherBytes.Length, decryptedBytes, 0);
+                        int returnedLength = gcm.ProcessBytes(cipherBytes, 0, cipherBytes.Length, decryptedBytes, 0);
 
                         var len = gcm.DoFinal(decryptedBytes, 0);
                         // 3 param = len or byteCount?
@@ -219,7 +218,7 @@ namespace BcFactory.Factories
 
         private void UpdatePlainText(IBufferedCipher cipher, byte[] cipherBytes)
         {
-            var decryptedBytes = cipher.DoFinal(cipherBytes);
+            byte[] decryptedBytes = cipher.DoFinal(cipherBytes);
             UpdatePlainText(decryptedBytes);
         }
 
