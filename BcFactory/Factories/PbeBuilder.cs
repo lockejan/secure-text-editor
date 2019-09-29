@@ -62,11 +62,11 @@ namespace BcFactory.Factories
             return ((KeyParameter)generator.GenerateDerivedParameters(_config.CipherAlgorithm.ToString(),GetKeySize())).GetKey();
         }
         
-        private Org.BouncyCastle.Crypto.IDigest GetDigest()
+        private IDigest GetDigest()
         {
             return _config.CipherAlgorithm == CipherAlgorithm.RC4
                 ? new Sha1Digest()
-                : (Org.BouncyCastle.Crypto.IDigest)new Sha256Digest();
+                : (IDigest)new Sha256Digest();
         }
 
         private int GetKeySize()
