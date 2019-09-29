@@ -9,7 +9,7 @@ using Org.BouncyCastle.Security;
 
 namespace BcFactory.Factories
 {
-    public class DigestBuilder : IIntegrity
+    public class DigestBuilder : IDigest
     {
         private readonly CryptoConfig _config;
         
@@ -31,9 +31,9 @@ namespace BcFactory.Factories
             _config.DigestKey = gen.GenerateKey();
         }
         
-        public CryptoConfig SignBytes(string input)
+        public CryptoConfig SignInput(string input)
         {
-            byte[] inputBytes = Encoding.UTF8.GetBytes(input);
+            var inputBytes = Convert.FromBase64String(input);
 
             var digestBytes = _config.IntegrityOptions switch
             {
@@ -49,16 +49,16 @@ namespace BcFactory.Factories
 
         public bool VerifySign(string sign)
         {
-            var result = sign != SignBytes(_config.Cipher).Signature;
-            return result;
+            var resign = SignInput(_config.Cipher);
+            return sign == resign.Signature;
         }
 
         private byte[] Sha256(byte[] inputBytes)
         {
-            Sha256Digest sha256 = new Sha256Digest();
+            var sha256 = new Sha256Digest();
             
             sha256.BlockUpdate(inputBytes, 0, inputBytes.Length);
-            byte[] hash = new byte[sha256.GetDigestSize()];
+            var hash = new byte[sha256.GetDigestSize()];
             sha256.DoFinal(hash, 0);
             
             return hash;
@@ -66,12 +66,12 @@ namespace BcFactory.Factories
 
         private byte[] AesCMac(byte[] inputBytes)
         {
-            CMac mac = new CMac(_myAes);
-            KeyParameter keyParam = new KeyParameter(_config.DigestKey);
+            var mac = new CMac(_myAes);
+            var keyParam = new KeyParameter(_config.DigestKey);
             
             mac.Init(keyParam);
             mac.BlockUpdate(inputBytes, 0, inputBytes.Length);
-            byte[] hash = new byte[mac.GetMacSize()];
+            var hash = new byte[mac.GetMacSize()];
             mac.DoFinal(hash,0);
 
             return hash;
@@ -79,13 +79,13 @@ namespace BcFactory.Factories
 
         private byte[] HMacSha256(byte[] inputBytes)
         {
-            Sha256Digest sha256 = new Sha256Digest();
-            HMac hMac = new HMac(sha256);
-            KeyParameter keyParam = new KeyParameter(_config.DigestKey);
+            var sha256 = new Sha256Digest();
+            var hMac = new HMac(sha256);
+            var keyParam = new KeyParameter(_config.DigestKey);
             
             hMac.Init(keyParam);
             hMac.BlockUpdate(inputBytes, 0, inputBytes.Length);
-            byte[] hash = new byte[hMac.GetMacSize()];
+            var hash = new byte[hMac.GetMacSize()];
             hMac.DoFinal(hash,0);
 
             return hash;
