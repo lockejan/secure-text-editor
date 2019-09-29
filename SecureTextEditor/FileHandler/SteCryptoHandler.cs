@@ -10,51 +10,61 @@ namespace SecureTextEditor.FileHandler
 
     public static class SteCryptoHandler
     {
+        private const string FileExtension = "ste";
+        private const string KeyExtension = "key";
+        private const string DigestKeyExtension = "digKey";
+        private const string PrivKeyExtension = "privKey";
+        private const string PubKeyExtension = "pubKey";
+        
         public static CryptoConfig ProcessConfigOnSave(string plainText, CryptoConfig config)
         {
             if (config.IsEncryptActive)
             {
                 if (config.IsPbeActive)
                 {
-                    var pbe = CryptoFactory.CreatePbe(config, config.PbePassword);
-                    config = pbe.GenerateKeyBytes(config.PbePassword);
-                    Array.Clear(config.Key,0, config.Key.Length);
+                    var pbeBuilder = CryptoFactory.CreatePbe(config, config.PbePassword);
+                    config = pbeBuilder.GenerateKeyBytes(config.PbePassword);
                 }
 
-                var crypt = CryptoFactory.CreateCipher(config);
-                config = crypt.EncryptTextToBytes(plainText);
+                var cipherBuilder = CryptoFactory.CreateCipher(config);
+                config = cipherBuilder.EncryptTextToBytes(plainText);
+                //Array.Clear(config.Key,0, config.Key.Length);
             }
 
             if (!config.IsIntegrityActive) return config;
-            
-            var sign = config.Integrity switch
+
+            if (config.Integrity == Integrity.Dsa)
             {
-                Integrity.Digest => CryptoFactory.CreateDigest(config),
-                Integrity.Dsa => CryptoFactory.CreateCert(config),
-                _ => throw new ArgumentException("Unsupported Integrity Mode!")
-            };
-                
-            config = sign.SignBytes(config.Cipher);
+                var certBuilder = CryptoFactory.CreateCert(config);
+                certBuilder.GenerateCerts();
+                config = certBuilder.SignInput(config.Cipher);
+            }
+            else
+            {
+                var certBuilder = CryptoFactory.CreateDigest(config);
+                config = certBuilder.SignInput(config.Cipher);
+            }
+            
             return config;
         }
 
         public static void SaveToDisk(string fileName, CryptoConfig config)
         {
-            fileName = SteHelper.WorkingDirectory + fileName;
+            var fqfn = SteHelper.WorkingDirectory + fileName;
             
             if (config.Key != null)
-                SaveKey(fileName, config.Key);
+                SaveKey($"{fqfn}.{KeyExtension}", config.Key);
             
             if (config.SignaturePrivateKey != null)
-                SaveKey($"{fileName}.privKey", config.SignaturePrivateKey);
+                SaveKey($"{fqfn}.{PrivKeyExtension}", config.SignaturePrivateKey);
             
             if (config.SignaturePublicKey != null)
-                SaveKey($"{fileName}.pubKey", config.SignaturePublicKey);
+                SaveKey($"{fqfn}.{PubKeyExtension}", config.SignaturePublicKey);
             
             if (config.DigestKey != null)
-                SaveKey(fileName, config.DigestKey);
+                SaveKey($"{fqfn}.{DigestKeyExtension}", config.DigestKey);
             
-            SaveFile(fileName, config);
+            SaveFile($"{fqfn}.{FileExtension}", config);
         }
         
         private static void SaveKey(string path, byte[] key)
@@ -69,48 +79,48 @@ namespace SecureTextEditor.FileHandler
         
         private static void SaveFile(string path, CryptoConfig config)
         {
-            string json = JsonConvert.SerializeObject(config, Formatting.Indented,
+            var json = JsonConvert.SerializeObject(config, Formatting.Indented,
                 new JsonSerializerSettings { DefaultValueHandling = DefaultValueHandling.Include });
-            File.WriteAllText($"{path}.ste", json, Encoding.UTF8);
+            File.WriteAllText(path, json, Encoding.UTF8);
         }
         
         
-        public static CryptoConfig LoadSteFile(string path)
+        public static CryptoConfig LoadSteFile(string fileName)
         {
-            path = SteHelper.WorkingDirectory + path;
+            var fqfn = SteHelper.WorkingDirectory + fileName;
             
                 try
                 {
-                    var cryptoData = File.ReadAllText($"{path}.ste", Encoding.UTF8);
+                    var cryptoData = File.ReadAllText($"{fqfn}.{FileExtension}", Encoding.UTF8);
                     CryptoConfig config = JsonConvert.DeserializeObject<CryptoConfig>(cryptoData);
                     return config;
                 }
                 catch (FileNotFoundException e)
                 {
-                    Console.WriteLine(e + $"Given file doesn't exist in DIR {path}.");
+                    Console.WriteLine(e + $"Given file doesn't exist in DIR {fqfn}.");
                     throw;
                 }
         }
 
-        public static CryptoConfig LoadKeys(string path, CryptoConfig config)
+        public static CryptoConfig LoadKeys(string fileName, CryptoConfig config)
         {
-            path = SteHelper.WorkingDirectory + path;
+            var fqfn = SteHelper.WorkingDirectory + fileName;
             
-            if (!config.IsPbeActive && File.Exists($"{path}.key"))
-                config.Key = File.ReadAllBytes($"{path}.key");
+            if (!config.IsPbeActive && File.Exists($"{fqfn}.{KeyExtension}"))
+                config.Key = File.ReadAllBytes($"{fqfn}.{KeyExtension}");
                 
             if (config.IsIntegrityActive)
                 switch (config.Integrity)
                 {
                     case Integrity.Digest:
-                        if(!File.Exists($"{path}.digKey")) break;
-                        config.DigestKey = File.ReadAllBytes($"{path}.digKey");
+                        if(!File.Exists($"{fqfn}.{DigestKeyExtension}")) break;
+                        config.DigestKey = File.ReadAllBytes($"{fqfn}.{DigestKeyExtension}");
                         break;
                     case Integrity.Dsa:
-                        if(!File.Exists($"{path}.pubKey")) break;
-                        config.SignaturePublicKey = File.ReadAllText($"{path}.pubKey");
-                        if(!File.Exists($"{path}.privKey")) break;
-                        config.SignaturePrivateKey = File.ReadAllText($"{path}.privKey");
+                        if(!File.Exists($"{fqfn}.{PubKeyExtension}")) break;
+                        config.SignaturePublicKey = File.ReadAllText($"{fqfn}.{PubKeyExtension}");
+                        if(!File.Exists($"{fqfn}.{PrivKeyExtension}")) break;
+                        config.SignaturePrivateKey = File.ReadAllText($"{fqfn}.{PrivKeyExtension}");
                         break;
                 }
             return config;
@@ -118,30 +128,36 @@ namespace SecureTextEditor.FileHandler
         
         public static string ProcessConfigOnLoad(CryptoConfig config)
         {
+            if (config.IsIntegrityActive)
+            {
+                if (config.Integrity == Integrity.Dsa)
+                {
+                    var certBuilder = CryptoFactory.CreateCert(config);
+                    certBuilder.GenerateCerts();
+                    config = certBuilder.SignInput(config.Cipher);
+                    
+                    var result = certBuilder.VerifySign(config.Signature);
+                    Console.WriteLine($"Signature verified: {result}");
+                }
+                else
+                {
+                    var certBuilder = CryptoFactory.CreateDigest(config);
+                    config = certBuilder.SignInput(config.Cipher);
+                    
+                    var result = certBuilder.VerifySign(config.Signature);
+                    Console.WriteLine($"Digest verified: {result}");
+                }
+            }
+
             if (config.IsPbeActive)
             {
-                var pbe = CryptoFactory.CreatePbe(config, config.PbePassword);
-                config = pbe.GenerateKeyBytes(config.PbePassword);
+                var pbeBuilder = CryptoFactory.CreatePbe(config, config.PbePassword);
+                config = pbeBuilder.GenerateKeyBytes(config.PbePassword);
             }
             
-            var cryptoConfig = CryptoFactory.CreateCipher(config);
+            var cipherBuilder = CryptoFactory.CreateCipher(config);
 
-            if (!config.IsIntegrityActive)
-                return cryptoConfig.DecryptBytesToText(Convert.FromBase64String(config.Cipher));
-            
-            var sign = config.Integrity switch
-            {
-                Integrity.Digest => CryptoFactory.CreateDigest(config),
-                Integrity.Dsa => CryptoFactory.CreateCert(config),
-                _ => throw new ArgumentException("Unsupported Integrity Mode!")
-            };
-            
-            config = sign.SignBytes(config.Cipher);
-                
-            var verified = sign.VerifySign(config.Signature);
-            Console.WriteLine($"Signature/Digest verified: {verified}");
-
-            return cryptoConfig.DecryptBytesToText(Convert.FromBase64String(config.Cipher));
+            return cipherBuilder.DecryptBytesToText(Convert.FromBase64String(config.Cipher));
         }
 
     }

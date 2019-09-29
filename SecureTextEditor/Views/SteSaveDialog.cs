@@ -68,13 +68,16 @@ namespace SecureTextEditor.Views
         private TextBlock _integrityLabel;
         private TextBlock _integritySpecLabel;
 
+        private readonly int _inputLength;
+
         /// <summary>
         /// Creates saveDialog Component. Expects ControlFactory for component creation. 
         /// </summary>
         /// <param name="controlFactory">medja.UI object which is needed for control creation.</param>
-        public SteSaveDialog(IControlFactory controlFactory)
+        public SteSaveDialog(IControlFactory controlFactory, int inputLength)
         {
             _controlFactory = controlFactory;
+            _inputLength = inputLength;
             
             _config = new CryptoConfig();
 
@@ -340,7 +343,9 @@ namespace SecureTextEditor.Views
         private void UpdateBlockComboBox()
         {
             _blockModeComboBox.Clear();
-            _blockModeComboBox.AddRange(_config.GetValidBlockModes());
+            _blockModeComboBox.AddRange(_inputLength > 15
+                ? _config.GetValidBlockModes()
+                : _config.GetValidBlockModes(BlockMode.CTS));
             _blockModeComboBox.SelectFirstItem();
         }
 

@@ -27,7 +27,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BcFactory\BcFactory.csproj" />
-    <ProjectReference Include="..\CryptoAdapter\CryptoAdapter.csproj" />
   </ItemGroup>
 
   <ItemGroup>

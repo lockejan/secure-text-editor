@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using BcFactory;
 using Medja.Controls;
 using Medja.Theming;
@@ -117,7 +118,7 @@ namespace SecureTextEditor.Views
 
         private void OnSaveButtonClicked(object sender, EventArgs e)
         {
-            var content = new SteSaveDialog(_controlFactory);
+            var content = new SteSaveDialog(_controlFactory, Encoding.UTF8.GetByteCount(Text));
             var dialog = _controlFactory.Create<ConfirmableDialog>();
             var dockPanel = dialog.Content as DockPanel;
             
