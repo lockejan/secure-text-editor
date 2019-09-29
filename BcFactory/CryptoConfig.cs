@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using System;
-using System.Linq;
 using BcFactory.Resources;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -21,7 +19,7 @@ namespace BcFactory
         public string Encoding { get; } = System.Text.Encoding.Default.ToString();
 
         [JsonProperty]
-        public string IvOrSalt { get; set; }
+        public byte[] IvOrSalt { get; set; }
 
         [JsonIgnoreAttribute]
         public string SignaturePublicKey { get; set; }
@@ -99,6 +97,9 @@ namespace BcFactory
         [JsonConverter(typeof(StringEnumConverter))]
         public IntegrityOptions IntegrityOptions { get; set; }
 
+        [JsonIgnoreAttribute]
+        public byte[] DigestKey { get; set; }
+        
         /// <summary>
         /// Custom ToString to display state of CryptoConfig.
         /// </summary>
@@ -122,6 +123,7 @@ namespace BcFactory
                    $"PbeDigest: {PbeDigest},\n" +
                    $"PbePassword: {PbePassword},\n" +
                    $"Key: {Key},\n" +
+                   $"Key: {DigestKey},\n" +
                    $"IsIntegrityActive: {IsIntegrityActive},\n" +
                    $"Integrity: {Integrity},\n" +
                    $"IntegrityOptions: {IntegrityOptions},\n";
@@ -227,19 +229,16 @@ namespace BcFactory
             if (CipherAlgorithm == CipherAlgorithm.RC4)
                 return Resources.KeySize.RC4;
 
-            if (IsPbeActive)
+            if (!IsPbeActive) return Resources.KeySize.AES;
+            
+            switch (PbeAlgorithm)
             {
-                if (PbeAlgorithm == PbeAlgorithm.SCRYPT)
+                case PbeAlgorithm.SCRYPT:
                     return new[] { 256 };
-
-                if (PbeAlgorithm == PbeAlgorithm.PBKDF2)
-                {
-                    if (CipherAlgorithm == CipherAlgorithm.AES)
-                        return new[] { 128 };
-
-                    if (CipherAlgorithm == CipherAlgorithm.RC4)
-                        return new[] { 40 };
-                }
+                case PbeAlgorithm.PBKDF2 when CipherAlgorithm == CipherAlgorithm.AES:
+                    return new[] { 128 };
+                case PbeAlgorithm.PBKDF2 when CipherAlgorithm == CipherAlgorithm.RC4:
+                    return new[] { 40 };
             }
             return Resources.KeySize.AES;
         }

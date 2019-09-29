@@ -94,11 +94,14 @@ fabric.properties
 .vs
 .ionide/
 *.DotSettings.user
-SecureTextEditor/*.ste
-SecureTextEditor/*.key
+
 *.ste
 *.key
+*.digKey
+*.privKey
+*.pubKey
 *.pem
+
 packages/
 **/bin/
 **/obj/
