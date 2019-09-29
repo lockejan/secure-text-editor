@@ -1,118 +1,77 @@
-using System.Text;
+using System;
 using BcFactory.Factories;
 using BcFactory.Resources;
 
 namespace BcFactory
 {
-    /// <summary>
-    /// Factory class for Cipher Processing.
-    /// </summary>
+
     public static class CryptoFactory
     {
-        /// <summary>
-        /// Gets a CryptoProcessor-Object from some factory.
-        /// </summary>
-        /// <param name="settings">CryptoConfig Object which holds all parameters needed for processing</param>
-        /// <returns>Object of some cryptoProcessing class.</returns>
-        public static ICrypto Create(CryptoConfig settings)
+
+        public static ICipher CreateCipher(CryptoConfig settings)
         {
-            if (settings.IsEncryptActive)
+            if(settings.IsEncryptActive)
                 return new CipherBuilder(settings);
 
-            return new NoopCrypto();
+            throw new ArgumentException("Invalid Configuration. Encryption not activated.'");
         }
-    }
 
-    /// <summary>
-    /// Factory class for Digests and Certificates.
-    /// </summary>
-    public static class IntegrityFactory
-    {
-        public static IIntegrity Create(CryptoConfig settings)
+        public static IPbe CreatePbe(CryptoConfig settings, char[] password)
         {
-            if (settings.IsIntegrityActive)
-            {
-                if (settings.Integrity == Integrity.Digest)
-                    return new DigestBuilder(settings);
+            if(!settings.IsPbeActive) 
+                throw new ArgumentException("Invalid Configuration. Pbe not activated."); 
+            
+            if(settings.PbePassword == null)
+                throw new ArgumentException("Pbe not properly configured. Empty password is not allowed.");
+            
+            return new PbeBuilder(settings);
+        }
 
-                return new CertificateBuilder(settings);
-            }
-            return null;
+        public static IIntegrity CreateDigest(CryptoConfig config)
+        {
+            if (!config.IsIntegrityActive) 
+                throw new ArgumentException("Integrity not activated!");
+            
+            if (config.Integrity == Integrity.Digest)
+                return new DigestBuilder(config);
+            
+            throw new ArgumentException("Unsupported digest mode!");
+        }
+
+        public static ICert CreateCert(CryptoConfig config)
+        {
+            if (!config.IsIntegrityActive)
+                throw new ArgumentException("Integrity not activated!");
+            
+            if (config.Integrity == Integrity.Dsa)
+                return new CertificateBuilder(config);
+            
+            throw new ArgumentException("Unsupported certificate mode!");
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public interface ICrypto
+    
+    public interface ICipher
     {
-        string MyIv { get; }
-        byte[] MyKey { get; }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="content"></param>
-        /// <returns></returns>
-        byte[] EncryptTextToBytes(string content);
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="cipherBytes"></param>
-        /// <returns></returns>
+        CryptoConfig EncryptTextToBytes(string content);
+        
         string DecryptBytesToText(byte[] cipherBytes);
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    public class NoopCrypto : ICrypto
+    public interface IPbe
     {
-        /// <inheritdoc />
-        public string MyIv { get; }
-
-        /// <inheritdoc />
-        public byte[] MyKey { get; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="content"></param>
-        /// <returns></returns>
-        public byte[] EncryptTextToBytes(string content)
-        {
-            return Encoding.Default.GetBytes(content);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="cipherBytes"></param>
-        /// <returns></returns>
-        public string DecryptBytesToText(byte[] cipherBytes)
-        {
-            return Encoding.Default.GetString(cipherBytes);
-        }
+        CryptoConfig GenerateKeyBytes(char[] password);
     }
 
-    /// <summary>
-    /// Interface which defines essential functions to.
-    /// </summary>
     public interface IIntegrity
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="content"></param>
-        /// <returns></returns>
-        byte[] SignBytes(string content);
+        CryptoConfig SignBytes(string content);
+        
+        bool VerifySign(string sign);
+    }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sign"></param>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        bool VerifySign(string sign, string input);
+    public interface ICert : IIntegrity
+    {
+        void GenerateCerts();
     }
 
 }
