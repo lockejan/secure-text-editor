@@ -27,7 +27,7 @@ namespace BcFactory
             return new PbeBuilder(settings);
         }
 
-        public static IIntegrity CreateDigest(CryptoConfig config)
+        public static IDigest CreateDigest(CryptoConfig config)
         {
             if (!config.IsIntegrityActive) 
                 throw new ArgumentException("Integrity not activated!");
@@ -61,17 +61,20 @@ namespace BcFactory
     {
         CryptoConfig GenerateKeyBytes(char[] password);
     }
-
-    public interface IIntegrity
+    
+    public interface IDigest
     {
-        CryptoConfig SignBytes(string content);
+        CryptoConfig SignInput(string input);
         
         bool VerifySign(string sign);
     }
 
-    public interface ICert : IIntegrity
+    public interface ICert
     {
         void GenerateCerts();
+        CryptoConfig SignInput(string input);
+        
+        bool VerifySign(string sign);
     }
 
 }
