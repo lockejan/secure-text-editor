@@ -14,6 +14,8 @@ namespace SecureTextEditor.Views
         private readonly IControlFactory _controlFactory;
 
         private TextBox _passwordInput;
+        public TextBox Password => _passwordInput;
+        
         private TextBox _filenameInput;
         public TextBox Filename => _filenameInput;
 
@@ -47,7 +49,7 @@ namespace SecureTextEditor.Views
 
             _filenameInput = CreateTextInput();
             _passwordInput = CreateTextInput();
-            _passwordInput.IsEnabled = false;
+            //_passwordInput.IsEnabled = false;
         }
 
         private Control CreateDockPanel()

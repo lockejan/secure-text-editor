@@ -105,7 +105,9 @@ namespace SecureTextEditor.Views
                 if (dialog.IsConfirmed)
                 {
                     _config = SteCryptoHandler.LoadSteFile(content.Filename.Text);
-                    Text = SteCryptoHandler.ProcessConfigToLoad(_config);
+                    _config = SteCryptoHandler.LoadKeys(content.Filename.Text, _config);
+                    _config.PbePassword = content.Password.Text.ToCharArray();
+                    Text = SteCryptoHandler.ProcessConfigOnLoad(_config);
                 }
                 FocusManager.Default.SetFocus(_textBox);
             });
@@ -128,7 +130,8 @@ namespace SecureTextEditor.Views
                     if (content.Config.IsPbeActive && content.Password.Text != null)
                         content.Config.PbePassword = content.Password.Text.ToCharArray();
                     
-                    SteCryptoHandler.ProcessConfigToSave(content.Filename.Text, Text, content.Config);
+                    var config = SteCryptoHandler.ProcessConfigOnSave(Text, content.Config);
+                    SteCryptoHandler.SaveToDisk(content.Filename.Text, config);
                 }
                 FocusManager.Default.SetFocus(_textBox);
             });
@@ -143,7 +146,7 @@ namespace SecureTextEditor.Views
 
             void Handler(object s, EventArgs e)
             {
-                // self deregistration prevents a memory leak (at least if close is called once)
+                // self unregister prevents a memory leak (at least if close is called once)
                 dialog.Closed -= Handler;
                 actionOnClose();
             }
