@@ -12,7 +12,7 @@ namespace BcFactory.Factories
     public class DigestBuilder : IIntegrity
     {
         private readonly CryptoConfig _config;
-        private byte[] _myKey;
+        
         private readonly AesEngine _myAes;
         private const string AesAlgo= "AES"; 
         private const string AesKeySize = "256"; 
@@ -20,49 +20,36 @@ namespace BcFactory.Factories
         {
             _config = config;
             _myAes = new AesEngine();
-            GenerateKey(AesAlgo + AesKeySize);
+            
+            if (_config.DigestKey == null)
+                GenerateKey(AesAlgo + AesKeySize);
         }
 
         private void GenerateKey(string cipher)
         {
             var gen = GeneratorUtilities.GetKeyGenerator(cipher);
-            _myKey = gen.GenerateKey();
+            _config.DigestKey = gen.GenerateKey();
         }
-
-        public void CreateCertificate()
-        {
-            throw new NotImplementedException();
-        }
-
-        public byte[] SignBytes(string content)
+        
+        public CryptoConfig SignBytes(string content)
         {
             byte[] textBytes = Encoding.UTF8.GetBytes(content);
-            byte[] digestBytes;
-            
-            switch (_config.IntegrityOptions)
+
+            var digestBytes = _config.IntegrityOptions switch
             {
-                case IntegrityOptions.Sha256:
-                    Console.WriteLine("Sha256 digest:");
-                    digestBytes = Sha256(textBytes);
-                    break;
-                case IntegrityOptions.AesCmac:
-                    Console.WriteLine("AESCMAC digest:");
-                    digestBytes = AesCMac(textBytes);
-                    break;
-                default:
-                    Console.WriteLine("HMacSha256 digest:");
-                    digestBytes = HMacSha256(textBytes);
-                    break;
-            }
-            Console.WriteLine(Convert.ToBase64String(digestBytes));
-            return digestBytes;
+                IntegrityOptions.Sha256 => Sha256(textBytes),
+                IntegrityOptions.AesCmac => AesCMac(textBytes),
+                IntegrityOptions.HmacSha256 => HMacSha256(textBytes),
+                _ => throw new ArgumentException("Unsupported digest.")
+            };
+            
+            _config.Signature = Convert.ToBase64String(digestBytes);
+            return _config;
         }
 
-        public bool VerifySign(string sign, string input)
+        public bool VerifySign(string sign)
         {
-            Console.WriteLine("Digest-Verifikation startet");
-            bool result = sign != Convert.ToBase64String(SignBytes(input));
-            Console.WriteLine($"Integrity tampered: {result}");
+            var result = sign != SignBytes(_config.Cipher).Signature;
             return result;
         }
 
@@ -80,7 +67,7 @@ namespace BcFactory.Factories
         private byte[] AesCMac(byte[] data)
         {
             CMac mac = new CMac(_myAes);
-            KeyParameter keyParam = new KeyParameter(_myKey);
+            KeyParameter keyParam = new KeyParameter(_config.DigestKey);
             
             mac.Init(keyParam);
             mac.BlockUpdate(data, 0, data.Length);
@@ -94,7 +81,7 @@ namespace BcFactory.Factories
         {
             Sha256Digest sha256 = new Sha256Digest();
             HMac hMac = new HMac(sha256);
-            KeyParameter keyParam = new KeyParameter(_myKey);
+            KeyParameter keyParam = new KeyParameter(_config.DigestKey);
             
             hMac.Init(keyParam);
             hMac.BlockUpdate(data, 0, data.Length);

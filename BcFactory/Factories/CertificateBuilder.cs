@@ -7,22 +7,20 @@ using Org.BouncyCastle.Security;
 
 namespace BcFactory.Factories
 {
-    public class CertificateBuilder : IIntegrity
+    public class CertificateBuilder : ICert
     {
-        private byte[] toBeSealedInput = Encoding.UTF8.GetBytes("Hallo cipher");
+        private CryptoConfig _config;
+        
+        //private byte[] toBeSealedInput = Encoding.UTF8.GetBytes("Hallo cipher");
         public CertificateBuilder(CryptoConfig config)
         {
-            
+            _config = config;
         }
 
-        public void CreateCertificate()
-        {
-            throw new NotImplementedException();
-        }
-
-        public byte[] SignBytes(string content)
+        public CryptoConfig CreateCertificate(string content)
         {
             Console.WriteLine("Signing process started...");
+            var cipherBytes = Convert.FromBase64String(_config.Cipher);
 
             try
             {
@@ -49,8 +47,13 @@ namespace BcFactory.Factories
 //                ISigner sign = SignerUtilities.GetSigner(PkcsObjectIdentifiers.sa)
                 ISigner sign = SignerUtilities.GetSigner("SHA256withDSA");
                 sign.Init(true, privateKey);
-                sign.BlockUpdate(toBeSealedInput, 0, toBeSealedInput.Length);
+                sign.BlockUpdate(cipherBytes, 0, cipherBytes.Length);
+                
                 byte[] signature = sign.GenerateSignature();
+                _config.Signature = Convert.ToBase64String(signature);
+                _config.SignaturePrivateKey = privateKey.ToString();
+                _config.SignaturePublicKey = publicKey.ToString();
+                
                 Console.WriteLine($"Public key is: {Convert.ToBase64String(signature)}");
 
 //                DsaParametersGenerator dParamGen = new DsaParametersGenerator();
@@ -67,19 +70,10 @@ namespace BcFactory.Factories
                 throw new ArgumentException("error setting up keys - " + e.ToString());
             }
 
-            return new byte[1];
-        }
-
-        public bool VerifySign(string sign, string input)
-        {
-            Console.WriteLine("Verification process started");
-            return true;
+            //return new byte[1];
+            return _config;
         }
         
-        public void CreateCert(string config)
-        {
-            Console.WriteLine("Certs are being generated");
-        }
 //
 //        private AsymmetricCipherKeyPair GetKeyPair()
 //        {
@@ -122,5 +116,19 @@ namespace BcFactory.Factories
 //            Signature signature = Signature.GetInstance("SHA256withDSA");
 //            signature.
 //        }
+        public void GenerateCerts()
+        {
+            throw new NotImplementedException();
+        }
+
+        public CryptoConfig SignBytes(string content)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool VerifySign(string sign)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

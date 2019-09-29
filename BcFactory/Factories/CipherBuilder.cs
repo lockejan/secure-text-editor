@@ -12,22 +12,16 @@ using Org.BouncyCastle.Security;
 namespace BcFactory.Factories
 {
     /// <inheritdoc />
-    public class CipherBuilder : ICrypto
+    public class CipherBuilder : ICipher
     {
         private readonly CryptoConfig _config;
 
-        private byte[] _textBytes;
+        private byte[] _inputBytes;
         private byte[] _encryptedBytes;
         private string _plainText;
 
         private AesEngine _myAes;
         private RC4Engine _myRc4;
-        private byte[] _myIv;
-
-        string? ICrypto.MyIv => _myIv == null ? null : Convert.ToBase64String(_myIv);
-
-        //private byte[] _myKey;
-        byte[] ICrypto.MyKey => _config.Key;
 
         /// <inheritdoc />
         public CipherBuilder(CryptoConfig config)
@@ -62,44 +56,38 @@ namespace BcFactory.Factories
             else
             {
                 _myAes = new AesEngine();
-                if (_config.IvOrSalt != null)
-                {
-                    _myIv = Convert.FromBase64String(_config.IvOrSalt);
-                }
-                else
-                {
-                    _myIv = _config.BlockMode == BlockMode.ECB ? null : GenerateIv();
-                }
+                if (_config.IvOrSalt == null && _config.BlockMode != BlockMode.ECB)
+                    _config.IvOrSalt = GenerateIv();
             }
         }
 
         private byte[] GenerateIv()
         {
-            SecureRandom random = new SecureRandom();
+            var random = new SecureRandom();
             var iv = new byte[_config.Key.Length];
             random.NextBytes(iv);
-            _config.IvOrSalt = Convert.ToBase64String(iv);
             return iv;
         }
 
         private ParametersWithIV GetKeyParamWithIv(KeyParameter keyParam)
         {
-            return new ParametersWithIV(keyParam, _myIv, 0, 16);
+            return new ParametersWithIV(keyParam, _config.IvOrSalt, 0, 16);
         }
 
         /// <inheritdoc />
-        public byte[] EncryptTextToBytes(string input)
+        public CryptoConfig EncryptTextToBytes(string input)
         {
-            _textBytes = Encoding.UTF8.GetBytes(input);
-            KeyParameter keyParam = new KeyParameter(_config.Key);
+            _inputBytes = Encoding.UTF8.GetBytes(input);
+            var keyParam = new KeyParameter(_config.Key);
 
             if (_config.CipherAlgorithm == CipherAlgorithm.RC4)
             {
-                byte[] outBuffer = new byte[_config.KeySize];
+                var outBuffer = new byte[_config.KeySize];
                 _myRc4.Init(true, keyParam);
-                _myRc4.ProcessBytes(_textBytes, 0, _textBytes.Length, outBuffer, 0);
-                //One occurence of broken cipherText with current LINQ. 
-                return outBuffer.Where(x => x != 0).ToArray();
+                _myRc4.ProcessBytes(_inputBytes, 0, _inputBytes.Length, outBuffer, 0);
+                
+                _config.Cipher = Convert.ToBase64String(outBuffer.Where(x => x != 0).ToArray());
+                return _config;
                 //UpdateEncryptedBytes(outBuffer);
             }
             
@@ -136,21 +124,26 @@ namespace BcFactory.Factories
 
                 case BlockMode.GCM:
                     var gcm = new GcmBlockCipher(_myAes);
-                    var parameters = new AeadParameters(new KeyParameter(_config.Key), 128, _myIv, null);
+                    var parameters = new AeadParameters(new KeyParameter(_config.Key), 128, _config.IvOrSalt, null);
                     gcm.Init(true, parameters);
 
-                    _encryptedBytes = new byte[gcm.GetOutputSize(_textBytes.Length)];
-                    Int32 returnedLength = gcm.ProcessBytes(_textBytes, 0, _textBytes.Length, _encryptedBytes, 0);
+                    _encryptedBytes = new byte[gcm.GetOutputSize(_inputBytes.Length)];
+                    Int32 returnedLength = gcm.ProcessBytes(_inputBytes, 0, _inputBytes.Length, _encryptedBytes, 0);
                     gcm.DoFinal(_encryptedBytes, returnedLength);
                     break;
+                
+                case BlockMode.None:
+                    break;
+                
                 default:
                     throw new ArgumentOutOfRangeException(nameof(_config.BlockMode));
             }
             
             if (cipher != null)
                 UpdateEncryptedBytes(cipher);
-
-            return _encryptedBytes;
+            
+            _config.Cipher = Convert.ToBase64String(_encryptedBytes);
+            return _config;
         }
 
         public string DecryptBytesToText(byte[] cipherBytes)
@@ -159,7 +152,7 @@ namespace BcFactory.Factories
 
             if (_config.CipherAlgorithm == CipherAlgorithm.RC4)
             {
-                byte[] outBuffer = new byte[_config.KeySize];
+                var outBuffer = new byte[_config.KeySize];
                 _myRc4.Init(false, keyParam);
                 _myRc4.ProcessBytes(cipherBytes, 0, cipherBytes.Length, outBuffer, 0);
                 UpdatePlainText(outBuffer);
@@ -199,7 +192,7 @@ namespace BcFactory.Factories
 
                     case BlockMode.GCM:
                         var gcm = new GcmBlockCipher(_myAes);
-                        var parameters = new AeadParameters(new KeyParameter(_config.Key), 128, _myIv, null);
+                        var parameters = new AeadParameters(new KeyParameter(_config.Key), 128, _config.IvOrSalt, null);
                         gcm.Init(false, parameters);
 
                         byte[] decryptedBytes = new byte[gcm.GetOutputSize(cipherBytes.Length)];
@@ -209,6 +202,10 @@ namespace BcFactory.Factories
                         // 3 param = len or byteCount?
                         _plainText = Encoding.UTF8.GetString(decryptedBytes, 0, len);
                         break;
+                    
+                    case BlockMode.None:
+                        break;
+                    
                     default:
                         throw new ArgumentOutOfRangeException(nameof(_config.BlockMode));
                 }
@@ -233,7 +230,7 @@ namespace BcFactory.Factories
         
         private void UpdateEncryptedBytes(IBufferedCipher cipher)
         {
-            _encryptedBytes = cipher.DoFinal(_textBytes);
+            _encryptedBytes = cipher.DoFinal(_inputBytes);
         }
 
         private IBlockCipherPadding GetBlockCipherPadding()
