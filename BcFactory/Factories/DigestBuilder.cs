@@ -31,15 +31,15 @@ namespace BcFactory.Factories
             _config.DigestKey = gen.GenerateKey();
         }
         
-        public CryptoConfig SignBytes(string content)
+        public CryptoConfig SignBytes(string input)
         {
-            byte[] textBytes = Encoding.UTF8.GetBytes(content);
+            byte[] inputBytes = Encoding.UTF8.GetBytes(input);
 
             var digestBytes = _config.IntegrityOptions switch
             {
-                IntegrityOptions.Sha256 => Sha256(textBytes),
-                IntegrityOptions.AesCmac => AesCMac(textBytes),
-                IntegrityOptions.HmacSha256 => HMacSha256(textBytes),
+                IntegrityOptions.Sha256 => Sha256(inputBytes),
+                IntegrityOptions.AesCmac => AesCMac(inputBytes),
+                IntegrityOptions.HmacSha256 => HMacSha256(inputBytes),
                 _ => throw new ArgumentException("Unsupported digest.")
             };
             
@@ -53,38 +53,38 @@ namespace BcFactory.Factories
             return result;
         }
 
-        private byte[] Sha256(byte[] data)
+        private byte[] Sha256(byte[] inputBytes)
         {
             Sha256Digest sha256 = new Sha256Digest();
             
-            sha256.BlockUpdate(data, 0, data.Length);
+            sha256.BlockUpdate(inputBytes, 0, inputBytes.Length);
             byte[] hash = new byte[sha256.GetDigestSize()];
             sha256.DoFinal(hash, 0);
             
             return hash;
         }
 
-        private byte[] AesCMac(byte[] data)
+        private byte[] AesCMac(byte[] inputBytes)
         {
             CMac mac = new CMac(_myAes);
             KeyParameter keyParam = new KeyParameter(_config.DigestKey);
             
             mac.Init(keyParam);
-            mac.BlockUpdate(data, 0, data.Length);
+            mac.BlockUpdate(inputBytes, 0, inputBytes.Length);
             byte[] hash = new byte[mac.GetMacSize()];
             mac.DoFinal(hash,0);
 
             return hash;
         }
 
-        private byte[] HMacSha256(byte[] data)
+        private byte[] HMacSha256(byte[] inputBytes)
         {
             Sha256Digest sha256 = new Sha256Digest();
             HMac hMac = new HMac(sha256);
             KeyParameter keyParam = new KeyParameter(_config.DigestKey);
             
             hMac.Init(keyParam);
-            hMac.BlockUpdate(data, 0, data.Length);
+            hMac.BlockUpdate(inputBytes, 0, inputBytes.Length);
             byte[] hash = new byte[hMac.GetMacSize()];
             hMac.DoFinal(hash,0);
 
