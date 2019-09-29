@@ -145,9 +145,8 @@ namespace BcFactory
         /// Determines valid Blockmodes for given Cipher- or/and PBE-Algorithms.
         /// </summary>
         /// <returns>Enum holding valid BlockModes</returns>
-        public IEnumerable<BlockMode> GetValidBlockModes()
+        public IEnumerable<BlockMode> GetValidBlockModes(BlockMode skip = BlockMode.None)
         {
-            // https://alexatnet.com/cs8-switch-statement/
             switch (CipherAlgorithm)
             {
                 case CipherAlgorithm.AES:
@@ -160,7 +159,7 @@ namespace BcFactory
                     }
                     else
                     {
-                        foreach (var value in EnumExtensions.ValuesExcept(BlockMode.None))
+                        foreach (var value in EnumExtensions.ValuesExcept(BlockMode.None, skip))
                             yield return value;
                     }
                     break;
