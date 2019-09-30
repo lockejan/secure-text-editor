@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace SecureTextEditor.FileHandler
+namespace SecureTextEditor.Views
 {
     /// <summary>
     /// Static class holding helper functions needed by file handlers or views. 

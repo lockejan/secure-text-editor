@@ -3,7 +3,6 @@ using System.Text;
 using BcFactory;
 using Medja.Controls;
 using Medja.Theming;
-using SecureTextEditor.FileHandler;
 
 namespace SecureTextEditor.Views
 {
@@ -105,10 +104,10 @@ namespace SecureTextEditor.Views
             {
                 if (dialog.IsConfirmed)
                 {
-                    _config = SteCryptoHandler.LoadSteFile(content.Filename.Text);
-                    _config = SteCryptoHandler.LoadKeys(content.Filename.Text, _config);
+                    _config = FileHandler.LoadSteFile(content.Filename.Text);
+                    _config = FileHandler.LoadKeys(content.Filename.Text, _config);
                     _config.PbePassword = content.Password.Text.ToCharArray();
-                    Text = SteCryptoHandler.ProcessConfigOnLoad(_config);
+                    Text = FileHandler.ProcessConfigOnLoad(_config);
                 }
                 FocusManager.Default.SetFocus(_textBox);
             });
@@ -128,11 +127,11 @@ namespace SecureTextEditor.Views
             {
                 if (dialog.IsConfirmed)
                 {
-                    if (content.Config.IsPbeActive && content.Password.Text != null)
+                    if (content.Config.IsPbeActive)
                         content.Config.PbePassword = content.Password.Text.ToCharArray();
                     
-                    var config = SteCryptoHandler.ProcessConfigOnSave(Text, content.Config);
-                    SteCryptoHandler.SaveToDisk(content.Filename.Text, config);
+                    var config = FileHandler.ProcessConfigOnSave(Text, content.Config);
+                    FileHandler.SaveToDisk(content.Filename.Text, config);
                 }
                 FocusManager.Default.SetFocus(_textBox);
             });
