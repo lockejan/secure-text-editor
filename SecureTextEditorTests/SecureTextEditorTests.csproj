@@ -40,31 +40,22 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Medja, Version=0.9.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Medja.0.9.1-CI-20190924-151928\lib\net472\Medja.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\..\..\.nuget\packages\medja\2019.8.30.1\lib\net472\Medja.dll</HintPath>
     </Reference>
     <Reference Include="Medja.OpenTk, Version=0.9.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Medja.OpenTk.0.9.1-CI-20190924-151928\lib\net472\Medja.OpenTk.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\..\..\.nuget\packages\medja.opentk\2019.8.30.1\lib\net472\Medja.OpenTk.dll</HintPath>
     </Reference>
     <Reference Include="Medja.OpenTk.Themes, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Medja.OpenTk.Themes.0.9.1-CI-20190924-151928\lib\net472\Medja.OpenTk.Themes.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\..\..\.nuget\packages\medja.opentk.themes\2019.8.30.1\lib\net472\Medja.OpenTk.Themes.dll</HintPath>
     </Reference>
     <Reference Include="Medja.Properties, Version=0.9.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Medja.Properties.0.9.1-CI-20190924-151928\lib\net472\Medja.Properties.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\..\..\.nuget\packages\medja.properties\2019.8.30.1\lib\net472\Medja.Properties.dll</HintPath>
     </Reference>
     <Reference Include="Medja.Utils, Version=0.9.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Medja.Utils.0.9.1-CI-20190924-151928\lib\net472\Medja.Utils.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\..\..\.nuget\packages\medja.utils\2019.8.30.1\lib\net472\Medja.Utils.dll</HintPath>
     </Reference>
-    <Reference Include="OpenTK, Version=3.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4">
-      <HintPath>..\packages\OpenTK.3.1.0\lib\net20\OpenTK.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="SkiaSharp, Version=1.68.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756">
-      <HintPath>..\packages\SkiaSharp.1.68.0\lib\net45\SkiaSharp.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3-beta1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -94,16 +85,11 @@
     <Compile Include="BcFactoryCryptoConfigTests.cs" />
     <Compile Include="BcFactoryDigestTests.cs" />
     <Compile Include="BcFactoryPbeTests.cs" />
-    <Compile Include="BcFactoryTests.cs" />
     <Compile Include="BcFactoryFileHandlerTests.cs" />
-    <Compile Include="SteLoadDialogTests.cs" />
-    <Compile Include="SteMainViewTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SteSaveDialogTests.cs" />
+    <Compile Include="SteViewTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="libSkiaSharp.so" />
-    <None Include="OpenTK.dll.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -126,12 +112,8 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\xunit.core.2.4.1\build\xunit.core.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\xunit.core.2.4.1\build\xunit.core.props'))" />
     <Error Condition="!Exists('..\packages\xunit.core.2.4.1\build\xunit.core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\xunit.core.2.4.1\build\xunit.core.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.NETFramework.ReferenceAssemblies.net472.1.0.0-preview.2\build\Microsoft.NETFramework.ReferenceAssemblies.net472.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.NETFramework.ReferenceAssemblies.net472.1.0.0-preview.2\build\Microsoft.NETFramework.ReferenceAssemblies.net472.targets'))" />
-    <Error Condition="!Exists('..\packages\SkiaSharp.1.68.0\build\net45\SkiaSharp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SkiaSharp.1.68.0\build\net45\SkiaSharp.targets'))" />
   </Target>
   <Import Project="..\packages\xunit.core.2.4.1\build\xunit.core.targets" Condition="Exists('..\packages\xunit.core.2.4.1\build\xunit.core.targets')" />
-  <Import Project="..\packages\Microsoft.NETFramework.ReferenceAssemblies.net472.1.0.0-preview.2\build\Microsoft.NETFramework.ReferenceAssemblies.net472.targets" Condition="Exists('..\packages\Microsoft.NETFramework.ReferenceAssemblies.net472.1.0.0-preview.2\build\Microsoft.NETFramework.ReferenceAssemblies.net472.targets')" />
-  <Import Project="..\packages\SkiaSharp.1.68.0\build\net45\SkiaSharp.targets" Condition="Exists('..\packages\SkiaSharp.1.68.0\build\net45\SkiaSharp.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
          Other similar extension points exist, see Microsoft.Common.targets.
     <Target Name="BeforeBuild">

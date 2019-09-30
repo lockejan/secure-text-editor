@@ -1,48 +1,63 @@
-﻿using Xunit;
+﻿using System;
+using System.IO;
+using BcFactory;
+using Xunit;
 
 namespace SecureTextEditorTests
 {
     public class BcFactoryFileHandlerTests
     {
-        [Fact]
-        public void TestValidConfigSaveToDisk()
-        {
-            
-        }
-        
+        private const string Filename = "test";
+
         [Fact]
         public void TestInvalidConfigSaveToDisk()
         {
+            byte[] key = Convert.FromBase64String("i/+IEVK8AdH6A9Jlh+i2Bg==");
             
+            var config = new CryptoConfig
+            {
+                IsPbeActive = false,
+                Key = key,
+            };
+
+            Assert.Throws<Newtonsoft.Json.JsonSerializationException>(
+                () => FileHandler.SaveToDisk(Filename, config));
         }
 
         [Fact]
         public void TestValidSaveKeyByte()
         {
-            
-        }
+            byte[] key = Convert.FromBase64String("i/+IEVK8AdH6A9Jlh+i2Bg==");
+            string cipher = "UiJB+lZnsHaNoevzsg8FCht==";
+            var config = new CryptoConfig
+            {
+                IsPbeActive = false,
+                Key = key,
+                Cipher = cipher
+            };
 
-        [Fact]
-        public void TestValidSaveKeyString()
-        {
-            
-        }
-        [Fact]
-        public void TestInvalidSaveKeyByte()
-        {
-            
-        }
+            FileHandler.SaveToDisk(Filename, config);
 
-        [Fact]
-        public void TestInvalidSaveKeyString()
-        {
-            
+            config = FileHandler.LoadKeys(Filename, config);
+            Assert.Equal(key, config.Key);
         }
         
         [Fact]
-        public void TestValidSaveFile()
+        public void TestValidSavePublicKeyString()
         {
-            
+            string publicKey = "MCwCFEceSBmYoh/mj6ivfDJPgwrxmB4EAhRgxragMUKULWDiF2oBKrlI5qC4IA==";
+            string cipher = "UiJB+lZnsHaNoevzsg8FCht==";
+            var config = new CryptoConfig
+            {
+                IsPbeActive = false,
+                SignaturePublicKey = publicKey,
+                Cipher = cipher
+            };
+
+            FileHandler.SaveToDisk(Filename, config);
+
+            config = FileHandler.LoadKeys(Filename, config);
+            Assert.Equal(publicKey, config.SignaturePublicKey);
         }
         
         [Fact]
@@ -78,23 +93,7 @@ namespace SecureTextEditorTests
         public void TestInvalidProcessConfigOnLoad()
         {
             
-        }            
-        
-        [Fact]
-        public void TestValidLoadKeys()
-        {
-            
         }
-        
-        [Fact]
-        public void TestInvalidLoadKeys()
-        {
-            
-        }
-        
-        
-        
-        
-        
+
     }
 }
