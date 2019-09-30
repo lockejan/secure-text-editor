@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace SecureTextEditor.FileHandler
 {
 
-    public static class SteCryptoHandler
+    public static class FileHandler
     {
         private const string FileExtension = "ste";
         private const string KeyExtension = "key";
@@ -22,8 +22,8 @@ namespace SecureTextEditor.FileHandler
             {
                 if (config.IsPbeActive)
                 {
-                    var pbeBuilder = CryptoFactory.CreatePbe(config, config.PbePassword);
-                    config = pbeBuilder.GenerateKeyBytes(config.PbePassword);
+                    var pbeBuilder = CryptoFactory.CreatePbe(config);
+                    config = pbeBuilder.GenerateKeyBytes();
                 }
 
                 var cipherBuilder = CryptoFactory.CreateCipher(config);
@@ -136,7 +136,7 @@ namespace SecureTextEditor.FileHandler
                     certBuilder.GenerateCerts();
                     config = certBuilder.SignInput(config.Cipher);
                     
-                    var result = certBuilder.VerifySign(config.Signature);
+                    var result = certBuilder.VerifySign(config.Signature, config.Cipher);
                     Console.WriteLine($"Signature verified: {result}");
                 }
                 else
@@ -144,20 +144,35 @@ namespace SecureTextEditor.FileHandler
                     var certBuilder = CryptoFactory.CreateDigest(config);
                     config = certBuilder.SignInput(config.Cipher);
                     
-                    var result = certBuilder.VerifySign(config.Signature);
+                    var result = certBuilder.VerifySign(config.Signature, config.Cipher);
                     Console.WriteLine($"Digest verified: {result}");
                 }
             }
 
             if (config.IsPbeActive)
             {
-                var pbeBuilder = CryptoFactory.CreatePbe(config, config.PbePassword);
-                config = pbeBuilder.GenerateKeyBytes(config.PbePassword);
+                var pbeBuilder = CryptoFactory.CreatePbe(config);
+                config = pbeBuilder.GenerateKeyBytes();
             }
             
             var cipherBuilder = CryptoFactory.CreateCipher(config);
+            try
+            {
+                return cipherBuilder.DecryptBytesToText(Convert.FromBase64String(config.Cipher));
 
-            return cipherBuilder.DecryptBytesToText(Convert.FromBase64String(config.Cipher));
+            }
+            catch (Org.BouncyCastle.Crypto.InvalidCipherTextException e)
+            {
+                Console.WriteLine(e);
+                //throw;
+            }
+            catch (FormatException e)
+            {
+                Console.WriteLine(e);
+            }
+
+            //return cipherBuilder.DecryptBytesToText(Convert.FromBase64String(config.Cipher));
+            return "not good";
         }
 
     }
