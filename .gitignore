@@ -106,3 +106,4 @@ packages/
 **/bin/
 **/obj/
 docs/
+*/OpenTK.dll.config
