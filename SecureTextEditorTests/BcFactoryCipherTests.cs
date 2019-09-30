@@ -6,44 +6,16 @@ using CryptoConfig = BcFactory.CryptoConfig;
 
 namespace SecureTextEditorTests
 {
-    public class BcFactoryTests
+    public class BcFactoryCipherTests
     {
 
         [Fact]
         public void TestInvalidCipherCreateCall()
         {
-            var config = new CryptoConfig {};
+            var config = new CryptoConfig();
             
             Assert.Throws<ArgumentException>(
                 () => CryptoFactory.CreateCipher(config));
-        }
-
-        [Fact]
-        public void TestInvalidPbeCreateCall()
-        {
-            var config = new CryptoConfig {};
-            var password = "12345".ToCharArray();
-            
-            Assert.Throws<ArgumentException>(
-                () => CryptoFactory.CreatePbe(config, password));
-        }
-
-        [Fact]
-        public void TestInvalidDigestCreateCall()
-        {
-            var config = new CryptoConfig {};
-            
-            Assert.Throws<ArgumentException>(
-                () => CryptoFactory.CreateDigest(config));
-        }
-
-        [Fact]
-        public void TestInvalidCertCreateCall()
-        {
-            var config = new CryptoConfig {};
-            
-            Assert.Throws<ArgumentException>(
-                () => CryptoFactory.CreateCert(config));
         }
         
         [Fact]

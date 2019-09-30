@@ -1,14 +1,25 @@
-﻿using Medja.Controls;
+﻿using System;
+using Medja.Controls;
 using Medja.Theming;
 using SecureTextEditor.Views;
 using Xunit;
 
 namespace SecureTextEditorTests
 {
-    public class SetMainViewTests
+    public class SteMainViewTests
     {
         private IControlFactory _controlFactory;
 
+        [Fact]
+        public void createMainView()
+        {
+            _controlFactory = new ControlFactory();
+            var mainView = new SteMainView(_controlFactory);
+
+            //Assert.Throws<MissingMethodException>(
+              //  () => new SteMainView(_controlFactory));
+        }
+        
 //        [Fact]
 //        public void GetText()
 //        {
@@ -23,15 +34,7 @@ namespace SecureTextEditorTests
 //            
 //            Assert.Equal("Hallo Welt", result);
 //        }
-//
-//        [Fact]
-//        public void TriggerNew()
-//        {
-//            _controlFactory = new ControlFactory();
-//            var mainView = new SteMainView(_controlFactory);
-//
-//            //mainView.On
-//        }
+
 
     }
 }

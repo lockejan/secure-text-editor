@@ -2,516 +2,119 @@ using System;
 using BcFactory;
 using BcFactory.Resources;
 using Xunit;
+using Xunit.Abstractions;
 using CryptoConfig = BcFactory.CryptoConfig;
 
 namespace SecureTextEditorTests
 {
-    public class BcFactoryCipherTests
+    public class BcFactoryPbeTests
     {
-
-        [Fact]
-        public void TestInvalidCipherCreateCall()
-        {
-            var config = new CryptoConfig {};
-            
-            Assert.Throws<ArgumentException>(
-                () => CryptoFactory.CreateCipher(config));
-        }
 
         [Fact]
         public void TestInvalidPbeCreateCall()
         {
-            var config = new CryptoConfig {};
-            var password = "12345".ToCharArray();
-            
+            var config = new CryptoConfig {PbePassword = "12345".ToCharArray()};
+
             Assert.Throws<ArgumentException>(
-                () => CryptoFactory.CreatePbe(config, password));
+                () => CryptoFactory.CreatePbe(config));
         }
 
         [Fact]
-        public void TestInvalidDigestCreateCall()
-        {
-            var config = new CryptoConfig {};
-            
-            Assert.Throws<ArgumentException>(
-                () => CryptoFactory.CreateDigest(config));
-        }
-
-        [Fact]
-        public void TestInvalidCertCreateCall()
-        {
-            var config = new CryptoConfig {};
-            
-            Assert.Throws<ArgumentException>(
-                () => CryptoFactory.CreateCert(config));
-        }
-        
-        [Fact]
-        public void TestInvalidCtsInput()
+        public void TestEmptyPasswordConfig()
         {
             var config = new CryptoConfig
             {
                 IsEncryptActive = true,
-                BlockMode = BlockMode.CTS,
                 CipherAlgorithm = CipherAlgorithm.AES,
-                KeySize = 128,
-                Padding = Padding.Pkcs7
+                KeySize = 256,
+                PbeDigest = PbeDigest.GCM,
+                BlockMode = BlockMode.GCM,
+                IsPbeActive = true
             };
-        
-            var cipherBuilder = CryptoFactory.CreateCipher(config);
-            Assert.Throws<Org.BouncyCastle.Crypto.DataLengthException>(
-                () => cipherBuilder.EncryptTextToBytes("Hallo Welt"));
+            
+            Assert.Throws<ArgumentException>(
+                () => CryptoFactory.CreatePbe(config));
         }
-        
-        //RC4 Combinations
+
+        //####################
+        //SCRYPT Combinations#
+        //####################
         
         [Fact]
-        public void TestValidRc4Cipher()
+        public void TestValidScryptKey()
+        {
+            var config = new CryptoConfig
+            {
+                IsEncryptActive = true,
+                CipherAlgorithm = CipherAlgorithm.AES,
+                KeySize = 256,
+                PbeAlgorithm = PbeAlgorithm.SCRYPT,
+                PbeDigest = PbeDigest.GCM,
+                PbePassword = "secret".ToCharArray(),
+                BlockMode = BlockMode.GCM,
+                IsPbeActive = true
+            };
+
+            var pbeBuilder = CryptoFactory.CreatePbe(config);
+            config = pbeBuilder.GenerateKeyBytes();
+            
+            var cipherBuilder = CryptoFactory.CreateCipher(config);
+            config = cipherBuilder.EncryptTextToBytes("Hallo Welt");
+            var decodedCipher = Convert.FromBase64String(config.Cipher);
+
+            var result = cipherBuilder.DecryptBytesToText(decodedCipher);
+            Assert.Equal("Hallo Welt",result);
+        }
+        
+        //####################
+        //PBKDF Combinations#
+        //####################
+        
+        [Fact]
+        public void TestValidPbkdf2Sha256Key()
+        {
+            var config = new CryptoConfig
+            {
+                IsEncryptActive = true,
+                IsPbeActive = true,
+                CipherAlgorithm = CipherAlgorithm.AES,
+                KeySize = 256,
+                PbeAlgorithm = PbeAlgorithm.PBKDF2,
+                PbeDigest = PbeDigest.SHA256,
+                PbePassword = "secret".ToCharArray(),
+                BlockMode = BlockMode.CBC,
+                Padding = Padding.Pkcs7,
+            };
+
+            var pbeBuilder = CryptoFactory.CreatePbe(config);
+            config = pbeBuilder.GenerateKeyBytes();
+            
+            var cipherBuilder = CryptoFactory.CreateCipher(config);
+            config = cipherBuilder.EncryptTextToBytes("Hallo Welt");
+            var decodedCipher = Convert.FromBase64String(config.Cipher);
+
+            var result = cipherBuilder.DecryptBytesToText(decodedCipher);
+            Assert.Equal("Hallo Welt",result);
+        }
+
+        [Fact]
+        public void TestValidPbkdf2Sha1Key()
         {
             var config = new CryptoConfig
             {
                 IsEncryptActive = true,
                 CipherAlgorithm = CipherAlgorithm.RC4,
-                KeySize = 2048
+                KeySize = 40,
+                PbeAlgorithm = PbeAlgorithm.PBKDF2,
+                PbeDigest = PbeDigest.SHA1,
+                PbePassword = "secret".ToCharArray(),
+                BlockMode = BlockMode.None,
+                IsPbeActive = true
             };
-        
-            var cipherBuilder = CryptoFactory.CreateCipher(config);
-            config = cipherBuilder.EncryptTextToBytes("Hallo Welt");
-            var decodedCipher = Convert.FromBase64String(config.Cipher);
 
-            var result = cipherBuilder.DecryptBytesToText(decodedCipher);
-            Assert.Equal("Hallo Welt",result);
-        }
-        
-        //#############################
-        //ECB Combinations without Pbe
-        //############################
-        [Fact]
-        public void TestValidAes128EcbZeroByteCipher()
-        {
-            var config = new CryptoConfig
-            {
-                IsEncryptActive = true,
-                CipherAlgorithm = CipherAlgorithm.AES,
-                KeySize = 128,
-                BlockMode = BlockMode.ECB,
-                Padding = Padding.ZeroByte
-            };
-        
-            var cipherBuilder = CryptoFactory.CreateCipher(config);
-            config = cipherBuilder.EncryptTextToBytes("Hallo Welt");
-            var decodedCipher = Convert.FromBase64String(config.Cipher);
-
-            var result = cipherBuilder.DecryptBytesToText(decodedCipher);
-            Assert.Equal("Hallo Welt",result);
-        }     
-        
-        [Fact]
-        public void TestValidAes192EcbZeroByteCipher()
-        {
-            var config = new CryptoConfig
-            {
-                IsEncryptActive = true,
-                CipherAlgorithm = CipherAlgorithm.AES,
-                KeySize = 192,
-                BlockMode = BlockMode.ECB,
-                Padding = Padding.ZeroByte
-            };
-        
-            var cipherBuilder = CryptoFactory.CreateCipher(config);
-            config = cipherBuilder.EncryptTextToBytes("Hallo Welt");
-            var decodedCipher = Convert.FromBase64String(config.Cipher);
-
-            var result = cipherBuilder.DecryptBytesToText(decodedCipher);
-            Assert.Equal("Hallo Welt",result);
-        }        
-                
-        [Fact]
-        public void TestValidAes256EcbZeroByteCipher()
-        {
-            var config = new CryptoConfig
-            {
-                IsEncryptActive = true,
-                CipherAlgorithm = CipherAlgorithm.AES,
-                KeySize = 256,
-                BlockMode = BlockMode.ECB,
-                Padding = Padding.ZeroByte
-            };
-        
-            var cipherBuilder = CryptoFactory.CreateCipher(config);
-            config = cipherBuilder.EncryptTextToBytes("Hallo Welt");
-            var decodedCipher = Convert.FromBase64String(config.Cipher);
-
-            var result = cipherBuilder.DecryptBytesToText(decodedCipher);
-            Assert.Equal("Hallo Welt",result);
-        }
-        
-        [Fact]
-        public void TestValidAes128EcbPkcs7Cipher()
-        {
-            var config = new CryptoConfig
-            {
-                IsEncryptActive = true,
-                CipherAlgorithm = CipherAlgorithm.AES,
-                KeySize = 128,
-                BlockMode = BlockMode.ECB,
-                Padding = Padding.Pkcs7
-            };
-        
-            var cipherBuilder = CryptoFactory.CreateCipher(config);
-            config = cipherBuilder.EncryptTextToBytes("Hallo Welt");
-            var decodedCipher = Convert.FromBase64String(config.Cipher);
-
-            var result = cipherBuilder.DecryptBytesToText(decodedCipher);
-            Assert.Equal("Hallo Welt",result);
-        }     
-        
-        [Fact]
-        public void TestValidAes192EcbPkcs7Cipher()
-        {
-            var config = new CryptoConfig
-            {
-                IsEncryptActive = true,
-                CipherAlgorithm = CipherAlgorithm.AES,
-                KeySize = 192,
-                BlockMode = BlockMode.ECB,
-                Padding = Padding.Pkcs7
-            };
-        
-            var cipherBuilder = CryptoFactory.CreateCipher(config);
-            config = cipherBuilder.EncryptTextToBytes("Hallo Welt");
-            var decodedCipher = Convert.FromBase64String(config.Cipher);
-
-            var result = cipherBuilder.DecryptBytesToText(decodedCipher);
-            Assert.Equal("Hallo Welt",result);
-        }        
-                
-        [Fact]
-        public void TestValidAes256EcbPkcs7Cipher()
-        {
-            var config = new CryptoConfig
-            {
-                IsEncryptActive = true,
-                CipherAlgorithm = CipherAlgorithm.AES,
-                KeySize = 256,
-                BlockMode = BlockMode.ECB,
-                Padding = Padding.Pkcs7
-            };
-        
-            var cipherBuilder = CryptoFactory.CreateCipher(config);
-            config = cipherBuilder.EncryptTextToBytes("Hallo Welt");
-            var decodedCipher = Convert.FromBase64String(config.Cipher);
-
-            var result = cipherBuilder.DecryptBytesToText(decodedCipher);
-            Assert.Equal("Hallo Welt",result);
-        }
-
-        //#############################
-        //CBC Combinations without Pbe
-        //############################
-        [Fact]
-        public void TestValidAes128CbcZeroByteCipher()
-        {
-            var config = new CryptoConfig
-            {
-                IsEncryptActive = true,
-                CipherAlgorithm = CipherAlgorithm.AES,
-                KeySize = 128,
-                BlockMode = BlockMode.CBC,
-                Padding = Padding.ZeroByte
-            };
-        
-            var cipherBuilder = CryptoFactory.CreateCipher(config);
-            config = cipherBuilder.EncryptTextToBytes("Hallo Welt");
-            var decodedCipher = Convert.FromBase64String(config.Cipher);
-
-            var result = cipherBuilder.DecryptBytesToText(decodedCipher);
-            Assert.Equal("Hallo Welt",result);
-        }     
-        
-        [Fact]
-        public void TestValidAes192CbcZeroByteCipher()
-        {
-            var config = new CryptoConfig
-            {
-                IsEncryptActive = true,
-                CipherAlgorithm = CipherAlgorithm.AES,
-                KeySize = 192,
-                BlockMode = BlockMode.CBC,
-                Padding = Padding.ZeroByte
-            };
-        
-            var cipherBuilder = CryptoFactory.CreateCipher(config);
-            config = cipherBuilder.EncryptTextToBytes("Hallo Welt");
-            var decodedCipher = Convert.FromBase64String(config.Cipher);
-
-            var result = cipherBuilder.DecryptBytesToText(decodedCipher);
-            Assert.Equal("Hallo Welt",result);
-        }        
-                
-        [Fact]
-        public void TestValidAes256CbcZeroByteCipher()
-        {
-            var config = new CryptoConfig
-            {
-                IsEncryptActive = true,
-                CipherAlgorithm = CipherAlgorithm.AES,
-                KeySize = 256,
-                BlockMode = BlockMode.CBC,
-                Padding = Padding.ZeroByte
-            };
-        
-            var cipherBuilder = CryptoFactory.CreateCipher(config);
-            config = cipherBuilder.EncryptTextToBytes("Hallo Welt");
-            var decodedCipher = Convert.FromBase64String(config.Cipher);
-
-            var result = cipherBuilder.DecryptBytesToText(decodedCipher);
-            Assert.Equal("Hallo Welt",result);
-        }
-        
-        [Fact]
-        public void TestValidAes128CbcPkcs7Cipher()
-        {
-            var config = new CryptoConfig
-            {
-                IsEncryptActive = true,
-                CipherAlgorithm = CipherAlgorithm.AES,
-                KeySize = 128,
-                BlockMode = BlockMode.CBC,
-                Padding = Padding.Pkcs7
-            };
-        
-            var cipherBuilder = CryptoFactory.CreateCipher(config);
-            config = cipherBuilder.EncryptTextToBytes("Hallo Welt");
-            var decodedCipher = Convert.FromBase64String(config.Cipher);
-
-            var result = cipherBuilder.DecryptBytesToText(decodedCipher);
-            Assert.Equal("Hallo Welt",result);
-        }     
-        
-        [Fact]
-        public void TestValidAes192CbcPkcs7Cipher()
-        {
-            var config = new CryptoConfig
-            {
-                IsEncryptActive = true,
-                CipherAlgorithm = CipherAlgorithm.AES,
-                KeySize = 192,
-                BlockMode = BlockMode.CBC,
-                Padding = Padding.Pkcs7
-            };
-        
-            var cipherBuilder = CryptoFactory.CreateCipher(config);
-            config = cipherBuilder.EncryptTextToBytes("Hallo Welt");
-            var decodedCipher = Convert.FromBase64String(config.Cipher);
-
-            var result = cipherBuilder.DecryptBytesToText(decodedCipher);
-            Assert.Equal("Hallo Welt",result);
-        }        
-                
-        [Fact]
-        public void TestValidAes256CbcPkcs7Cipher()
-        {
-            var config = new CryptoConfig
-            {
-                IsEncryptActive = true,
-                CipherAlgorithm = CipherAlgorithm.AES,
-                KeySize = 256,
-                BlockMode = BlockMode.CBC,
-                Padding = Padding.Pkcs7
-            };
-        
-            var cipherBuilder = CryptoFactory.CreateCipher(config);
-            config = cipherBuilder.EncryptTextToBytes("Hallo Welt");
-            var decodedCipher = Convert.FromBase64String(config.Cipher);
-
-            var result = cipherBuilder.DecryptBytesToText(decodedCipher);
-            Assert.Equal("Hallo Welt",result);
-        }
-        
-        //#############################
-        //CTS Combinations without Pbe
-        //############################
-        
-        [Fact]
-        public void TestValidAes128CtsCipher()
-        {
-            var config = new CryptoConfig
-            {
-                IsEncryptActive = true,
-                CipherAlgorithm = CipherAlgorithm.AES,
-                KeySize = 128,
-                BlockMode = BlockMode.CTS,
-                Padding = Padding.None
-            };
-        
-            var cipherBuilder = CryptoFactory.CreateCipher(config);
-            config = cipherBuilder.EncryptTextToBytes("Hallo Welt, Du bist schön.");
-            var decodedCipher = Convert.FromBase64String(config.Cipher);
-
-            var result = cipherBuilder.DecryptBytesToText(decodedCipher);
-            Assert.Equal("Hallo Welt, Du bist schön.",result);
-        }     
-        
-        [Fact]
-        public void TestValidAes192CtsCipher()
-        {
-            var config = new CryptoConfig
-            {
-                IsEncryptActive = true,
-                CipherAlgorithm = CipherAlgorithm.AES,
-                KeySize = 192,
-                BlockMode = BlockMode.CTS,
-                Padding = Padding.None
-            };
-        
-            var cipherBuilder = CryptoFactory.CreateCipher(config);
-            config = cipherBuilder.EncryptTextToBytes("Hallo Welt, Du bist schön.");
-            var decodedCipher = Convert.FromBase64String(config.Cipher);
-
-            var result = cipherBuilder.DecryptBytesToText(decodedCipher);
-            Assert.Equal("Hallo Welt, Du bist schön.",result);
-        }        
-                
-        [Fact]
-        public void TestValidAes256CtsCipher()
-        {
-            var config = new CryptoConfig
-            {
-                IsEncryptActive = true,
-                CipherAlgorithm = CipherAlgorithm.AES,
-                KeySize = 256,
-                BlockMode = BlockMode.CTS,
-                Padding = Padding.None
-            };
-        
-            var cipherBuilder = CryptoFactory.CreateCipher(config);
-            config = cipherBuilder.EncryptTextToBytes("Hallo Welt, Du bist schön.");
-            var decodedCipher = Convert.FromBase64String(config.Cipher);
-
-            var result = cipherBuilder.DecryptBytesToText(decodedCipher);
-            Assert.Equal("Hallo Welt, Du bist schön.",result);
-        }
-        
-        //#############################
-        //OFB Combinations without Pbe
-        //############################
-        
-        [Fact]
-        public void TestValidAes128OfbCipher()
-        {
-            var config = new CryptoConfig
-            {
-                IsEncryptActive = true,
-                CipherAlgorithm = CipherAlgorithm.AES,
-                KeySize = 128,
-                BlockMode = BlockMode.OFB,
-                Padding = Padding.None
-            };
-        
-            var cipherBuilder = CryptoFactory.CreateCipher(config);
-            config = cipherBuilder.EncryptTextToBytes("Hallo Welt");
-            var decodedCipher = Convert.FromBase64String(config.Cipher);
-
-            var result = cipherBuilder.DecryptBytesToText(decodedCipher);
-            Assert.Equal("Hallo Welt",result);
-        }     
-        
-        [Fact]
-        public void TestValidAes192OfbCipher()
-        {
-            var config = new CryptoConfig
-            {
-                IsEncryptActive = true,
-                CipherAlgorithm = CipherAlgorithm.AES,
-                KeySize = 192,
-                BlockMode = BlockMode.OFB,
-                Padding = Padding.None
-            };
-        
-            var cipherBuilder = CryptoFactory.CreateCipher(config);
-            config = cipherBuilder.EncryptTextToBytes("Hallo Welt");
-            var decodedCipher = Convert.FromBase64String(config.Cipher);
-
-            var result = cipherBuilder.DecryptBytesToText(decodedCipher);
-            Assert.Equal("Hallo Welt",result);
-        }        
-                
-        [Fact]
-        public void TestValidAes256OfbCipher()
-        {
-            var config = new CryptoConfig
-            {
-                IsEncryptActive = true,
-                CipherAlgorithm = CipherAlgorithm.AES,
-                KeySize = 256,
-                BlockMode = BlockMode.OFB,
-                Padding = Padding.None
-            };
-        
-            var cipherBuilder = CryptoFactory.CreateCipher(config);
-            config = cipherBuilder.EncryptTextToBytes("Hallo Welt");
-            var decodedCipher = Convert.FromBase64String(config.Cipher);
-
-            var result = cipherBuilder.DecryptBytesToText(decodedCipher);
-            Assert.Equal("Hallo Welt",result);
-        }
-        
-        //#############################
-        //GCM Combinations without Pbe
-        //############################
-        [Fact]
-        public void TestValidAes128GcmCipher()
-        {
-            var config = new CryptoConfig
-            {
-                IsEncryptActive = true,
-                CipherAlgorithm = CipherAlgorithm.AES,
-                KeySize = 128,
-                BlockMode = BlockMode.GCM,
-                Padding = Padding.None
-            };
-        
-            var cipherBuilder = CryptoFactory.CreateCipher(config);
-            config = cipherBuilder.EncryptTextToBytes("Hallo Welt");
-            var decodedCipher = Convert.FromBase64String(config.Cipher);
-
-            var result = cipherBuilder.DecryptBytesToText(decodedCipher);
-            Assert.Equal("Hallo Welt",result);
-        }     
-        
-        [Fact]
-        public void TestValidAes192GcmCipher()
-        {
-            var config = new CryptoConfig
-            {
-                IsEncryptActive = true,
-                CipherAlgorithm = CipherAlgorithm.AES,
-                KeySize = 192,
-                BlockMode = BlockMode.GCM,
-                Padding = Padding.None
-            };
-        
-            var cipherBuilder = CryptoFactory.CreateCipher(config);
-            config = cipherBuilder.EncryptTextToBytes("Hallo Welt");
-            var decodedCipher = Convert.FromBase64String(config.Cipher);
-
-            var result = cipherBuilder.DecryptBytesToText(decodedCipher);
-            Assert.Equal("Hallo Welt",result);
-        }        
-                
-        [Fact]
-        public void TestValidAes256GcmCipher()
-        {
-            var config = new CryptoConfig
-            {
-                IsEncryptActive = true,
-                CipherAlgorithm = CipherAlgorithm.AES,
-                KeySize = 256,
-                BlockMode = BlockMode.GCM,
-                Padding = Padding.None
-            };
-        
+            var pbeBuilder = CryptoFactory.CreatePbe(config);
+            config = pbeBuilder.GenerateKeyBytes();
+            
             var cipherBuilder = CryptoFactory.CreateCipher(config);
             config = cipherBuilder.EncryptTextToBytes("Hallo Welt");
             var decodedCipher = Convert.FromBase64String(config.Cipher);
