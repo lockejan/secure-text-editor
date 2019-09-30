@@ -15,23 +15,38 @@ namespace BcFactory
         [JsonProperty(Required = Required.Always)]
         private string FormatVersion { get; } = "0.1";
 
+        /// <summary>
+        /// System encoding to help in case of encoding errors on different environment.
+        /// </summary>
         [JsonProperty(Required = Required.Always)]
         public string Encoding { get; } = System.Text.Encoding.Default.ToString();
 
+        /// <summary>
+        /// Iv for passwordless created ciphers engine or Salt if the key was derived using pbe.
+        /// </summary>
         [JsonProperty]
         public byte[] IvOrSalt { get; set; }
 
+        /// <summary>
+        /// String representation of publicKey certificate to verify signature on load.
+        /// </summary>
         [JsonIgnoreAttribute]
         public string SignaturePublicKey { get; set; }
         
+        /// <summary>
+        /// String representation of privateKey certificate which has been used to sign message. 
+        /// </summary>
         [JsonIgnoreAttribute]
         public string SignaturePrivateKey { get; set; }
 
+        /// <summary>
+        /// String representation of Signature of cipher respective message.
+        /// </summary>
         [JsonProperty]
         public string Signature { get; set; }
 
         /// <summary>
-        /// Generated cipher of cipher engine.
+        /// Generated cipher text of cipher engine.
         /// </summary>
         [JsonProperty(Required = Required.Always)]
         public string Cipher { get; set; }
@@ -43,14 +58,14 @@ namespace BcFactory
         public bool IsEncryptActive { get; set; }
         
         /// <summary>
-        /// Representing the used cipher algorithm.
+        /// String representation of used cipher algorithm.
         /// </summary>
         [JsonProperty]
         [JsonConverter(typeof(StringEnumConverter))]
         public CipherAlgorithm CipherAlgorithm { get; set; }
         
         /// <summary>
-        /// Representing the key size used by related cipher algorithm.
+        /// Representing the key size used by cipher algorithm.
         /// </summary>
         [JsonProperty]
         public int KeySize { get; set; }
@@ -69,34 +84,62 @@ namespace BcFactory
         [JsonConverter(typeof(StringEnumConverter))]
         public Padding Padding { get; set; }
         
+        /// <summary>
+        /// Referring to whether or not password based encryption has been used.
+        /// </summary>
         [JsonProperty(Required = Required.Always)]
         public bool IsPbeActive { get; set; }
         
+        /// <summary>
+        /// used PbeAlgorithm to generate key.
+        /// </summary>
         [JsonProperty(Required = Required.Default)]
         [JsonConverter(typeof(StringEnumConverter))]
         public PbeAlgorithm PbeAlgorithm { get; set; }
         
+        /// <summary>
+        /// Integrity or digest mode which has been used during key derivation.
+        /// </summary>
         [JsonProperty(Required = Required.Default)]
         [JsonConverter(typeof(StringEnumConverter))]
         public PbeDigest PbeDigest { get; set; }
         
+        /// <summary>
+        /// Password which comes from user through load or save dialog.
+        /// </summary>
         [JsonIgnoreAttribute]
         public char[] PbePassword { get; set; }
 
+        /// <summary>
+        /// secret key which is needed for en- and decryption.
+        /// </summary>
         [JsonIgnoreAttribute]
         public byte[] Key { get; set; }
         
+        /// <summary>
+        /// states if some of the provided integrity engine was used. 
+        /// </summary>
         [JsonProperty(Required = Required.Always)]
         public bool IsIntegrityActive { get; set; }
         
+        /// <summary>
+        /// refers to the form of integrity - digest or cert(dsa)
+        /// </summary>
         [JsonProperty(Required = Required.Default)]
         [JsonConverter(typeof(StringEnumConverter))]
         public Integrity Integrity { get; set; }
         
+        /// <summary>
+        /// string representation of used config for digest or certificate(dsa).
+        /// currently mac or digest.
+        /// </summary>
         [JsonProperty(Required = Required.Default)]
         [JsonConverter(typeof(StringEnumConverter))]
         public IntegrityOptions IntegrityOptions { get; set; }
 
+        /// <summary>
+        /// key which will created if AesCmac is used.
+        /// </summary>
         [JsonIgnoreAttribute]
         public byte[] DigestKey { get; set; }
         
@@ -110,7 +153,6 @@ namespace BcFactory
                    $"Encoding: {Encoding},\n" +
                    $"IvOrSalt: {IvOrSalt},\n" +
                    $"SignaturePublicKey: {SignaturePublicKey},\n" +
-                   $"SignaturePrivateKey: {SignaturePrivateKey},\n" +
                    $"Signature: {Signature},\n" +
                    $"Cipher: {Cipher},\n" +
                    $"IsEncryptActive: {IsEncryptActive},\n" +
@@ -121,9 +163,6 @@ namespace BcFactory
                    $"IsPbeActive: {IsPbeActive},\n" +
                    $"PbeAlgorithm: {PbeAlgorithm},\n" +
                    $"PbeDigest: {PbeDigest},\n" +
-                   $"PbePassword: {PbePassword},\n" +
-                   $"Key: {Key},\n" +
-                   $"Key: {DigestKey},\n" +
                    $"IsIntegrityActive: {IsIntegrityActive},\n" +
                    $"Integrity: {Integrity},\n" +
                    $"IntegrityOptions: {IntegrityOptions},\n";

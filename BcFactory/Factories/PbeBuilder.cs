@@ -8,10 +8,12 @@ using Org.BouncyCastle.Security;
 
 namespace BcFactory.Factories
 {
+    /// <inheritdoc />
     internal class PbeBuilder : IPbe
     {
         private readonly CryptoConfig _config;
-        
+
+        /// <inheritdoc />
         public PbeBuilder(CryptoConfig config)
         {
             _config = config;
@@ -34,7 +36,7 @@ namespace BcFactory.Factories
             {
                 PbeAlgorithm.SCRYPT => BcScrypt(_config.PbePassword, _config.IvOrSalt, 8, 128, 8),
                 PbeAlgorithm.PBKDF2 => BcPkcs5Scheme(_config.PbePassword, _config.IvOrSalt, 128),
-                _ => throw new ArgumentException("Algorithm not supported")
+                _ => throw new ArgumentException("Algorithm not supported.")
             };
             _config.Key = keyBytes;
             return _config;

@@ -12,7 +12,7 @@ using Org.BouncyCastle.Security;
 namespace BcFactory.Factories
 {
     /// <inheritdoc />
-    public class CipherBuilder : ICipher
+    internal class CipherBuilder : ICipher
     {
         private readonly CryptoConfig _config;
 
@@ -145,6 +145,7 @@ namespace BcFactory.Factories
             return _config;
         }
 
+        /// <inheritdoc />
         public string DecryptBytesToText(byte[] cipherBytes)
         {
             var keyParam = new KeyParameter(_config.Key);

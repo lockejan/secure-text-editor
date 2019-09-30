@@ -1,7 +1,7 @@
 namespace BcFactory.Resources
 {
     /// <summary>
-    /// Holds all sort of paddings which are available for cipher processing. 
+    /// Holds all available paddings for cipher processing. 
     /// </summary>
     public enum Padding
     {

@@ -7,13 +7,15 @@ using Org.BouncyCastle.X509;
 
 namespace BcFactory.Factories
 {
-    public class CertificateBuilder : ICert
+    /// <inheritdoc />
+    internal class CertificateBuilder : ICert
     {
         private readonly CryptoConfig _config;
 
         private AsymmetricKeyParameter _privateKey;
         private AsymmetricKeyParameter _publicKey;
-        
+
+        /// <inheritdoc />
         public CertificateBuilder(CryptoConfig config)
         {
             _config = config;
@@ -24,6 +26,7 @@ namespace BcFactory.Factories
 
         }
 
+        /// <inheritdoc />
         public void GenerateCerts()
         {
             var dsaKeyPairGen = new DsaKeyPairGenerator();
@@ -48,6 +51,7 @@ namespace BcFactory.Factories
             _config.SignaturePublicKey = publicKeyDerBase64;
         }
 
+        /// <inheritdoc />
         public CryptoConfig SignInput(string message)
         {
             var cipherBytes = Convert.FromBase64String(message);
@@ -69,7 +73,8 @@ namespace BcFactory.Factories
             
             return _config;
         }
-        
+
+        /// <inheritdoc />
         public bool VerifySign(string sign, string message)
         {
             var messageBytes = Convert.FromBase64String(message);

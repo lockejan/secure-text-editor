@@ -21,6 +21,9 @@ namespace SecureTextEditor.Views
 
         private readonly TextEditor _textBox;
 
+        /// <summary>
+        /// private interface to simplify working with textEditor inside class.
+        /// </summary>
         private string Text
         {
             get => _textBox.GetText();

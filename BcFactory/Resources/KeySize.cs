@@ -9,6 +9,7 @@ namespace BcFactory.Resources
         /// Supported key length for AES.
         /// </summary>
         public static readonly int[] AES = { 128, 192, 256 };
+        
         /// <summary>
         /// Supported key length for RC4.
         /// </summary>

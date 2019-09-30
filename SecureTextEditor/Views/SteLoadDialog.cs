@@ -13,9 +13,17 @@ namespace SecureTextEditor.Views
         private readonly IControlFactory _controlFactory;
 
         private TextBox _passwordInput;
+        /// <summary>
+        /// Public interface to password field.
+        /// necessary for parent window.
+        /// </summary>
         public TextBox Password => _passwordInput;
         
         private TextBox _filenameInput;
+        /// <summary>
+        /// Public interface to filename field.
+        /// necessary for parent window. 
+        /// </summary>
         public TextBox Filename => _filenameInput;
 
         private readonly VerticalStackPanel _firstColumnStack;

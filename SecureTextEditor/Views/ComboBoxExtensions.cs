@@ -5,8 +5,18 @@ using Medja.Controls;
 
 namespace SecureTextEditor.Views
 {
-    static class ComboBoxExtensions
+    /// <summary>
+    /// Static class holding extension methods to simplify working with comboBox updates.
+    /// </summary>
+    internal static class ComboBoxExtensions
     {
+        /// <summary>
+        /// Adds multiple entries to Combobox at once.
+        /// Accepts an iterable collection.
+        /// Results in one call instead of calling add-method multiple times with one entry each time.
+        /// </summary>
+        /// <param name="comboBox">comboBox object</param>
+        /// <param name="items">iterable string object</param>
         public static void AddRange(this ComboBox comboBox, IEnumerable<string> items)
         {
             foreach (var title in items)
@@ -36,6 +46,11 @@ namespace SecureTextEditor.Views
             comboBox.Add(Enum.GetName(typeof(T), item));
         }
 
+        /// <summary>
+        /// Selecting first item in combobox.
+        /// Results in Display.
+        /// Otherwise title of combobox would have been displayed instead. 
+        /// </summary>
         public static void SelectFirstItem(this ComboBox comboBox)
         {
             if (comboBox.ItemsPanel.Children.Count == 0)

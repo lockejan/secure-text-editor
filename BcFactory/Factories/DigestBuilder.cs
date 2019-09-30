@@ -9,13 +9,19 @@ using Org.BouncyCastle.Security;
 
 namespace BcFactory.Factories
 {
-    public class DigestBuilder : IDigest
+    
+    /// <summary>
+    /// Factory which creates digests and macs.
+    /// </summary>
+    internal class DigestBuilder : IDigest
     {
         private readonly CryptoConfig _config;
         
         private readonly AesEngine _myAes;
-        private const string AesAlgo= "AES"; 
-        private const string AesKeySize = "256"; 
+        private const string AesAlgo = "AES"; 
+        private const string AesKeySize = "256";
+
+        /// <inheritdoc />
         public DigestBuilder(CryptoConfig config)
         {
             _config = config;
@@ -30,7 +36,8 @@ namespace BcFactory.Factories
             var gen = GeneratorUtilities.GetKeyGenerator(cipher);
             _config.DigestKey = gen.GenerateKey();
         }
-        
+
+        /// <inheritdoc />
         public CryptoConfig SignInput(string message)
         {
             var inputBytes = Convert.FromBase64String(message);
@@ -48,6 +55,7 @@ namespace BcFactory.Factories
             return _config;
         }
 
+        /// <inheritdoc />
         public bool VerifySign(string sign, string message)
         {
             var testSign = SignInput(message);
