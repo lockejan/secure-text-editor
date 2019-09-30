@@ -154,7 +154,7 @@ namespace BcFactory.Factories
                 var outBuffer = new byte[_config.KeySize];
                 _myRc4.Init(false, keyParam);
                 _myRc4.ProcessBytes(cipherBytes, 0, cipherBytes.Length, outBuffer, 0);
-                UpdatePlainText(outBuffer);
+                UpdatePlainText(outBuffer.Where(x => x != 0).ToArray());
             }
             else
             {

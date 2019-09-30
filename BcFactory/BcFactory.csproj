@@ -56,6 +56,7 @@
     <Compile Include="Factories\CipherBuilder.cs" />
     <Compile Include="Factories\DigestBuilder.cs" />
     <Compile Include="Factories\PbeBuilder.cs" />
+    <Compile Include="FileHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\BlockMode.cs" />
     <Compile Include="Resources\CipherAlgorithm.cs" />

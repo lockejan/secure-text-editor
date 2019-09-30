@@ -28,12 +28,12 @@ namespace BcFactory.Factories
             return salt;
         }
         
-        CryptoConfig IPbe.GenerateKeyBytes(char[] passwordChars)
+        CryptoConfig IPbe.GenerateKeyBytes()
         {
             var keyBytes = _config.PbeAlgorithm switch
             {
-                PbeAlgorithm.SCRYPT => BcScrypt(passwordChars, _config.IvOrSalt, 8, 128, 8),
-                PbeAlgorithm.PBKDF2 => BcPkcs5Scheme(passwordChars, _config.IvOrSalt, 128),
+                PbeAlgorithm.SCRYPT => BcScrypt(_config.PbePassword, _config.IvOrSalt, 8, 128, 8),
+                PbeAlgorithm.PBKDF2 => BcPkcs5Scheme(_config.PbePassword, _config.IvOrSalt, 128),
                 _ => throw new ArgumentException("Algorithm not supported")
             };
             _config.Key = keyBytes;
@@ -52,7 +52,7 @@ namespace BcFactory.Factories
         private byte[] BcPkcs5Scheme(char[] password, byte[] salt,
             int iterationCount)
         {
-            Pkcs5S1ParametersGenerator generator = new Pkcs5S1ParametersGenerator(
+            var generator = new Pkcs5S1ParametersGenerator(
                 GetDigest());
 
             generator.Init(PbeParametersGenerator.Pkcs5PasswordToUtf8Bytes(password),

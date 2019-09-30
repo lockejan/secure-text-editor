@@ -229,17 +229,14 @@ namespace BcFactory
                 return Resources.KeySize.RC4;
 
             if (!IsPbeActive) return Resources.KeySize.AES;
-            
-            switch (PbeAlgorithm)
+
+            return PbeAlgorithm switch
             {
-                case PbeAlgorithm.SCRYPT:
-                    return new[] { 256 };
-                case PbeAlgorithm.PBKDF2 when CipherAlgorithm == CipherAlgorithm.AES:
-                    return new[] { 128 };
-                case PbeAlgorithm.PBKDF2 when CipherAlgorithm == CipherAlgorithm.RC4:
-                    return new[] { 40 };
-            }
-            return Resources.KeySize.AES;
+                PbeAlgorithm.SCRYPT => new[] {256},
+                PbeAlgorithm.PBKDF2 when CipherAlgorithm == CipherAlgorithm.AES => new[] {128},
+                PbeAlgorithm.PBKDF2 when CipherAlgorithm == CipherAlgorithm.RC4 => new[] {40},
+                _ => Resources.KeySize.AES
+            };
         }
     }
 }

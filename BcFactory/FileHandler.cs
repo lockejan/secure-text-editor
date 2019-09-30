@@ -1,11 +1,10 @@
 using System;
 using System.IO;
 using System.Text;
-using BcFactory;
 using BcFactory.Resources;
 using Newtonsoft.Json;
 
-namespace SecureTextEditor.FileHandler
+namespace BcFactory
 {
 
     public static class FileHandler
@@ -50,7 +49,7 @@ namespace SecureTextEditor.FileHandler
 
         public static void SaveToDisk(string fileName, CryptoConfig config)
         {
-            var fqfn = SteHelper.WorkingDirectory + fileName;
+            var fqfn = WorkingDirectory + fileName;
             
             if (config.Key != null)
                 SaveKey($"{fqfn}.{KeyExtension}", config.Key);
@@ -87,7 +86,7 @@ namespace SecureTextEditor.FileHandler
         
         public static CryptoConfig LoadSteFile(string fileName)
         {
-            var fqfn = SteHelper.WorkingDirectory + fileName;
+            var fqfn = WorkingDirectory + fileName;
             
                 try
                 {
@@ -104,7 +103,7 @@ namespace SecureTextEditor.FileHandler
 
         public static CryptoConfig LoadKeys(string fileName, CryptoConfig config)
         {
-            var fqfn = SteHelper.WorkingDirectory + fileName;
+            var fqfn = WorkingDirectory + fileName;
             
             if (!config.IsPbeActive && File.Exists($"{fqfn}.{KeyExtension}"))
                 config.Key = File.ReadAllBytes($"{fqfn}.{KeyExtension}");
@@ -173,6 +172,17 @@ namespace SecureTextEditor.FileHandler
 
             //return cipherBuilder.DecryptBytesToText(Convert.FromBase64String(config.Cipher));
             return "not good";
+        }
+        
+        public static String WorkingDirectory
+        {
+            get
+            {
+                string codeBase = Directory.GetCurrentDirectory() + "/../../../../";
+                UriBuilder uri = new UriBuilder(codeBase);
+                string path = Uri.UnescapeDataString(uri.Path);
+                return $"{Path.GetDirectoryName(path)}/";
+            }
         }
 
     }

@@ -48,9 +48,9 @@ namespace BcFactory.Factories
             _config.SignaturePublicKey = publicKeyDerBase64;
         }
 
-        public CryptoConfig SignInput(string input)
+        public CryptoConfig SignInput(string message)
         {
-            var cipherBytes = Convert.FromBase64String(_config.Cipher);
+            var cipherBytes = Convert.FromBase64String(message);
 
             try
             {
@@ -70,15 +70,15 @@ namespace BcFactory.Factories
             return _config;
         }
         
-        public bool VerifySign(string sign)
+        public bool VerifySign(string sign, string message)
         {
-            var messageBytes = Convert.FromBase64String(_config.Cipher);
+            var messageBytes = Convert.FromBase64String(message);
             var signer = SignerUtilities.GetSigner("SHA256withDSA");
 
             signer.Init(false, _publicKey);
             signer.BlockUpdate(messageBytes, 0, messageBytes.Length);
             
-            var decodedBytes = Convert.FromBase64String(_config.Signature);
+            var decodedBytes = Convert.FromBase64String(sign);
             
             return signer.VerifySignature(decodedBytes);
         }

@@ -31,9 +31,10 @@ namespace BcFactory.Factories
             _config.DigestKey = gen.GenerateKey();
         }
         
-        public CryptoConfig SignInput(string input)
+        public CryptoConfig SignInput(string message)
         {
-            var inputBytes = Convert.FromBase64String(input);
+            var inputBytes = Convert.FromBase64String(message);
+            //var inputBytes = Encoding.UTF8.GetBytes(input);
 
             var digestBytes = _config.IntegrityOptions switch
             {
@@ -47,10 +48,10 @@ namespace BcFactory.Factories
             return _config;
         }
 
-        public bool VerifySign(string sign)
+        public bool VerifySign(string sign, string message)
         {
-            var resign = SignInput(_config.Cipher);
-            return sign == resign.Signature;
+            var testSign = SignInput(message);
+            return sign == testSign.Signature;
         }
 
         private byte[] Sha256(byte[] inputBytes)

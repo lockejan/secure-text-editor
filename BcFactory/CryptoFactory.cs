@@ -8,23 +8,23 @@ namespace BcFactory
     public static class CryptoFactory
     {
 
-        public static ICipher CreateCipher(CryptoConfig settings)
+        public static ICipher CreateCipher(CryptoConfig config)
         {
-            if(settings.IsEncryptActive)
-                return new CipherBuilder(settings);
+            if(config.IsEncryptActive)
+                return new CipherBuilder(config);
 
             throw new ArgumentException("Invalid Configuration. Encryption not activated.'");
         }
 
-        public static IPbe CreatePbe(CryptoConfig settings, char[] password)
+        public static IPbe CreatePbe(CryptoConfig config)
         {
-            if(!settings.IsPbeActive) 
+            if(!config.IsPbeActive) 
                 throw new ArgumentException("Invalid Configuration. Pbe not activated."); 
             
-            if(settings.PbePassword == null)
+            if(config.PbePassword == null)
                 throw new ArgumentException("Pbe not properly configured. Empty password is not allowed.");
             
-            return new PbeBuilder(settings);
+            return new PbeBuilder(config);
         }
 
         public static IDigest CreateDigest(CryptoConfig config)
@@ -59,22 +59,22 @@ namespace BcFactory
 
     public interface IPbe
     {
-        CryptoConfig GenerateKeyBytes(char[] password);
+        CryptoConfig GenerateKeyBytes();
     }
     
     public interface IDigest
     {
-        CryptoConfig SignInput(string input);
+        CryptoConfig SignInput(string message);
         
-        bool VerifySign(string sign);
+        bool VerifySign(string sign, string message);
     }
 
     public interface ICert
     {
         void GenerateCerts();
-        CryptoConfig SignInput(string input);
+        CryptoConfig SignInput(string message);
         
-        bool VerifySign(string sign);
+        bool VerifySign(string sign, string message);
     }
 
 }
