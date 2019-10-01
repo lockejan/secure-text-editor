@@ -135,6 +135,7 @@ namespace SecureTextEditor.Views
                     
                     var config = FileHandler.ProcessConfigOnSave(Text, content.Config);
                     FileHandler.SaveToDisk(content.Filename.Text, config);
+                    FileHandler.ClearSecrets(config);
                 }
                 FocusManager.Default.SetFocus(_textBox);
             });
