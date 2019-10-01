@@ -231,7 +231,10 @@ namespace BcFactory
                 Array.Clear(config.PbePassword,0, config.PbePassword.Length);
             
             if (config.DigestKey != null)
-                Array.Clear(config.DigestKey,0, config.DigestKey.Length);
+                Array.Clear(config.DigestKey,0, config.DigestKey.Length);  
+            
+            if (config.IvOrSalt != null)
+                Array.Clear(config.IvOrSalt,0, config.IvOrSalt.Length);
         }
     }
 }

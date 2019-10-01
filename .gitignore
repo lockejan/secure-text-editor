@@ -107,3 +107,4 @@ packages/
 **/obj/
 docs/
 */OpenTK.dll.config
+.DS_Store
