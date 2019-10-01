@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using BcFactory.Resources;
 using Newtonsoft.Json;
@@ -276,6 +277,28 @@ namespace BcFactory
                 PbeAlgorithm.PBKDF2 when CipherAlgorithm == CipherAlgorithm.RC4 => new[] {40},
                 _ => Resources.KeySize.AES
             };
+        }
+        
+        /// <summary>
+        /// Clear byte arrays holding secrets.
+        /// </summary>
+        /// <param name="config">config object state</param>
+        public void ClearSecrets()
+        {
+            if (Key != null)
+                Key = null;
+
+            if (PbePassword != null)
+                PbePassword = null;
+
+            if (DigestKey != null)
+                DigestKey = null;
+
+            if (IvOrSalt != null)
+                IvOrSalt = null;
+
+//            if (Key != null)
+//                Array.Clear(Key,0, Key.Length);
         }
     }
 }

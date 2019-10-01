@@ -111,6 +111,7 @@ namespace SecureTextEditor.Views
                     _config = FileHandler.LoadKeys(content.Filename.Text, _config);
                     _config.PbePassword = content.Password.Text.ToCharArray();
                     Text = FileHandler.ProcessConfigOnLoad(_config);
+                    _config.IvOrSalt = null;
                 }
                 FocusManager.Default.SetFocus(_textBox);
             });
@@ -135,7 +136,7 @@ namespace SecureTextEditor.Views
                     
                     var config = FileHandler.ProcessConfigOnSave(Text, content.Config);
                     FileHandler.SaveToDisk(content.Filename.Text, config);
-                    FileHandler.ClearSecrets(config);
+                    config.ClearSecrets();
                 }
                 FocusManager.Default.SetFocus(_textBox);
             });

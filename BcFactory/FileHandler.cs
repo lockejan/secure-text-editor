@@ -217,21 +217,6 @@ namespace BcFactory
                 return $"{Path.GetDirectoryName(path)}/";
             }
         }
-
-        /// <summary>
-        /// Clear byte arrays holding secrets.
-        /// </summary>
-        /// <param name="config">config object state</param>
-        public static void ClearSecrets(CryptoConfig config)
-        {
-            if (config.Key != null)
-                Array.Clear(config.Key,0, config.Key.Length);
-
-            if (config.PbePassword != null)
-                Array.Clear(config.PbePassword,0, config.PbePassword.Length);
-            
-            if (config.DigestKey != null)
-                Array.Clear(config.DigestKey,0, config.DigestKey.Length);
-        }
+        
     }
 }
