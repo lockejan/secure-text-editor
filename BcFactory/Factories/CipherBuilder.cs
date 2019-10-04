@@ -82,11 +82,11 @@ namespace BcFactory.Factories
 
             if (_config.CipherAlgorithm == CipherAlgorithm.RC4)
             {
-                var outBuffer = new byte[_config.KeySize];
+                var outBuffer = new byte[_inputBytes.Length];
                 _myRc4.Init(true, keyParam);
                 _myRc4.ProcessBytes(_inputBytes, 0, _inputBytes.Length, outBuffer, 0);
                 
-                _config.Cipher = Convert.ToBase64String(outBuffer.Where(x => x != 0).ToArray());
+                _config.Cipher = Convert.ToBase64String(outBuffer);
                 return _config;
             }
             
@@ -152,10 +152,10 @@ namespace BcFactory.Factories
 
             if (_config.CipherAlgorithm == CipherAlgorithm.RC4)
             {
-                var outBuffer = new byte[_config.KeySize];
+                var outBuffer = new byte[cipherBytes.Length];
                 _myRc4.Init(false, keyParam);
                 _myRc4.ProcessBytes(cipherBytes, 0, cipherBytes.Length, outBuffer, 0);
-                UpdatePlainText(outBuffer.Where(x => x != 0).ToArray());
+                UpdatePlainText(outBuffer);
             }
             else
             {
