@@ -280,25 +280,27 @@ namespace BcFactory
         }
         
         /// <summary>
-        /// Clear byte arrays holding secrets.
+        /// Clear all secrets from current state.
         /// </summary>
-        /// <param name="config">config object state</param>
-        public void ClearSecrets()
+        public void ClearSecrets(bool beforeSave)
         {
-            if (Key != null)
-                Key = null;
+            if (beforeSave)
+            {
+                if (Key != null || IsPbeActive)
+                    Key = null;
 
-            if (PbePassword != null)
-                PbePassword = null;
+                if (PbePassword != null)
+                    PbePassword = null;
+            }
+            else
+            {
+                if (DigestKey != null)
+                    DigestKey = null;
 
-            if (DigestKey != null)
-                DigestKey = null;
-
-            if (IvOrSalt != null)
-                IvOrSalt = null;
-
-//            if (Key != null)
-//                Array.Clear(Key,0, Key.Length);
+                if (Key != null)
+                    Array.Clear(Key,0, Key.Length);
+    
+            }
         }
     }
 }
