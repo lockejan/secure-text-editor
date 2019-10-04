@@ -1,10 +1,11 @@
 using System;
 using System.IO;
 using System.Text;
+using BcFactory;
 using BcFactory.Resources;
 using Newtonsoft.Json;
 
-namespace BcFactory
+namespace SecureTextEditor
 {
     /// <summary>
     /// Static class which is responsible for file IO operations.

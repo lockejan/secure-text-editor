@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using BcFactory;
+using SecureTextEditor;
 using Xunit;
 
 namespace SecureTextEditorTests
