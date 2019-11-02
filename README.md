@@ -8,40 +8,48 @@ The used cross-plattform UI library is called 'medja' and has been provided by S
 
 Currently the UI library isn't open sourced so it's not possible to use this editor right now without a private feed.
 
-
+![Main view](screenshots/main-view-ste.png)
 
 The projects implements following cryptographic functions:
-- Symmetric cryptography
-   - AES (128, 192 and 256 bit)
-  
-- Stream cipher
-   - RC4
-   
-- Password based cryptography
-   - SCRYPT
-   - PBKDF2
-   
-- Digital signing (creation and verification):
-   - SHA256 with DSA
 
-Supported paddings are currently:
-- No Padding
-- PKCS7 Padding
-- ZeroByte Padding
+-  Symmetric cryptography
 
-Supported Blockmodes:
-- ECB
-- CBC
-- OFB
-- CTS
-- GCM
+   -  AES (128, 192 and 256 bit)
 
-Supported digest and macs:
-- SHA256
-- AESCMAC
-- HMACSHA256
+-  Stream cipher
+   -  RC4
+-  Password based cryptography
+   -  SCRYPT
+   -  PBKDF2
+-  Digital signing (creation and verification):
 
-The editor stores the text files in a json file format:
+   -  SHA256 with DSA
+
+-  Padding:
+
+   -  No Padding
+   -  PKCS7 Padding
+   -  ZeroByte Padding
+
+-  Blockmodes:
+
+   -  ECB
+   -  CBC
+   -  OFB
+   -  CTS
+   -  GCM
+
+-  Digest and macs:
+
+   -  SHA256
+   -  AESCMAC
+   -  HMACSHA256
+
+![Save view](screenshots/save-dialog.png)
+
+![Load view](screenshots/load-dialog.png)
+
+The editor stores text files in a json file format:
 
 ```
 {
@@ -65,3 +73,5 @@ The editor stores the text files in a json file format:
 ```
 
 There is also some sort of code documentation via doxygen.
+
+Change directory to root folder of the project and execute doxygen via CLI to create it.
