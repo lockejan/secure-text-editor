@@ -135,9 +135,9 @@ namespace SecureTextEditor.Views
                         content.Config.PbePassword = content.Password.Text.ToCharArray();
                     
                     var config = FileHandler.ProcessConfigOnSave(Text, content.Config);
-                    config.ClearSecrets(false);
-                    FileHandler.SaveToDisk(content.Filename.Text, config);
                     config.ClearSecrets(true);
+                    FileHandler.SaveToDisk(content.Filename.Text, config);
+                    config.ClearSecrets(false);
                 }
                 FocusManager.Default.SetFocus(_textBox);
             });
