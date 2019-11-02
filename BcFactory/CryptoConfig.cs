@@ -286,7 +286,7 @@ namespace BcFactory
         {
             if (beforeSave)
             {
-                if (Key != null || IsPbeActive)
+                if (Key != null && IsPbeActive)
                     Key = null;
 
                 if (PbePassword != null)
