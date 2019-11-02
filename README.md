@@ -12,38 +12,37 @@ Currently the UI library isn't open sourced so it's not possible to use this edi
 
 The projects implements following cryptographic functions:
 
--  Symmetric cryptography
+| Cipher | Keysize             |
+| ------ | ------------------- |
+| AES    | 128 / 192 / 256 bit |
+| RC4    | 40 - 2048 bit       |
 
-   -  AES (128, 192 and 256 bit)
+| Blockmode |
+| --------- |
+| ECB       |
+| CBC       |
+| OFB       |
 
--  Stream cipher
-   -  RC4
--  Password based cryptography
-   -  SCRYPT
-   -  PBKDF2
--  Digital signing (creation and verification):
+| Padding   |
+| --------- |
+| NoPadding |
+| PKCS7     |
+| ZeroByte  |
 
-   -  SHA256 with DSA
+| PBE (Password based encryption) cipher |
+| -------------------------------------- |
+| PBKDF2                                 |
+| SCRYPT                                 |
 
--  Padding:
+| Digital Signing (creation and verification) |
+| ------------------------------------------- |
+| SHA256 with DSA                             |
 
-   -  No Padding
-   -  PKCS7 Padding
-   -  ZeroByte Padding
-
--  Blockmodes:
-
-   -  ECB
-   -  CBC
-   -  OFB
-   -  CTS
-   -  GCM
-
--  Digest and macs:
-
-   -  SHA256
-   -  AESCMAC
-   -  HMACSHA256
+| Digest and MACs |
+| --------------- |
+| SHA256          |
+| AESCMAC         |
+| HMACSHA256      |
 
 ![Save view](screenshots/save-dialog.png)
 
