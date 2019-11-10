@@ -50,6 +50,8 @@ The project currently provides the following cryptographic options:
 | AESCMAC         |
 | HMACSHA256      |
 
+Manipulations on files which are using integrity options (e.g. DSA, Digest or MAC) are recognized by the editor on load.
+
 ![Save view](screenshots/save-dialog.png)
 
 ![Load view](screenshots/load-dialog.png)
