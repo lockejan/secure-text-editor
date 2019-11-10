@@ -78,4 +78,4 @@ The editor stores text files in a json file format:
 ```
 
 There is also some sort of code documentation via doxygen.
-To create it, `cd` to the project root and execute `doxygen` via CLI to create it.
+To create it, `cd` to the project root and execute `doxygen` via CLI. (Doxygen looks for it's config file in the current directory if not specified.)
