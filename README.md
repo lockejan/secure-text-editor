@@ -6,7 +6,7 @@ All cryptographic functionality was used with [bouncyCastle](https://github.com/
 
 The used cross-plattform UI library _medja_ has been provided by [SprintWORX GmbH](https://sprintworx.de/).
 
-Under the hood _medja_ uses OpenTK and SkiSharp and has been created as a lightweight cross-plattform UI library especially for embedded systems applications. This project is some sort of prototype test in an different environment.
+Under the hood _medja_ uses [OpenTK](https://github.com/opentk/opentk) and [SkiaSharp](https://github.com/mono/SkiaSharp) and has been created as a lightweight cross-plattform UI library especially for embedded systems applications. This project is some sort of prototype test in an different environment.
 Therefore it's not fully optimized for this use case but still feature-rich enough to run the editor under Linux, OSX and Windows.
 
 Because openTK hasn't been ported to a current dotNet standard yet the _secure-text-editor_ currently runs with the mono runtime.
