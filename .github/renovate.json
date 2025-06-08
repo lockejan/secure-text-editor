@@ -1,18 +1,26 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:best-practices"],
+  "extends": [
+    "config:best-practices"
+  ],
   "dependencyDashboard": true,
   "packageRules": [
     {
       "description": "Automatically merge minor, patch-level and digest updates",
-      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "digest"
+      ],
       "automerge": false,
       "minimumReleaseAge": "14 days"
     },
     {
       "description": "Ensure .NET dependencies in all subfolders are detected",
-      "matchManagers": ["nuget"],
-      "matchPaths": [
+      "matchManagers": [
+        "nuget"
+      ],
+      "matchFileNames": [
         "src/**/Directory.Packages.props",
         "src/**/*.csproj",
         "src/**/*.sln",
