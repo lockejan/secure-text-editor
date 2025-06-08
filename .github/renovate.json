@@ -9,5 +9,14 @@
       "automerge": false,
       "minimumReleaseAge": "14 days"
     }
+  ],
+  "dotnet": {
+    "enabled": true
+  },
+  "fileMatch": [
+    "(^|/)src/.*\\.csproj$",
+    "(^|/)src/.*\\.sln$",
+    "(^|/)tests/.*\\.csproj$",
+    "(^|/)tests/.*\\.sln$"
   ]
 }

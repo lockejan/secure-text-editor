@@ -108,3 +108,6 @@ packages/
 docs/
 */OpenTK.dll.config
 .DS_Store
+
+coverage/
+TestResults/
