@@ -16,7 +16,7 @@ At the time of creating this project openTK haven't been ported to a current dot
 As said before _medja_ isn't an open source project right now but might be in the future. Till then it's not possible to build the project without a private feed.
 However due to the design of the _secure-text-editor_ project it's easy to use a different UI framework or library and just make use of the crypto backend.
 
-![Main view](screenshots/main-view-ste.png)
+![Main view](docs/main-view-ste.png)
 
 The project currently provides the following cryptographic options:
 
@@ -54,9 +54,9 @@ The project currently provides the following cryptographic options:
 
 Manipulations on files which are using integrity options (e.g. DSA, Digest or MAC) are recognized by the editor on load.
 
-![Save view](screenshots/save-dialog.png)
+![Save view](docs/save-dialog.png)
 
-![Load view](screenshots/load-dialog.png)
+![Load view](docs/load-dialog.png)
 
 The editor stores text files in a json file format:
 
