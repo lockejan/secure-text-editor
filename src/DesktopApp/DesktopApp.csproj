@@ -15,14 +15,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BouncyCastle.NetCore" Version="2.2.1" />
-    <PackageReference Include="Medja" Version="2019.8.30.1" />
-    <PackageReference Include="Medja.OpenTk" Version="2019.8.30.1" />
-    <PackageReference Include="Medja.OpenTk.Themes" Version="2019.8.30.1" />
-    <PackageReference Include="Medja.Utils" Version="2019.8.30.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="OpenTK" Version="3.1.0" />
-    <PackageReference Include="SkiaSharp" Version="1.68.0" />
+    <PackageReference Include="BouncyCastle.NetCore" />
+    <PackageReference Include="Medja" />
+    <PackageReference Include="Medja.OpenTk" />
+    <PackageReference Include="Medja.OpenTk.Themes" />
+    <PackageReference Include="Medja.Utils" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="OpenTK" />
+    <PackageReference Include="SkiaSharp" />
   </ItemGroup>
 
   <ItemGroup>

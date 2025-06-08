@@ -9,18 +9,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
-    <PackageReference Include="xunit" Version="2.4.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5" />
-    <PackageReference Include="xunit.analyzers" Version="0.10.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Medja" Version="2019.8.30.1" />
-    <PackageReference Include="Medja.OpenTk" Version="2019.8.30.1" />
-    <PackageReference Include="Medja.OpenTk.Themes" Version="2019.8.30.1" />
-    <PackageReference Include="Medja.Properties" Version="2019.8.30.1" />
-    <PackageReference Include="Medja.Utils" Version="2019.8.30.1" />
-    <PackageReference Include="OpenTK" Version="3.1.0" />
-    <PackageReference Include="SkiaSharp" Version="1.68.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="xunit.analyzers" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Medja" />
+    <PackageReference Include="Medja.OpenTk" />
+    <PackageReference Include="Medja.OpenTk.Themes" />
+    <PackageReference Include="Medja.Properties" />
+    <PackageReference Include="Medja.Utils" />
+    <PackageReference Include="OpenTK" />
+    <PackageReference Include="SkiaSharp" />
   </ItemGroup>
   
   <ItemGroup>
