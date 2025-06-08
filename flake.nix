@@ -20,6 +20,10 @@
             texlivePackages.epstopdf # needed for doxygen
           ];
           buildInputs = [ ];
+
+          shellHook = ''
+            doxygen docs/Doxygen/SteDoxygen
+          '';
         };
       });
 }
