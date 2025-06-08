@@ -8,17 +8,6 @@
       "matchUpdateTypes": ["minor", "patch", "digest"],
       "automerge": false,
       "minimumReleaseAge": "14 days"
-    },
-    {
-      "description": "Ensure .NET dependencies in all subfolders are detected",
-      "matchManagers": ["nuget"],
-      "matchPaths": [
-        "src/**/Directory.Packages.props",
-        "src/**/*.csproj",
-        "src/**/*.sln",
-        "tests/**/*.csproj",
-        "tests/**/*.sln"
-      ]
     }
   ]
 }
