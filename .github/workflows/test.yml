@@ -8,24 +8,21 @@ on:
 jobs:
   crypto-engine-tests:
     runs-on: ubuntu-24.04
-    strategy:
-      matrix:
-        dotnet: [ '8.x' ]
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: ${{ matrix.dotnet }}
+          dotnet-version: 8.x
 
       - name: Run CryptoEngine tests with coverage
         run: |
-          dotnet test tests/CryptoEngine.Tests/CryptoEngine.Tests.csproj --collect:"XPlat Code Coverage" --results-directory ./TestResults --verbosity normal
+          dotnet test tests/CryptoEngine.Tests/CryptoEngine.Tests.csproj --configuration Release --logger trx --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
 
       - name: Publish Code Coverage Report
         uses: irongut/CodeCoverageSummary@v1.3.0
         with:
-          filename: "Cobertura.xml"
+          filename: coverage/**/coverage.cobertura.xml
           badge: true
           fail_below_min: false # just informative for now
           format: markdown
@@ -46,21 +43,20 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: ${{ github.workspace }}/**/TestResults/**/*
-          retention-days: 5
+          path: coverage/**/*
+          retention-days: 7
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2.20.0
         if: always()
         with:
-          # NOTE: using trx_files instead of files due to https://github.com/EnricoMi/publish-unit-test-result-action/issues/424
-          trx_files: "${{ github.workspace }}/**/*.trx"
+          files: "${{ github.workspace }}/**/*.trx"
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./TestResults/**/coverage.cobertura.xml
+          files: coverage/**/coverage.cobertura.xml
           flags: crypto
           name: crypto-tests
           fail_ci_if_error: false
