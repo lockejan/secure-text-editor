@@ -1,20 +1,22 @@
-**NOTE: because the used frontend library is still closed source at this point, only the backend (in BcFactory) is in a reproducable state.**
+**NOTE: because the used frontend library is still closed source at this point, only the backend (in CryptoEngine) is in a reproducible state.**
 
-# secure-text-editor
+# Secure Text Editor
 
 Implementation of a basic text editor with security features in C# which can save and load it's own encrypted files or any other basic text file.
 
 All cryptographic functionality was used with [bouncyCastle](https://github.com/bcgit/bc-csharp) crypto library.
 
-The used cross-plattform UI library _medja_ has been provided by [SprintWORX GmbH](https://sprintworx.de/).
+The used cross-platform UI library _medja_ has been provided by [SprintWORX GmbH](https://sprintworx.de/).
 
-Under the hood _medja_ uses [OpenTK](https://github.com/opentk/opentk) and [SkiaSharp](https://github.com/mono/SkiaSharp) and has been created as a lightweight cross-plattform UI library especially for embedded systems applications. This project is some sort of prototype test in an different environment.
+Under the hood _medja_ uses [OpenTK](https://github.com/opentk/opentk) and [SkiaSharp](https://github.com/mono/SkiaSharp) and has been created as a lightweight cross-platform UI library especially for embedded systems applications.
+This project is some sort of prototype test in an different environment.
 Therefore it's not fully optimized for this use case but still feature-rich enough to run as a basic editor under Linux, OSX and Windows.
 
-At the time of creating this project openTK haven't been ported to a current dotNet standard. Therefore the _secure-text-editor_ runs with the mono runtime.
+At the time of creating this project openTK haven't been ported to a current dotNet standard.
+Therefore, the _secure-text-editor_ runs with the mono runtime.
 
-As said before _medja_ isn't an open source project right now but might be in the future. Till then it's not possible to build the project without a private feed.
-However due to the design of the _secure-text-editor_ project it's easy to use a different UI framework or library and just make use of the crypto backend.
+As said before _medja_ isn't an open source project right now but might be in the future. Till then, it's not possible to build the project without a private feed.
+However, due to the design of the _secure-text-editor_ project it's easy to use a different UI framework or library and just make use of the crypto backend.
 
 ![Main view](docs/main-view-ste.png)
 
