@@ -1,13 +1,45 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:best-practices"],
+  "extends": [
+    "config:best-practices"
+  ],
   "dependencyDashboard": true,
   "packageRules": [
     {
       "description": "Automatically merge minor, patch-level and digest updates",
-      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "digest"
+      ],
       "automerge": false,
       "minimumReleaseAge": "14 days"
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "NuGet packages in BcFactory/packages.config",
+      "managerFilePatterns": [
+        "^BcFactory/packages\\.config$"
+      ],
+      "matchStrings": [
+        "<package\\s+id=\\\"(?<depName>[^\\\"]+)\\\"\\s+version=\\\"(?<currentValue>[^\\\"]+)\\\""
+      ],
+      "datasourceTemplate": "nuget",
+      "versioningTemplate": "nuget"
+    },
+    {
+      "customType": "regex",
+      "description": "NuGet packages in SecureTextEditorTests/packages.config",
+      "managerFilePatterns": [
+        "^SecureTextEditorTests/packages\\.config$"
+      ],
+      "matchStrings": [
+        "<package\\s+id=\\\"(?<depName>[^\\\"]+)\\\"\\s+version=\\\"(?<currentValue>[^\\\"]+)\\\""
+      ],
+      "datasourceTemplate": "nuget",
+      "versioningTemplate": "nuget"
     }
   ]
 }
