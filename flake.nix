@@ -22,7 +22,7 @@
           buildInputs = [ ];
 
           shellHook = ''
-            doxygen docs/Doxygen/SteDoxygen
+            doxygen -q docs/Doxygen/SteDoxygen
           '';
         };
       });
