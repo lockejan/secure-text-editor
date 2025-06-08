@@ -83,3 +83,12 @@ The editor stores text files in a json file format:
 
 There is also some sort of code documentation via doxygen.
 To create it, `cd` to the project root and execute `doxygen` via CLI. (Doxygen looks for it's config file in the current directory if not specified.)
+
+## Running Tests
+
+Unit tests are located alongside their respective projects:
+
+* `BcFactory/Tests` contains backend tests for the cryptography layer.
+* `SecureTextEditor/Tests` contains tests for the UI logic and file handling.
+
+All test projects target **.NET 8**. Execute them with the `dotnet test` command from the repository root after restoring dependencies.
