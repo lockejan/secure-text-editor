@@ -25,7 +25,8 @@ namespace CryptoEngine.Factories
         private byte[] GenerateSalt()
         {
             SecureRandom random = new SecureRandom();
-            var salt = new byte[_config.PbePassword.Length];
+            var size = _config.CipherAlgorithm == CipherAlgorithm.AES ? 16 : _config.PbePassword.Length;
+            var salt = new byte[size];
             random.NextBytes(salt);
             return salt;
         }
@@ -54,21 +55,22 @@ namespace CryptoEngine.Factories
         private byte[] BcPkcs5Scheme(char[] password, byte[] salt,
             int iterationCount)
         {
-            var generator = new Pkcs5S1ParametersGenerator(
-                GetDigest());
+            var generator = new Pkcs5S2ParametersGenerator(GetDigest());
 
             generator.Init(PbeParametersGenerator.Pkcs5PasswordToUtf8Bytes(password),
                 salt,
                 iterationCount);
-            
-            return ((KeyParameter)generator.GenerateDerivedParameters(_config.CipherAlgorithm.ToString(),GetKeySize())).GetKey();
+
+            return ((KeyParameter)generator.GenerateDerivedParameters(_config.CipherAlgorithm.ToString(), GetKeySize())).GetKey();
         }
         
         private Org.BouncyCastle.Crypto.IDigest GetDigest()
         {
-            return _config.CipherAlgorithm == CipherAlgorithm.RC4
-                ? new Sha1Digest()
-                : (Org.BouncyCastle.Crypto.IDigest)new Sha256Digest();
+            return _config.PbeDigest switch
+            {
+                PbeDigest.SHA1 => new Sha1Digest(),
+                _ => new Sha256Digest()
+            };
         }
 
         private int GetKeySize()
