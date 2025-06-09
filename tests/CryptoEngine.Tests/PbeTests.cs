@@ -65,7 +65,7 @@ public class PbeTests
     //PBKDF Combinations#
     //####################
 
-    [Fact (Skip = "This test is currently broken, because the PBKDF2 implementation is not yet complete.")]
+    [Fact]
     public void TestValidPbkdf2Sha256Key()
     {
         var config = new CryptoConfig
